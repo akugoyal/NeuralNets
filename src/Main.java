@@ -9,6 +9,7 @@ public class Main
    private static final int MAX_ITERATIONS = 100000;
    private static final double LAMBDA = 0.3;
    private static final double ERROR_THRESHOLD = 2e-4;
+   public static int i;
    private static int numInAct;
    private static int numHidAct;
    private static int numOutAct;
@@ -17,8 +18,6 @@ public class Main
    private static boolean randomizeWeights;
    private static boolean isTraining;
    private static int numTrainingCases;
-
-
    private static double[] a;
    private static double[] thetaJ;
    private static double[] h;
@@ -26,7 +25,6 @@ public class Main
    private static double F0;
    private static double[][] kjWeights;
    private static double[] j0Weights;
-   public static int i;
    private static int j;
    private static int k;
 
@@ -40,12 +38,13 @@ public class Main
    private static double omega0;
    private static double psi0;
    private static double ePrimeWj0;
-   private static double deltaWj0;
+   private static double[] deltaWj0;
    private static double omegaJ;
    private static double psiJ;
    private static double ePrimeWkj;
-   private static double deltaWkj;
-
+   private static double[][] deltaWkj;
+   private static double sigValue;
+   private static double avgErrorAccumulator;
 
 
    /**
@@ -55,16 +54,16 @@ public class Main
    public static void setConfig()
    {
       numInAct = 2;
-      numHidAct = 2;
+      numHidAct = 3;
       numOutAct = 1;
       lowRand = -1.5;
       highRand = 1.5;
-      randomizeWeights = false;
-      isTraining = false;
+      randomizeWeights = true;
+      isTraining = true;
       if (isTraining)
       {
          System.out.println("Number of training cases: ");
-         numTrainingCases = scanner.nextInt();
+         numTrainingCases = 4;//scanner.nextInt();
       }
    } //public static void setConfig
 
@@ -100,18 +99,20 @@ public class Main
       if (isTraining)
       {
          truthTable = new double[numTrainingCases][numInAct + 1];
-         omega0 = 0.0;
+         omega0 = Double.MAX_VALUE;
          psi0 = 0.0;
          ePrimeWj0 = 0.0;
-         deltaWj0 = 0.0;
+         deltaWj0 = new double[numHidAct];
          omegaJ = 0.0;
          psiJ = 0.0;
          ePrimeWkj = 0.0;
-         deltaWkj = 0.0;
+         deltaWkj = new double[numInAct][numHidAct];
          trainIterations = 0;
+         sigValue = 0;
+         avgErrorAccumulator = 0.0;
       }
       a = new double[numInAct];
-      thetaJ = new double[numInAct];
+      thetaJ = new double[numHidAct];
       h = new double[numHidAct];
       theta0 = 0.0;
       F0 = 0.0;
@@ -131,16 +132,28 @@ public class Main
    {
       if (isTraining)
       {
-         for (xIter = 0; xIter < numTrainingCases; xIter++)
-         {
-            for (k = 0; k < numInAct; k++)
-            {
-               System.out.print("Training case #" + xIter + " - Input #" + k + ": ");
-               truthTable[xIter][k] = scanner.nextDouble();
-            } //for (yIter = 0; yIter < numInAct; yIter++)
-            System.out.print("Training case #" + xIter + " - Output: ");
-            truthTable[xIter][numInAct] = scanner.nextDouble();
-         } //for (xIter = 0; xIter < numTrainingCases; xIter++)
+         truthTable[0][0] = 0;
+         truthTable[0][1] = 0;
+         truthTable[0][2] = 0;
+         truthTable[1][0] = 0;
+         truthTable[1][1] = 1;
+         truthTable[1][2] = 0;
+         truthTable[2][0] = 1;
+         truthTable[2][1] = 0;
+         truthTable[2][2] = 0;
+         truthTable[3][0] = 1;
+         truthTable[3][1] = 1;
+         truthTable[3][2] = 1;
+//         for (xIter = 0; xIter < numTrainingCases; xIter++)
+//         {
+//            for (k = 0; k < numInAct; k++)
+//            {
+//               System.out.print("Training case #" + xIter + " - Input #" + k + ": ");
+//               truthTable[xIter][k] = scanner.nextDouble();
+//            } //for (yIter = 0; yIter < numInAct; yIter++)
+//            System.out.print("Training case #" + xIter + " - Output: ");
+//            truthTable[xIter][numInAct] = scanner.nextDouble();
+//         } //for (xIter = 0; xIter < numTrainingCases; xIter++)
       }  //if (isTraining)
       else
       {
@@ -210,7 +223,7 @@ public class Main
    {
       for (j = 0; j < numHidAct; j++)
       {
-         thetaJ[j] = 0;
+         thetaJ[j] = 0.0;
          for (k = 0; k < numInAct; k++)
          {
             thetaJ[j] += a[k] * kjWeights[k][j];
@@ -218,6 +231,7 @@ public class Main
          h[j] = sigmoid(thetaJ[j]);
       }
 
+      theta0 = 0.0;
       for (j = 0; j < numHidAct; j++)
       {
          theta0 += h[j] * j0Weights[j];
@@ -230,10 +244,101 @@ public class Main
       return 1.0 / (1 + Math.exp(-in));
    }
 
-   public static void train() {
-      while ()
-      omega0 =
+   public static double sigmoidPrime(double in)
+   {
+      sigValue = sigmoid(in);
+      return sigValue * (1.0 - sigValue);
    }
+
+   public static double avgError()
+   {
+      avgErrorAccumulator = 0.0;
+      for (xIter = 0; xIter < numTrainingCases; xIter++)
+      {
+         for (k = 0; k < numInAct; k++)
+         {
+            a[k] = truthTable[xIter][k];
+         }
+         run();
+         avgErrorAccumulator += truthTable[xIter][numInAct];
+      }
+      return avgErrorAccumulator / numTrainingCases;
+   }
+
+   public static void exitTrain()
+   {
+      if (trainIterations >= MAX_ITERATIONS)
+      {
+         System.out.println("Ended training due to max iterations reached.");
+      }
+      else
+      {
+         System.out.println("Ended training due to reaching error threshold.");
+      }
+      System.out.println("Reached " + trainIterations + " iterations.");
+      System.out.println("Reached " + avgError() + " error.");
+
+      for (xIter = 0; xIter < numTrainingCases; xIter++)
+      {
+         for (k = 0; k < numInAct; k++)
+         {
+            a[k] = truthTable[xIter][k];
+         }
+         run();
+         System.out.println(Arrays.toString(truthTable[xIter]) + "   Output: " + F0);
+      }
+   }
+
+   public static void train()
+   {
+      while (trainIterations < MAX_ITERATIONS && avgError() > ERROR_THRESHOLD)
+      {
+         System.out.println("Running iteration " + trainIterations);
+         for (xIter = 0; xIter < numTrainingCases; xIter++)
+         {
+            a = truthTable[xIter];
+
+            run();
+
+            omega0 = truthTable[xIter][numInAct] - F0;
+            psi0 = omega0 * sigmoidPrime(theta0);
+
+            for (j = 0; j < numHidAct; j++)
+            {
+               ePrimeWj0 = -h[j] * psi0;
+               deltaWj0[j] = -LAMBDA * ePrimeWj0;
+            }
+
+            for (j = 0; j < numHidAct; j++)
+            {
+               omegaJ = psi0 * j0Weights[j];
+               psiJ = omegaJ * sigmoidPrime(thetaJ[j]);
+
+               for (k = 0; k < numInAct; k++)
+               {
+                  ePrimeWkj = -a[k] * psiJ;
+                  deltaWkj[k][j] = -LAMBDA * ePrimeWkj;
+               }
+            }
+
+            for (j = 0; j < numHidAct; j++)
+            {
+               j0Weights[j] += deltaWj0[j];
+            }
+            for (j = 0; j < numHidAct; j++)
+            {
+               for (k = 0; k < numInAct; k++)
+               {
+                  kjWeights[k][j] += deltaWkj[k][j];
+               }
+            }
+         }
+         trainIterations++;
+      }
+
+      exitTrain();
+   }
+
    public static void main(String[] args)
    {
       setConfig();
@@ -243,7 +348,7 @@ public class Main
 
       if (isTraining)
       {
-//         train();
+         train();
 //         System.out.println("Training is not supported yet. I think it would be a good idea to " +
 //               "run the network instead.");
       }
