@@ -6,10 +6,10 @@ import java.util.*;
 
 public class Main
 {
-   private static final int MAX_ITERATIONS = 100000;
-   private static final double LAMBDA = 0.3;
-   private static final double ERROR_THRESHOLD = 2e-4;
-   public static int i;
+   private static final int MAX_ITERATIONS = 100000;      //Max number of iterations during
+   // training
+   private static final double LAMBDA = 0.3;              //Lambda value for training
+   private static final double ERROR_THRESHOLD = 2e-4;    //Error threshold for training
    private static int numInAct;
    private static int numHidAct;
    private static int numOutAct;
@@ -30,7 +30,6 @@ public class Main
 
 
    private static int xIter;
-   private static Scanner scanner = new Scanner(System.in);
 
 
    private static int trainIterations;
@@ -54,7 +53,7 @@ public class Main
    public static void setConfig()
    {
       numInAct = 2;
-      numHidAct = 3;
+      numHidAct = 20;
       numOutAct = 1;
       lowRand = -1.5;
       highRand = 1.5;
@@ -118,7 +117,6 @@ public class Main
       F0 = 0.0;
       kjWeights = new double[numInAct][numHidAct];
       j0Weights = new double[numHidAct];
-      i = 0;
       j = 0;
       k = 0;
       xIter = 0;
@@ -135,15 +133,18 @@ public class Main
          truthTable[0][0] = 0;
          truthTable[0][1] = 0;
          truthTable[0][2] = 0;
+
          truthTable[1][0] = 0;
          truthTable[1][1] = 1;
-         truthTable[1][2] = 0;
+         truthTable[1][2] = 1;
+
          truthTable[2][0] = 1;
          truthTable[2][1] = 0;
-         truthTable[2][2] = 0;
+         truthTable[2][2] = 1;
+
          truthTable[3][0] = 1;
          truthTable[3][1] = 1;
-         truthTable[3][2] = 1;
+         truthTable[3][2] = 0;
 //         for (xIter = 0; xIter < numTrainingCases; xIter++)
 //         {
 //            for (k = 0; k < numInAct; k++)
@@ -157,11 +158,7 @@ public class Main
       }  //if (isTraining)
       else
       {
-         for (k = 0; k < numInAct; k++)
-         {
-            System.out.print("Input #" + k + ": ");
-            a[k] = scanner.nextDouble();
-         } //for (k = 0; k < numInAct; k++)
+         a = new double[] {0, 0};
       }
 
       if (randomizeWeights)
@@ -255,12 +252,10 @@ public class Main
       avgErrorAccumulator = 0.0;
       for (xIter = 0; xIter < numTrainingCases; xIter++)
       {
-         for (k = 0; k < numInAct; k++)
-         {
-            a[k] = truthTable[xIter][k];
-         }
+         a = truthTable[xIter];
          run();
-         avgErrorAccumulator += truthTable[xIter][numInAct];
+         omega0 = (truthTable[xIter][numInAct] - F0);
+         avgErrorAccumulator += 0.5 * omega0 * omega0;
       }
       return avgErrorAccumulator / numTrainingCases;
    }
@@ -276,28 +271,24 @@ public class Main
          System.out.println("Ended training due to reaching error threshold.");
       }
       System.out.println("Reached " + trainIterations + " iterations.");
-      System.out.println("Reached " + avgError() + " error.");
+      System.out.println("Reached " + avgError() + " average error.");
 
       for (xIter = 0; xIter < numTrainingCases; xIter++)
       {
-         for (k = 0; k < numInAct; k++)
-         {
-            a[k] = truthTable[xIter][k];
-         }
+         a = truthTable[xIter];
          run();
-         System.out.println(Arrays.toString(truthTable[xIter]) + "   Output: " + F0);
+         System.out.println(Arrays.toString(a) + "   Output: " + F0);
       }
    }
 
    public static void train()
    {
+      System.out.println("Training...");
       while (trainIterations < MAX_ITERATIONS && avgError() > ERROR_THRESHOLD)
       {
-         System.out.println("Running iteration " + trainIterations);
          for (xIter = 0; xIter < numTrainingCases; xIter++)
          {
             a = truthTable[xIter];
-
             run();
 
             omega0 = truthTable[xIter][numInAct] - F0;
@@ -319,7 +310,7 @@ public class Main
                   ePrimeWkj = -a[k] * psiJ;
                   deltaWkj[k][j] = -LAMBDA * ePrimeWkj;
                }
-            }
+            } //for (j = 0; j < numHidAct; j++)
 
             for (j = 0; j < numHidAct; j++)
             {
@@ -334,10 +325,10 @@ public class Main
             }
          }
          trainIterations++;
-      }
+      } //for (xIter = 0; xIter < numTrainingCases; xIter++)
 
       exitTrain();
-   }
+   } //while (trainIterations < MAX_ITERATIONS && avgError() > ERROR_THRESHOLD)
 
    public static void main(String[] args)
    {
