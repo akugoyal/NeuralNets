@@ -31,19 +31,6 @@ import java.util.Arrays;
 
 public class Main
 {
-   public static final double nanoPerSec = 1.0e9;        //Nanoseconds per second
-   public static final double millisPerSec = 1000.0;     //Milliseconds per second
-   public static final double secPerMin = 60.0;          //Seconds per minute
-   public static final double minPerHr = 60.0;           //Minutes per hour
-   public static final double hrPerDay = 24.0;           //Hours per day
-   public static final double daysPerWk = 7.0;           //Days per week
-
-/**
- * Variables used during training mode only
- */
-   public static final int MAX_ITERATIONS = 100000;      //Maximum iterations during training mode
-   public static final double LAMBDA = 0.3;              //Lambda value for training mode
-   public static final double ERROR_THRESHOLD = 2.0e-4;  //Error threshold for training mode
    public static int numInAct;                           //Number of input activation nodes
    public static int numHidAct;                          //Number of hidden activation nodes
    public static int numOutAct;                          //Number of output activation nodes
@@ -60,7 +47,20 @@ public class Main
 /**
  * Variables for the printTime() method
  */
-   public static double initTime;                        //Time at the start of the program
+   public static final double NANO_PER_SEC = 1.0e9;        //Nanoseconds per second
+   public static final double MILLIS_PER_SEC = 1000.0;     //Milliseconds per second
+   public static final double SEC_PER_MIN = 60.0;          //Seconds per minute
+   public static final double MIN_PER_HR = 60.0;           //Minutes per hour
+   public static final double HR_PER_DAY = 24.0;           //Hours per day
+   public static final double DAYS_PER_WK = 7.0;           //Days per week
+   public static double initTime;                          //Time at the start of the program
+
+/**
+ * Variables used during training mode only
+ */
+   public static final int MAX_ITERATIONS = 100000;      //Maximum iterations during training mode
+   public static final double LAMBDA = 0.3;              //Lambda value for training mode
+   public static final double ERROR_THRESHOLD = 2.0e-4;  //Error threshold for training mode
    public static int numTrainingCases;                   //Number of training cases
    public static int trainIterations;                    //Number of iterations during training mode
    public static double[][] truthTable;                  //Truth table for training mode
@@ -73,10 +73,10 @@ public class Main
    public static double psi0;
    public static double ePartialWj0;
    public static double[] deltaWj0;
+   public static double[][] deltaWkj;
    public static double omegaJ;
    public static double psiJ;
    public static double ePrimeWkj;
-   public static double[][] deltaWkj;
 
 /**
  * Initializes the configuration parameters: the number of nodes in the activation layer, the
@@ -400,7 +400,7 @@ public class Main
       } //if (isTraining)
 
       //Prints the time elapsed
-      printTime((System.nanoTime() - initTime) / nanoPerSec);
+      printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
    } //public static void report()
 
 /**
@@ -470,6 +470,7 @@ public class Main
  * digest units.
  *
  * Author: Dr. Eric R. Nelson
+ * This method was modified by Akul Goyal to remove magic numbers.
  */
    public static void printTime(double seconds)
    {
@@ -478,30 +479,30 @@ public class Main
       System.out.printf("Elapsed time: ");
 
       if (seconds < 1.)
-         System.out.printf("%g milliseconds", seconds * millisPerSec);
-      else if (seconds < secPerMin)
+         System.out.printf("%g milliseconds", seconds * MILLIS_PER_SEC);
+      else if (seconds < SEC_PER_MIN)
          System.out.printf("%g seconds", seconds);
       else
       {
-         minutes = seconds / secPerMin;
+         minutes = seconds / SEC_PER_MIN;
 
-         if (minutes < minPerHr)
+         if (minutes < MIN_PER_HR)
             System.out.printf("%g minutes", minutes);
          else
          {
-            hours = minutes / minPerHr;
+            hours = minutes / MIN_PER_HR;
 
-            if (hours < hrPerDay)
+            if (hours < HR_PER_DAY)
                System.out.printf("%g hours", hours);
             else
             {
-               days = hours / hrPerDay;
+               days = hours / HR_PER_DAY;
 
-               if (days < daysPerWk)
+               if (days < DAYS_PER_WK)
                   System.out.printf("%g days", days);
                else
                {
-                  weeks = days / daysPerWk;
+                  weeks = days / DAYS_PER_WK;
 
                   System.out.printf("%g weeks", weeks);
                }
