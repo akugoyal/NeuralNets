@@ -15,14 +15,16 @@ import java.util.Arrays;
  * lowRand: the lower bound for the random number range
  * highRand: the upper bound for the random number range
  * randomizeWeights: whether to randomize the weights. If randomizeWeights is true, the weights
- * will be randomized using the Math.random() function. If randomizeWeights is
- * false, the weights
- * will be set manually in the populateArrays() method.
+ *                   will be randomized using the Math.random() function. If randomizeWeights is
+ *                   false, the weights will be set manually in the populateArrays() method.
  * isTraining: whether the network is in training or run mode. If the network is in training
- * mode, the user should set the number of training cases in setConfig() and manually
- * populate the truth table in populateArrays() with the input and output values. If
- * the network is in run mode, the user should manually populate the input activation
- * array, a, in populateArrays().
+ *             mode, the user should set the number of training cases in setConfig() and manually
+ *             populate the truth table in populateArrays() with the input and output values. If
+ *             the network is in run mode, the user should manually populate the input activation
+ *             array, a, in populateArrays().
+ * maxIters: the maximum number of training iterations to run before ending training mode
+ * lambda: the lambda value used to scale delta weights during training mode
+ * errThreshold: the error threshold used to determine when to end training
  * The user should not modify the numOutAct parameter, which is set to 1.
  *
  * Author: Akul Goyal
@@ -58,17 +60,21 @@ public class Main
 /**
  * Variables used during training mode only
  */
-   public static final int MAX_ITERATIONS = 100000;      //Maximum iterations during training mode
-   public static final double LAMBDA = 0.3;              //Lambda value for training mode
-   public static final double ERROR_THRESHOLD = 2.0e-4;  //Error threshold for training mode
-   public static int numTrainingCases;                   //Number of training cases
-   public static int trainIterations;                    //Number of iterations during training mode
-   public static double[][] truthTable;                  //Truth table for training mode
+   public static final int MAX_ITERATIONS = 100000;
+   public static final double LAMBDA = 0.3;
+   public static final double ERROR_THRESHOLD = 2.0e-4;
+   public static double maxIters;
+   public static double lambda;
+   public static double errThreshold;
+   public static int numTrainingCases;
+   public static int trainIterations;
+   public static double[][] truthTable;
    public static double[] thetaJ;                        //Array of theta values for the hidden layer
    public static double theta0;                          //Theta value for the output layer
-   public static double sigValue;                        //Value of the sigmoid function
-   public static double avgErrorAccumulator;             //Accumulator for avgError()
-   public static double thetaAccumulator;                //Accumulator for the theta values in run()
+
+/**
+ * Variables used to calculate the delta weights during training mode only
+ */
    public static double omega0;
    public static double psi0;
    public static double ePartialWj0;
@@ -95,11 +101,14 @@ public class Main
       lowRand = -1.5;
       highRand = 1.5;
       randomizeWeights = true;
-      isTraining = false;
+      isTraining = true;
 
-      //The numTrainingCases parameter is only needed when the network is running in train mode
+      //The following parameters are only used when the network is running in train mode
       if (isTraining)
       {
+         maxIters = MAX_ITERATIONS;
+         lambda = LAMBDA;
+         errThreshold = ERROR_THRESHOLD;
          numTrainingCases = 4;
       }
 
@@ -117,9 +126,9 @@ public class Main
       if (isTraining)
       {
          System.out.println("Number of training cases: " + numTrainingCases);
-         System.out.println("Max training iterations: " + MAX_ITERATIONS);
-         System.out.println("Lambda value: " + LAMBDA);
-         System.out.println("Error threshold: " + ERROR_THRESHOLD);
+         System.out.println("Max training iterations: " + maxIters);
+         System.out.println("Lambda value: " + lambda);
+         System.out.println("Error threshold: " + errThreshold);
          System.out.println("Network is in training mode.");
       } //if (isTraining)
       else
@@ -156,15 +165,12 @@ public class Main
          ePrimeWkj = 0.0;
          deltaWkj = new double[numInAct][numHidAct];
          trainIterations = 0;
-         sigValue = 0;
-         avgErrorAccumulator = 0.0;
          thetaJ = new double[numHidAct];
          theta0 = 0.0;
       } //if (isTraining)
 
       //The following memory is always allocated
       a = new double[numInAct];
-      thetaAccumulator = 0.0;
       h = new double[numHidAct];
       F0 = 0.0;
       kjWeights = new double[numInAct][numHidAct];
@@ -173,8 +179,7 @@ public class Main
 
 /**
  * Populates the weights manually or randomly, depending on the value of the randomizeWeights
- * boolean.
- * Also manually populates the array of activation nodes or the truth table depending on
+ * boolean. Also manually populates the array of activation nodes or the truth table depending on
  * whether the network is training.
  */
    public static void populateArrays()
@@ -199,7 +204,7 @@ public class Main
 
          truthTable[3][0] = 1.0;    //Test Case #4, Input #1
          truthTable[3][1] = 1.0;    //Test Case #4, Input #2
-         truthTable[3][2] = 0.0;    //Test Case #4, Output
+         truthTable[3][2] = 1.0;    //Test Case #4, Output
       }  //if (isTraining)
       //If the network is in run mode, the user should populate the input activation array
       else
@@ -262,6 +267,7 @@ public class Main
       int j;
       int k;
 
+      double thetaAccumulator = 0.0;
       //Computes the theta values for the hidden layer
       for (j = 0; j < numHidAct; j++)
       {
@@ -322,7 +328,7 @@ public class Main
  */
    public static double sigmoid(double x)
    {
-      return 1.0 / (1 + Math.exp(-x));
+      return 1.0 / (1.0 + Math.exp(-x));
    } //public static double sigmoid(double in)
 
 /**
@@ -331,7 +337,7 @@ public class Main
  */
    public static double sigmoidPrime(double x)
    {
-      sigValue = sigmoid(x);
+      double sigValue = sigmoid(x);
       return sigValue * (1.0 - sigValue);
    } //public static double sigmoidPrime(double x)
 
@@ -346,7 +352,7 @@ public class Main
       int trainIter;
       int k;
 
-      avgErrorAccumulator = 0.0;
+      double avgErrorAccumulator = 0.0;
       for (trainIter = 0; trainIter < numTrainingCases; trainIter++)
       {
          for (k = 0; k < numInAct; k++)
@@ -372,14 +378,14 @@ public class Main
 
       if (isTraining)
       {
-         if (trainIterations >= MAX_ITERATIONS)
+         if (trainIterations >= maxIters)
          {
             System.out.println("Ended training due to max iterations reached.");
-         } //if (trainIterations >= MAX_ITERATIONS)
+         } //if (trainIterations >= maxIters)
          else
          {
             System.out.println("Ended training due to reaching error threshold.");
-         } //if (trainIterations >= MAX_ITERATIONS)
+         } //if (trainIterations >= maxIters)
          System.out.println("Reached " + trainIterations + " iterations.");
          System.out.println("Reached " + avgError() + " average error.");
 
@@ -418,7 +424,7 @@ public class Main
 
       System.out.println("Training...");
       //Each iteration is defined as each execution of the body of the while loop
-      while (trainIterations < MAX_ITERATIONS && avgError() > ERROR_THRESHOLD)
+      while (trainIterations < maxIters && avgError() > errThreshold)
       {
          for (trainIter = 0; trainIter < numTrainingCases; trainIter++)
          {
@@ -434,7 +440,7 @@ public class Main
             for (j = 0; j < numHidAct; j++)
             {
                ePartialWj0 = -h[j] * psi0;
-               deltaWj0[j] = -LAMBDA * ePartialWj0;
+               deltaWj0[j] = -lambda * ePartialWj0;
             } //for (j = 0; j < numHidAct; j++)
 
             for (j = 0; j < numHidAct; j++)
@@ -445,16 +451,13 @@ public class Main
                for (k = 0; k < numInAct; k++)
                {
                   ePrimeWkj = -a[k] * psiJ;
-                  deltaWkj[k][j] = -LAMBDA * ePrimeWkj;
+                  deltaWkj[k][j] = -lambda * ePrimeWkj;
                } //for (k = 0; k < numInAct; k++)
             } //for (j = 0; j < numHidAct; j++)
 
             for (j = 0; j < numHidAct; j++)
             {
                j0Weights[j] += deltaWj0[j];
-            }
-            for (j = 0; j < numHidAct; j++)
-            {
                for (k = 0; k < numInAct; k++)
                {
                   kjWeights[k][j] += deltaWkj[k][j];
@@ -462,7 +465,7 @@ public class Main
             }
          } //for (xIter = 0; xIter < numTrainingCases; xIter++)
          trainIterations++;
-      } //while (trainIterations < MAX_ITERATIONS && avgError() > ERROR_THRESHOLD)
+      } //while (trainIterations < maxIters && avgError() > errThreshold)
    } //public static void train()
 
 /**
@@ -538,4 +541,4 @@ public class Main
 
       report();
    } //public static void main(String[] args)
-}
+} //public class Main
