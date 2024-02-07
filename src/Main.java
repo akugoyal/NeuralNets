@@ -204,7 +204,7 @@ public class Main
 
          truthTable[3][0] = 1.0;    //Test Case #4, Input #1
          truthTable[3][1] = 1.0;    //Test Case #4, Input #2
-         truthTable[3][2] = 1.0;    //Test Case #4, Output
+         truthTable[3][2] = 0.0;    //Test Case #4, Output
       }  //if (isTraining)
       //If the network is in run mode, the user should populate the input activation array
       else
