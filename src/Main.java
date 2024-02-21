@@ -1,17 +1,18 @@
 import java.util.Arrays;
 
 /**
- * This class is an A-B-1 feedforward neural network. The network is fully connected and uses a
+ * This class is an A-B-C feedforward neural network. The network is fully connected and uses a
  * sigmoid activation function. The network can be run in training mode or run mode. In training
  * mode, the network uses a gradient descent algorithm to calculate the delta weights, until
  * either the maximum number of iterations is reached or the average error is under the error
  * threshold. In run mode, the network simply runs the input through the network and prints the
- * value of the output node.
+ * value of the output node(s).
  *
  * The user can modify the following configuration parameters to change the behavior of the
  * network.
  * numInAct: the number of input activation nodes
  * numHidAct: the number of hidden activation nodes
+ * numOutAct: the number of output activation nodes
  * lowRand: the lower bound for the random number range
  * highRand: the upper bound for the random number range
  * randomizeWeights: whether to randomize the weights. If randomizeWeights is true, the weights
@@ -42,9 +43,9 @@ public class Main
    public static boolean isTraining;                     //Whether the network is in training mode
    public static double[] a;                             //Array of input activation nodes
    public static double[] h;                             //Array of hidden activation nodes
-   public static double F0;                              //Output activation node
+   public static double[] f;                              //Output activation node
    public static double[][] kjWeights;                   //Weights between input and hidden layer
-   public static double[] j0Weights;                     //Weights between hidden and output layer
+   public static double[][] jiWeights;                     //Weights between hidden and output layer
 
 /**
  * Variables for the printTime() method
@@ -68,17 +69,18 @@ public class Main
    public static double errThreshold;
    public static int numTrainingCases;
    public static int trainIterations;
-   public static double[][] truthTable;
+   public static double[][] truthTableInputs;
+   public static double[][] truthTableOutputs;
    public static double[] thetaJ;                        //Array of theta values for the hidden layer
-   public static double theta0;                          //Theta value for the output layer
+   public static double[] thetaI;                        //Array of theta values for the output layer
 
 /**
  * Variables used to calculate the delta weights during training mode only
  */
-   public static double omega0;
-   public static double psi0;
-   public static double ePartialWj0;
-   public static double[] deltaWj0;
+   public static double[] omegaI;
+   public static double[] psiI;
+   public static double ePartialWji;
+   public static double[][] deltaWji;
    public static double[][] deltaWkj;
    public static double omegaJ;
    public static double psiJ;
@@ -97,8 +99,9 @@ public class Main
 
       //Configuration parameters for the user to modify
       numInAct = 2;
-      numHidAct = 2;
-      lowRand = -1.5;
+      numHidAct = 5;
+      numOutAct = 3;
+      lowRand = 0.1;
       highRand = 1.5;
       randomizeWeights = true;
       isTraining = true;
@@ -111,9 +114,6 @@ public class Main
          errThreshold = ERROR_THRESHOLD;
          numTrainingCases = 4;
       }
-
-      //The user should not change the following parameter
-      numOutAct = 1;
    } //public static void setConfig
 
 /**
@@ -155,56 +155,72 @@ public class Main
       //Allocates the following memory only if the network is in training mode
       if (isTraining)
       {
-         truthTable = new double[numTrainingCases][numInAct + 1];
-         omega0 = Double.MAX_VALUE;
-         psi0 = 0.0;
-         ePartialWj0 = 0.0;
-         deltaWj0 = new double[numHidAct];
+         truthTableInputs = new double[numTrainingCases][numInAct];
+         truthTableOutputs = new double[numTrainingCases][numOutAct];
+         omegaI = new double[numOutAct];
+         psiI = new double[numOutAct];
+         ePartialWji = 0.0;
+         deltaWji = new double[numHidAct][numOutAct];
          omegaJ = 0.0;
          psiJ = 0.0;
          ePrimeWkj = 0.0;
          deltaWkj = new double[numInAct][numHidAct];
          trainIterations = 0;
          thetaJ = new double[numHidAct];
-         theta0 = 0.0;
+         thetaI = new double[numOutAct];
       } //if (isTraining)
 
       //The following memory is always allocated
       a = new double[numInAct];
       h = new double[numHidAct];
-      F0 = 0.0;
+      f = new double[numOutAct];
       kjWeights = new double[numInAct][numHidAct];
-      j0Weights = new double[numHidAct];
+      jiWeights = new double[numHidAct][numOutAct];
    } //public static void allocateArrays()
 
 /**
  * Populates the weights manually or randomly, depending on the value of the randomizeWeights
- * boolean. Also manually populates the array of activation nodes or the truth table depending on
+ * boolean. Also, manually populates the array of activation nodes or the truth table depending on
  * whether the network is training.
  */
    public static void populateArrays()
    {
       int j;
       int k;
+      int i;
 
       //If the network is training, the user should populate the truth table with values.
       if (isTraining)
       {
-         truthTable[0][0] = 0.0;    //Test Case #1, Input #1
-         truthTable[0][1] = 0.0;    //Test Case #1, Input #2
-         truthTable[0][2] = 0.0;    //Test Case #1, Output
+         truthTableInputs[0][0] = 0.0;    //Test Case #1, Input #1
+         truthTableInputs[0][1] = 0.0;    //Test Case #1, Input #2
 
-         truthTable[1][0] = 0.0;    //Test Case #2, Input #1
-         truthTable[1][1] = 1.0;    //Test Case #2, Input #2
-         truthTable[1][2] = 1.0;    //Test Case #2, Output
+         truthTableInputs[1][0] = 0.0;    //Test Case #2, Input #1
+         truthTableInputs[1][1] = 1.0;    //Test Case #2, Input #2
 
-         truthTable[2][0] = 1.0;    //Test Case #3, Input #1
-         truthTable[2][1] = 0.0;    //Test Case #3, Input #2
-         truthTable[2][2] = 1.0;    //Test Case #3, Output
+         truthTableInputs[2][0] = 1.0;    //Test Case #3, Input #1
+         truthTableInputs[2][1] = 0.0;    //Test Case #3, Input #2
 
-         truthTable[3][0] = 1.0;    //Test Case #4, Input #1
-         truthTable[3][1] = 1.0;    //Test Case #4, Input #2
-         truthTable[3][2] = 0.0;    //Test Case #4, Output
+         truthTableInputs[3][0] = 1.0;    //Test Case #4, Input #1
+         truthTableInputs[3][1] = 1.0;    //Test Case #4, Input #2
+
+
+         truthTableOutputs[0][0] = 0.0;   //Test Case #1, Output #1
+         truthTableOutputs[0][1] = 0.0;   //Test Case #1, Output #2
+         truthTableOutputs[0][2] = 0.0;   //Test Case #1, Output #3
+
+         truthTableOutputs[1][0] = 0.0;   //Test Case #2, Output #1
+         truthTableOutputs[1][1] = 1.0;   //Test Case #2, Output #2
+         truthTableOutputs[1][2] = 1.0;   //Test Case #2, Output #3
+
+         truthTableOutputs[2][0] = 0.0;   //Test Case #3, Output #1
+         truthTableOutputs[2][1] = 1.0;   //Test Case #3, Output #2
+         truthTableOutputs[2][2] = 1.0;   //Test Case #3, Output #3
+
+         truthTableOutputs[3][0] = 1.0;   //Test Case #4, Output #1
+         truthTableOutputs[3][1] = 1.0;   //Test Case #4, Output #2
+         truthTableOutputs[3][2] = 1.0;   //Test Case #4, Output #3
+
       }  //if (isTraining)
       //If the network is in run mode, the user should populate the input activation array
       else
@@ -226,7 +242,10 @@ public class Main
          //Populates j0Weights with random weights
          for (j = 0; j < numHidAct; j++)
          {
-            j0Weights[j] = randomize(lowRand, highRand);
+            for (i = 0; i < numOutAct; i++)
+            {
+               jiWeights[j][i] = randomize(lowRand, highRand);
+            } //for (i = 0; i < numOutAct; i++)
          } //for (j = 0; j < numHidAct; j++)
       } //if (randomizeWeights)
       else
@@ -239,8 +258,8 @@ public class Main
          kjWeights[0][1] = 0.66;
          kjWeights[1][0] = -0.14;
          kjWeights[1][1] = -0.2;
-         j0Weights[0] = -0.98;
-         j0Weights[1] = -0.98;
+         jiWeights[0][0] = -0.98;
+         jiWeights[1][0] = -0.98;
       } //if (randomizeWeights)
    } //public static void populateArrays()
 
@@ -266,6 +285,7 @@ public class Main
    {
       int j;
       int k;
+      int i;
 
       double thetaAccumulator = 0.0;
       //Computes the theta values for the hidden layer
@@ -279,15 +299,18 @@ public class Main
          h[j] = sigmoid(thetaAccumulator);
       } //for (j = 0; j < numHidAct; j++)
 
-      //Computes the theta value for the output layer
-      thetaAccumulator = 0.0;
-      for (j = 0; j < numHidAct; j++)
-      {
-         thetaAccumulator += h[j] * j0Weights[j];
-      }
+      //Computes the output layer
+      for (i = 0; i < numOutAct; i++) {
+         //Computes the theta values for the output layer
+         thetaAccumulator = 0.0;
+         for (j = 0; j < numHidAct; j++)
+         {
+            thetaAccumulator += h[j] * jiWeights[j][i];
+         }
 
-      //Computes the final output
-      F0 = sigmoid(thetaAccumulator);
+         //Computes the final output
+         f[i] = sigmoid(thetaAccumulator);
+      }
    } //public static void run()
 
 /**
@@ -300,6 +323,7 @@ public class Main
    {
       int j;
       int k;
+      int i;
 
       //Computes and saves the theta values for the hidden layer
       for (j = 0; j < numHidAct; j++)
@@ -312,15 +336,19 @@ public class Main
          h[j] = sigmoid(thetaJ[j]);
       } //for (j = 0; j < numHidAct; j++)
 
-      //Computes and saves the theta value for the output layer
-      theta0 = 0.0;
-      for (j = 0; j < numHidAct; j++)
+      //Computes and saves the values for the output layer
+      for (i = 0; i < numOutAct; i++)
       {
-         theta0 += h[j] * j0Weights[j];
-      }
+         //Computes and saves the theta values for the output layer
+         thetaI[i] = 0.0;
+         for (j = 0; j < numHidAct; j++)
+         {
+            thetaI[i] += h[j] * jiWeights[j][i];
+         }
 
-      //Computes the final output
-      F0 = sigmoid(theta0);
+         //Computes the final output
+         f[i] = sigmoid(thetaI[i]);
+      }
    } //public static void runDuringTrain()
 
 /**
@@ -351,17 +379,27 @@ public class Main
    {
       int trainIter;
       int k;
+      int i;
 
+      double errorAcc = 0.0;
       double avgErrorAccumulator = 0.0;
       for (trainIter = 0; trainIter < numTrainingCases; trainIter++)
       {
+         //Run the network for the current training case
          for (k = 0; k < numInAct; k++)
          {
-            a[k] = truthTable[trainIter][k];
+            a[k] = truthTableInputs[trainIter][k];
          }
          run();
-         omega0 = (truthTable[trainIter][numInAct] - F0);
-         avgErrorAccumulator += 0.5 * omega0 * omega0;
+
+         //Calculate error for each training case
+         errorAcc = 0.0;
+         for (i = 0; i < numOutAct; i++)
+         {
+            omegaI[i] = (truthTableOutputs[trainIter][i] - f[i]);
+            errorAcc += omegaI[i] * omegaI[i];
+         }
+         avgErrorAccumulator += errorAcc * 0.5;
       }
       return avgErrorAccumulator / numTrainingCases;
    } //public static double avgError()
@@ -393,16 +431,18 @@ public class Main
          {
             for (k = 0; k < numInAct; k++)
             {
-               a[k] = truthTable[trainIter][k];
+               a[k] = truthTableInputs[trainIter][k];
             } //for (k = 0; k < numInAct; k++) {
             run();
+
             System.out.println("Input Case #" + trainIter + ": " + Arrays.toString(a) +
-                  "     Expected: " + truthTable[trainIter][numInAct] + "     Output: " + F0);
+                  "     Expected: " + Arrays.toString(truthTableOutputs[trainIter]) + "     " +
+                  "Output: " + Arrays.toString(f));
          } //for (xIter = 0; xIter < numTrainingCases; xIter++)
       } //if (isTraining)
       else
       {
-         System.out.println("Network output: " + F0);
+         System.out.println("Network output: " + Arrays.toString(f));
       } //if (isTraining)
 
       //Prints the time elapsed
@@ -420,6 +460,7 @@ public class Main
    {
       int j;
       int k;
+      int i;
       int trainIter;
 
       System.out.println("Training...");
@@ -430,22 +471,28 @@ public class Main
          {
             for (k = 0; k < numInAct; k++)
             {
-               a[k] = truthTable[trainIter][k];
+               a[k] = truthTableInputs[trainIter][k];
             } //for (k = 0; k < numInAct; k++)
             runDuringTrain();
 
-            omega0 = truthTable[trainIter][numInAct] - F0;
-            psi0 = omega0 * sigmoidPrime(theta0);
+            for (i = 0; i < numOutAct; i++) {
+               omegaI[i] = truthTableOutputs[trainIter][i] - f[i];
+               psiI[i] = omegaI[i] * sigmoidPrime(thetaI[i]);
+
+               for (j = 0; j < numHidAct; j++)
+               {
+                  ePartialWji = -h[j] * psiI[i];
+                  deltaWji[j][i] = -lambda * ePartialWji;
+               } //for (j = 0; j < numHidAct; j++)
+            } //for (i = 0; i < numOutAct; i++) {
 
             for (j = 0; j < numHidAct; j++)
             {
-               ePartialWj0 = -h[j] * psi0;
-               deltaWj0[j] = -lambda * ePartialWj0;
-            } //for (j = 0; j < numHidAct; j++)
+               omegaJ = 0.0;
+               for (i = 0; i < numOutAct; i++) {
+                  omegaJ += psiI[i] + jiWeights[j][i];
+               }
 
-            for (j = 0; j < numHidAct; j++)
-            {
-               omegaJ = psi0 * j0Weights[j];
                psiJ = omegaJ * sigmoidPrime(thetaJ[j]);
 
                for (k = 0; k < numInAct; k++)
@@ -457,12 +504,16 @@ public class Main
 
             for (j = 0; j < numHidAct; j++)
             {
-               j0Weights[j] += deltaWj0[j];
+               for (i = 0; i < numOutAct; i++)
+               {
+                  jiWeights[j][i] += deltaWji[j][i];
+               }
+
                for (k = 0; k < numInAct; k++)
                {
                   kjWeights[k][j] += deltaWkj[k][j];
                }
-            }
+            } //for (j = 0; j < numHidAct; j++)
          } //for (xIter = 0; xIter < numTrainingCases; xIter++)
          trainIterations++;
       } //while (trainIterations < maxIters && avgError() > errThreshold)
