@@ -121,11 +121,11 @@ public class Main
 /**
  * Configuration parameters for the user to modify
  */
-      numInAct = 2;
+      numInAct = 3;
       numHidAct = 1;
       numOutAct = 3;
       loadWeights = false;
-      saveWeights = true;
+      saveWeights = false;
       isTraining = true;
 
 /**
