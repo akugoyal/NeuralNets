@@ -110,11 +110,11 @@ public class Main
 
       //Configuration parameters for the user to modify
       numInAct = 2;
-      numHidAct = 5;
+      numHidAct = 1;
       numOutAct = 3;
-      loadWeights = true;
+      loadWeights = false;
       saveWeights = true;
-      isTraining = false;
+      isTraining = true;
 
       //The following parameters are only used when the network is running in train mode
       if (isTraining)
@@ -227,7 +227,7 @@ public class Main
 
       writer.flush();
       writer.close();
-      System.out.println("Saved weights successfully");
+      System.out.println("Saved weights successfully.");
    }
 
    public static void loadWeights(String fileName) throws IOException{
@@ -235,27 +235,60 @@ public class Main
       int j;
       int k;
 
-      BufferedReader br = new BufferedReader(new FileReader(fileName));
-      String[] lnRead = br.readLine().split(" ");
-      int in = Integer.parseInt(lnRead[0]);
-      int hid = Integer.parseInt(lnRead[1]);
-      int out = Integer.parseInt(lnRead[2]);
+      Scanner scanner = new Scanner(new File(fileName));
+      int in = 0;
+      int hid = 0;
+      int out = 0;
+
+      if (scanner.hasNextInt())
+      {
+         in = scanner.nextInt();
+      } else {
+         System.out.println("Missing input activations configuration");
+         System.exit(1);
+      }
+      if (scanner.hasNextInt())
+      {
+         hid = scanner.nextInt();
+      } else {
+         System.out.println("Missing hidden activations configuration");
+         System.exit(1);
+      }
+      if (scanner.hasNextInt())
+      {
+         out = scanner.nextInt();
+      } else {
+         System.out.println("Missing output activations configuration");
+         System.exit(1);
+      }
+
       if (in != numInAct || hid != numHidAct || out != numOutAct) {
          System.out.println("Error: Network configuration mismatch. Weights configured for " + in + "-" + hid + "-" + out + ".");
          System.exit(1);
       }
 
       for (k = 0; k < numInAct; k++) {
-         lnRead = br.readLine().split(" ");
          for (j = 0; j < numHidAct; j++) {
-            kjWeights[k][j] = Integer.parseInt(lnRead[j]);
+            if (scanner.hasNextDouble())
+            {
+               kjWeights[k][j] = scanner.nextDouble();
+            } else {
+               System.out.println("Error in weights at file at k = " + k + ", j = " + j);
+               System.exit(1);
+            }
          }
       }
 
       for (j = 0; j < numHidAct; j++) {
-         lnRead = br.readLine().split(" ");
          for (i = 0; i < numOutAct; i++) {
-            jiWeights[j][i] = Integer.parseInt(lnRead[i]);
+            if (scanner.hasNextDouble())
+            {
+               jiWeights[j][i] = scanner.nextDouble();
+            } else
+            {
+               System.out.println("Error in weights at file at j = " + j + ", i = " + i);
+               System.exit(1);
+            }
          }
       }
 
@@ -336,7 +369,7 @@ public class Main
       //If the network is in run mode, the user should populate the input activation array
       else
       {
-         a = new double[] {0, 1};   //Inputs #1 and #2
+         a = new double[] {0.0, 0.0};   //Inputs #1 and #2
       }  //if (isTraining)
 
       if (loadWeights)
