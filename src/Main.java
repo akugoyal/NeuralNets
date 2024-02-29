@@ -121,9 +121,9 @@ public class Main
 /**
  * Configuration parameters for the user to modify
  */
-      numInAct = 3;
-      numHidAct = 1;
-      numOutAct = 3;
+      numInAct = 2;
+      numHidAct = 5;
+      numOutAct = 1;
       loadWeights = false;
       saveWeights = false;
       isTraining = true;
@@ -422,22 +422,6 @@ public class Main
          truthTableOutputs[3][0] = 1.0;   //Test Case #4, Output #1
          truthTableOutputs[3][1] = 1.0;   //Test Case #4, Output #2
          truthTableOutputs[3][2] = 0.0;   //Test Case #4, Output #3
-
-//         truthTableInputs[0][0] = 0.0;    //Test Case #1, Input #1
-//         truthTableInputs[0][1] = 0.0;    //Test Case #1, Input #2
-//         truthTableOutputs[0][0] = 0.0;    //Test Case #1, Output
-//
-//         truthTableInputs[1][0] = 0.0;    //Test Case #2, Input #1
-//         truthTableInputs[1][1] = 1.0;    //Test Case #2, Input #2
-//         truthTableOutputs[1][0] = 1.0;    //Test Case #2, Output
-//
-//         truthTableInputs[2][0] = 1.0;    //Test Case #3, Input #1
-//         truthTableInputs[2][1] = 0.0;    //Test Case #3, Input #2
-//         truthTableOutputs[2][0] = 1.0;    //Test Case #3, Output
-//
-//         truthTableInputs[3][0] = 1.0;    //Test Case #4, Input #1
-//         truthTableInputs[3][1] = 1.0;    //Test Case #4, Input #2
-//         truthTableOutputs[3][0] = 0.0;    //Test Case #4, Output
       }  //if (isTraining)
 /**
  * If the network is in run mode, the user should populate the input activation array
