@@ -123,7 +123,7 @@ public class Main
  */
       numInAct = 2;
       numHidAct = 5;
-      numOutAct = 1;
+      numOutAct = 3;
       loadWeights = false;
       saveWeights = false;
       isTraining = true;
@@ -243,7 +243,8 @@ public class Main
       int j;
       int k;
       BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-      writer.write(Integer.toString(numInAct) + " " + Integer.toString(numHidAct) + " " + Integer.toString(numOutAct) + "\n");
+      writer.write(Integer.toString(numInAct) + " " + Integer.toString(numHidAct) + " " +
+            Integer.toString(numOutAct) + "\n");
 
       for (k = 0; k < numInAct; k++)
       {
@@ -278,92 +279,6 @@ public class Main
  */
    public static void loadWeights(String fileName) throws IOException
    {
-      int i;
-      int j;
-      int k;
-
-      Scanner scanner = new Scanner(new File(fileName));
-
-      int in = 0;
-      int hid = 0;
-      int out = 0;
-
-/**
- * Reads the network configuration from the file and compares it to the user set configuration
- */
-      if (scanner.hasNextInt())
-      {
-         in = scanner.nextInt();
-      }
-      else
-      {
-         System.out.println("Missing input activations configuration");
-         System.exit(1);
-      }
-      if (scanner.hasNextInt())
-      {
-         hid = scanner.nextInt();
-      }
-      else
-      {
-         System.out.println("Missing hidden activations configuration");
-         System.exit(1);
-      }
-      if (scanner.hasNextInt())
-      {
-         out = scanner.nextInt();
-      }
-      else
-      {
-         System.out.println("Missing output activations configuration");
-         System.exit(1);
-      }
-
-      if (in != numInAct || hid != numHidAct || out != numOutAct)
-      {
-         System.out.println("Error: Network configuration mismatch. Weights configured for " + in + "-" + hid + "-" + out + ".");
-         System.exit(1);
-      }
-
-/**
- * Reads the weights for the kj connectivity layer from the file
- */
-      for (k = 0; k < numInAct; k++)
-      {
-         for (j = 0; j < numHidAct; j++)
-         {
-            if (scanner.hasNextDouble())
-            {
-               kjWeights[k][j] = scanner.nextDouble();
-            }
-            else
-            {
-               System.out.println("Error in weights at file at k = " + k + ", j = " + j);
-               System.exit(1);
-            }
-         }
-      }
-
-/**
- * Reads the weights for the ji connectivity layer from the file
- */
-      for (j = 0; j < numHidAct; j++)
-      {
-         for (i = 0; i < numOutAct; i++)
-         {
-            if (scanner.hasNextDouble())
-            {
-               jiWeights[j][i] = scanner.nextDouble();
-            }
-            else
-            {
-               System.out.println("Error in weights at file at j = " + j + ", i = " + i);
-               System.exit(1);
-            }
-         } //for (i = 0; i < numOutAct; i++)
-      } //for (j = 0; j < numHidAct; j++)
-
-      System.out.println("Loaded weights successfully.");
    } //public static void loadWeights(String fileName) throws IOException
 
 /**
@@ -577,7 +492,7 @@ public class Main
    } //public static double sigmoidPrime(double x)
 
 /**
- * Calculates the average error across all the test cases by running each one, accumulating
+ * Calculates the average error across all the test.txt cases by running each one, accumulating
  * the error for each output, and then dividing by the total number of training cases.
  *
  * @return the average error
@@ -609,7 +524,7 @@ public class Main
                   (truthTableOutputs[trainIter][i] - F[i]);
          }
       }
-      return avgErrorAccumulator / numTrainingCases;
+      return avgErrorAccumulator / ((double) numTrainingCases);
    } //public static double avgError()
 
 /**
@@ -663,9 +578,9 @@ public class Main
 /**
  * Trains the network using a gradient descent algorithm. The method trains until the max
  * number of iterations has been reached or the average error is under the error threshold.
- * For each iteration, every test case is run, the error is computed, and then the partial
+ * For each iteration, every test.txt case is run, the error is computed, and then the partial
  * derivatives are calculated. The lambda value is then multiplied by the partial derivatives
- * to compute the delta weights, which are applied for each test case.
+ * to compute the delta weights, which are applied for each test.txt case.
  */
    public static void train()
    {
