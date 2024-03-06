@@ -48,6 +48,7 @@ import java.util.Scanner;
 
 public class Main
 {
+   public static FileIO file;
 /**
  * Variables for the printTime() method
  */
@@ -69,6 +70,7 @@ public class Main
 /**
  * Variables used during both running and training modes
  */
+   public static int numLayers;
    public static int numInAct;                           //Number of input activation nodes
    public static int numHidAct;                          //Number of hidden activation nodes
    public static int numOutAct;                          //Number of output activation nodes
@@ -118,15 +120,17 @@ public class Main
  */
       initTime = System.nanoTime();
 
+      //COMMIET
+      numLayers = 3;
 /**
  * Configuration parameters for the user to modify
  */
       numInAct = 2;
       numHidAct = 5;
       numOutAct = 3;
-      loadWeights = false;
+      loadWeights = true;
       saveWeights = false;
-      isTraining = true;
+      isTraining = false;
 
 /**
  * The following parameters are only used when the network is running in train mode
@@ -145,6 +149,7 @@ public class Main
  */
       if (loadWeights || saveWeights)
       {
+         file = new FileIO(numLayers, numInAct, numHidAct, numOutAct);
          weightsFile = "weights.txt";
       }
 
@@ -237,36 +242,36 @@ public class Main
  * @param fileName the name of the file to save the weights to
  * @throws IOException if the file cannot be written to
  */
-   public static void saveWeights(String fileName) throws IOException
-   {
-      int i;
-      int j;
-      int k;
-      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-      writer.write(Integer.toString(numInAct) + " " + Integer.toString(numHidAct) + " " +
-            Integer.toString(numOutAct) + "\n");
-
-      for (k = 0; k < numInAct; k++)
-      {
-         for (j = 0; j < numHidAct - 1; j++)
-         {
-            writer.write(Double.toString(kjWeights[k][j]) + " ");
-         }
-         writer.write(Double.toString(kjWeights[k][numHidAct - 1]) + "\n");
-      }
-      for (j = 0; j < numHidAct; j++)
-      {
-         for (i = 0; i < numOutAct - 1; i++)
-         {
-            writer.write(Double.toString(jiWeights[j][i]) + " ");
-         }
-         writer.write(Double.toString(jiWeights[j][numOutAct - 1]) + "\n");
-      }
-
-      writer.flush();
-      writer.close();
-      System.out.println("Saved weights successfully.");
-   } //public static void saveWeights(String fileName) throws IOException
+//   public static void saveWeights(String fileName) throws IOException
+//   {
+//      int i;
+//      int j;
+//      int k;
+//      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+//      writer.write(Integer.toString(numInAct) + " " + Integer.toString(numHidAct) + " " +
+//            Integer.toString(numOutAct) + "\n");
+//
+//      for (k = 0; k < numInAct; k++)
+//      {
+//         for (j = 0; j < numHidAct - 1; j++)
+//         {
+//            writer.write(Double.toString(kjWeights[k][j]) + " ");
+//         }
+//         writer.write(Double.toString(kjWeights[k][numHidAct - 1]) + "\n");
+//      }
+//      for (j = 0; j < numHidAct; j++)
+//      {
+//         for (i = 0; i < numOutAct - 1; i++)
+//         {
+//            writer.write(Double.toString(jiWeights[j][i]) + " ");
+//         }
+//         writer.write(Double.toString(jiWeights[j][numOutAct - 1]) + "\n");
+//      }
+//
+//      writer.flush();
+//      writer.close();
+//      System.out.println("Saved weights successfully.");
+//   } //public static void saveWeights(String fileName) throws IOException
 
 /**
  * Loads the weights from a file. First, the network configuration is read from the file. If
@@ -277,9 +282,9 @@ public class Main
  * @param fileName the name of the file to load the weights from
  * @throws IOException if the file cannot be read from
  */
-   public static void loadWeights(String fileName) throws IOException
-   {
-   } //public static void loadWeights(String fileName) throws IOException
+//   public static void loadWeights(String fileName) throws IOException
+//   {
+//   } //public static void loadWeights(String fileName) throws IOException
 
 /**
  * Uses Math.random() to return a random number between low and high.
@@ -353,7 +358,7 @@ public class Main
  * If the loadWeights boolean was set to true in setConfig(), the weights will be
  * loaded from file.
  */
-         loadWeights(weightsFile);
+         file.loadWeights(kjWeights, jiWeights, weightsFile);
       } //if (loadWeights)
       else
       {
@@ -724,7 +729,7 @@ public class Main
 
       if (saveWeights)
       {
-         saveWeights(weightsFile);
+         file.saveWeights(kjWeights, jiWeights, weightsFile);
       }
 
       report();

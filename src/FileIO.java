@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -20,23 +19,22 @@ public class FileIO
    public boolean loadWeights(double[][] kjWeights, double[][] jiWeights, String fileName)
          throws FileNotFoundException
    {
-      int i;
-      int j;
-      int k;
       int layers;
       int inAct;
       int hidAct;
       int outAct;
-
-      Scanner scanner = new Scanner(new File(fileName));
-      scanner.useDelimiter(Pattern.compile("\\p{javaWhitespace}*:*"));
+      String read;
+      Scanner scanner;
 
 /**
  * Reads the number of network layers from the file and compares it to the user set number of layers
  */
-      if (scanner.hasNext("Network layers:"))
+      scanner = new Scanner(new File(fileName));
+      scanner.useDelimiter(Pattern.compile("(\\p{javaWhitespace}|:|\\(|\\)|,)+"));
+
+      if (scanner.hasNext("NetworkLayers"))
       {
-         scanner.next("Network layers:");
+         scanner.next("NetworkLayers");
          if (scanner.hasNext())
          {
             layers = 0;
@@ -46,131 +44,163 @@ public class FileIO
             }
             catch (NumberFormatException e)
             {
-               System.out.println("Incorrectly formatted \"Network layers\" configuration.");
+               System.out.println("Error: Incorrectly formatted \"NetworkLayers\" configuration.");
                System.exit(1);
             }
             if (layers != numLayers)
             {
-               System.out.println("Error: \"Network layers\" mismatch. File " + fileName +
+               System.out.println("Error: \"NetworkLayers\" mismatch. File " + fileName +
                      " configured for " + layers + " layers.");
                System.exit(1);
             }
          }
          else
          {
-            System.out.println("Missing \"Network layers\" configuration.");
+            System.out.println("Error: Missing \"NetworkLayers\" configuration.");
             System.exit(1);
          }
       }
       else
       {
-         System.out.println("Missing \"Network layers\" tag.");
+         System.out.println("Error: Missing \"NetworkLayers\" tag.");
          System.exit(1);
       }
-      scanner.reset();
 
 /**
 * Reads the network configuration from the file and compares it to the user set configuration
 */
-      if (scanner.hasNext("Network configuration:"))
+      if (scanner.hasNext("NetworkConfiguration"))
       {
-         scanner.next("Network configuration:");
-         if (scanner.hasNextInt())
+         scanner.next("NetworkConfiguration");
+         if (scanner.hasNext())
          {
-            inAct = scanner.nextInt();
-            if (inAct != numInAct) {
-               System.out.println("Error: Network configuration mismatch. File " + fileName +
-                           " configured for " + inAct + " input activations");
+            try
+            {
+               inAct = Integer.parseInt(scanner.next().trim());
+               if (inAct != numInAct) {
+                  System.out.println("Error: Network configuration mismatch. File " + fileName +
+                        " configured for " + inAct + " input activations");
+                  System.exit(1);
+               }
+            }
+            catch (NumberFormatException e)
+            {
+               System.out.println("Error: Incorrectly formatted \"NetworkConfiguration\".");
                System.exit(1);
+            }
+            if (scanner.hasNext())
+            {
+               try
+               {
+                  hidAct = Integer.parseInt(scanner.next().trim());
+                  if (hidAct != numHidAct) {
+                     System.out.println("Error: Network configuration mismatch. File " + fileName +
+                           " configured for " + hidAct + " hidden activations");
+                     System.exit(1);
+                  }
+               }
+               catch (NumberFormatException e)
+               {
+                  System.out.println("Error: Incorrectly formatted \"NetworkConfiguration\".");
+                  System.exit(1);
+               }
             }
             else
             {
-               System.out.println("Missing input activations configuration");
+               System.out.println("Error: Missing hidden activations configuration");
                System.exit(1);
             }
-            if (scanner.hasNextInt())
+            if (scanner.hasNext())
             {
-               hidAct = scanner.nextInt();
+               try
+               {
+                  outAct = Integer.parseInt(scanner.next().trim());
+                  if (outAct != numOutAct) {
+                     System.out.println("Error: Network configuration mismatch. File " + fileName +
+                           " configured for " + outAct + " output activations");
+                     System.exit(1);
+                  }
+               }
+               catch (NumberFormatException e)
+               {
+                  System.out.println("Error: Incorrectly formatted \"NetworkConfiguration\".");
+                  System.exit(1);
+               }
             }
             else
             {
-               System.out.println("Missing hidden activations configuration");
+               System.out.println("Error: Missing output activations configuration");
                System.exit(1);
             }
-            if (scanner.hasNextInt())
-            {
-               outAct = scanner.nextInt();
-            }
-            else
-            {
-               System.out.println("Missing output activations configuration");
-               System.exit(1);
-            }
-
-//            if (configMismatch)
-//            {
-//               System.out.println("Error: Network configuration mismatch. Weights configured for " + inAct + "-" + hidAct + "-" + outAct + ".");
-//               System.exit(1);
-//            }
          }
          else
          {
-            System.out.println("Incorrectly formatted \"Network configuration\".");
+            System.out.println("Error: Missing input activations configuration");
             System.exit(1);
          }
       }
       else
       {
-         System.out.println("Missing \"Network configuration\".");
+         System.out.println("Error: Missing \"NetworkConfiguration\" tag.");
          System.exit(1);
       }
-      scanner.reset();
 
 /**
- * Reads the network configuration from the file and compares it to the user set configuration
+ * Reads the weights from file and stores them
  */
-
-
-/**
- * Reads the weights for the kj connectivity layer from the file
- */
-      for (k = 0; k < numInAct; k++)
-      {
-         for (j = 0; j < numHidAct; j++)
-         {
-            if (scanner.hasNextDouble())
-            {
-               kjWeights[k][j] = scanner.nextDouble();
+      while (scanner.hasNext()) {
+         read = scanner.next();
+         if (read.startsWith("kj")) {
+            if (readWeight(kjWeights, scanner)) {
+               System.out.println("Error: Incorrectly formatted kj weight.");
+               System.exit(1);
             }
-            else
-            {
-               System.out.println("Error in weights at file at k = " + k + ", j = " + j);
+         }
+
+         if (read.startsWith("ji")) {
+            if (readWeight(jiWeights, scanner)) {
+               System.out.println("Error: Incorrectly formatted ji weight.");
                System.exit(1);
             }
          }
       }
 
-/**
- * Reads the weights for the ji connectivity layer from the file
- */
-      for (j = 0; j < numHidAct; j++)
-      {
-         for (i = 0; i < numOutAct; i++)
-         {
-            if (scanner.hasNextDouble())
-            {
-               jiWeights[j][i] = scanner.nextDouble();
-            }
-            else
-            {
-               System.out.println("Error in weights at file at j = " + j + ", i = " + i);
-               System.exit(1);
-            }
-         } //for (i = 0; i < numOutAct; i++)
-      } //for (j = 0; j < numHidAct; j++)
-
       System.out.println("Loaded weights successfully.");
       return true;
+   }
+
+   private boolean readWeight(double[][] weights, Scanner scanner)
+   {
+      boolean badFormat;
+      int x;
+      int y;
+      badFormat = false;
+      if (scanner.hasNextInt()) {
+         x = scanner.nextInt();
+         if (scanner.hasNextInt()) {
+            y = scanner.nextInt();
+            if (scanner.hasNext()) {
+               try
+               {
+                  weights[x][y] = Double.parseDouble(scanner.next().trim());
+               }
+               catch (NumberFormatException e)
+               {
+                  badFormat = true;
+               }
+            }
+            else {
+               badFormat = true;
+            }
+         }
+         else {
+            badFormat = true;
+         }
+      } else
+      {
+         badFormat = true;
+      }
+      return badFormat;
    }
 
    public boolean saveWeights(double[][] kjWeights, double[][] jiWeights, String fileName) throws IOException

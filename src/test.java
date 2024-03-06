@@ -9,8 +9,7 @@ public class test
    {
       Scanner s = new Scanner(new File("test.txt"));
       s.useDelimiter(Pattern.compile("(\\p{javaWhitespace}|:)+"));
-      while (s.hasNext()) {
-         System.out.println(s.next());
-      }
+      s.next("hi");
+      System.out.println(s.next());
    }
 }
