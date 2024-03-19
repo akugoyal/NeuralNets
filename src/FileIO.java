@@ -8,12 +8,27 @@ public class FileIO
    private int numInAct;
    private int numHidAct;
    private int numOutAct;
+   private DataOutputStream out;
+   private DataInputStream in;
+   private String fileName;
 
-   public FileIO(int numLayers, int numInAct, int numHidAct, int numOutAct) {
+   public FileIO(int numLayers, int numInAct, int numHidAct, int numOutAct, String fileName)
+   {
       this.numLayers = numLayers;
       this.numInAct = numInAct;
       this.numHidAct = numHidAct;
       this.numOutAct = numOutAct;
+      this.fileName = fileName;
+
+      try
+      {
+         out = new DataOutputStream(new FileOutputStream(fileName));
+         in = new DataInputStream(new FileInputStream(fileName));
+      }
+      catch (FileNotFoundException e)
+      {
+         e.printStackTrace();
+      }
    }
 
    public boolean loadWeights(double[][] kjWeights, double[][] jiWeights, String fileName)
@@ -67,8 +82,8 @@ public class FileIO
       }
 
 /**
-* Reads the network configuration from the file and compares it to the user set configuration
-*/
+ * Reads the network configuration from the file and compares it to the user set configuration
+ */
       if (scanner.hasNext("NetworkConfiguration"))
       {
          scanner.next("NetworkConfiguration");
@@ -77,7 +92,8 @@ public class FileIO
             try
             {
                inAct = Integer.parseInt(scanner.next().trim());
-               if (inAct != numInAct) {
+               if (inAct != numInAct)
+               {
                   System.out.println("Error: Network configuration mismatch. File " + fileName +
                         " configured for " + inAct + " input activations");
                   System.exit(1);
@@ -93,7 +109,8 @@ public class FileIO
                try
                {
                   hidAct = Integer.parseInt(scanner.next().trim());
-                  if (hidAct != numHidAct) {
+                  if (hidAct != numHidAct)
+                  {
                      System.out.println("Error: Network configuration mismatch. File " + fileName +
                            " configured for " + hidAct + " hidden activations");
                      System.exit(1);
@@ -115,7 +132,8 @@ public class FileIO
                try
                {
                   outAct = Integer.parseInt(scanner.next().trim());
-                  if (outAct != numOutAct) {
+                  if (outAct != numOutAct)
+                  {
                      System.out.println("Error: Network configuration mismatch. File " + fileName +
                            " configured for " + outAct + " output activations");
                      System.exit(1);
@@ -148,17 +166,22 @@ public class FileIO
 /**
  * Reads the weights from file and stores them
  */
-      while (scanner.hasNext()) {
+      while (scanner.hasNext())
+      {
          read = scanner.next();
-         if (read.startsWith("kj")) {
-            if (readWeight(kjWeights, scanner)) {
+         if (read.startsWith("kj"))
+         {
+            if (readWeight(kjWeights, scanner))
+            {
                System.out.println("Error: Incorrectly formatted kj weight.");
                System.exit(1);
             }
          }
 
-         if (read.startsWith("ji")) {
-            if (readWeight(jiWeights, scanner)) {
+         if (read.startsWith("ji"))
+         {
+            if (readWeight(jiWeights, scanner))
+            {
                System.out.println("Error: Incorrectly formatted ji weight.");
                System.exit(1);
             }
@@ -175,11 +198,14 @@ public class FileIO
       int x;
       int y;
       badFormat = false;
-      if (scanner.hasNextInt()) {
+      if (scanner.hasNextInt())
+      {
          x = scanner.nextInt();
-         if (scanner.hasNextInt()) {
+         if (scanner.hasNextInt())
+         {
             y = scanner.nextInt();
-            if (scanner.hasNext()) {
+            if (scanner.hasNext())
+            {
                try
                {
                   weights[x][y] = Double.parseDouble(scanner.next().trim());
@@ -189,14 +215,17 @@ public class FileIO
                   badFormat = true;
                }
             }
-            else {
+            else
+            {
                badFormat = true;
             }
          }
-         else {
+         else
+         {
             badFormat = true;
          }
-      } else
+      }
+      else
       {
          badFormat = true;
       }
@@ -232,6 +261,106 @@ public class FileIO
       writer.flush();
       writer.close();
       System.out.println("Saved weights successfully.");
+      return true;
+   }
+
+   public boolean mySaveWeights(double[][] kjWeights, double[][] jiWeights)
+   {
+      int k;
+      int j;
+      int i;
+
+      try
+      {
+         out.writeInt(numInAct);
+         out.writeInt(numHidAct);
+         out.writeInt(numOutAct);
+      }
+      catch (IOException e)
+      {
+         Exit.exit("Error writing network configuration to weights file: " + fileName);
+      }
+
+      for (k = 0; k < numInAct; k++)
+      {
+         for (j = 0; j < numHidAct; j++)
+         {
+            try
+            {
+               out.writeDouble(kjWeights[k][j]);
+            }
+            catch (IOException e)
+            {
+               Exit.exit("Error writing kjWeights[" + k + "][" + j + "] to weights file: " + fileName);
+            }
+         }
+      }
+
+      for (j = 0; j < numHidAct; j++)
+      {
+         for (i = 0; i < numOutAct; i++)
+         {
+            try
+            {
+               out.writeDouble(jiWeights[j][i]);
+            }
+            catch (IOException e)
+            {
+               Exit.exit("Error writing jiWeights[" + j + "][" + i + "] to weights file: " + fileName);
+            }
+         }
+      }
+
+      return true;
+   }
+
+   public boolean myLoadWeights(double[][] kjWeights, double[][] jiWeights)
+   {
+      int inActsRead;
+      int hidActsRead;
+      int outActsRead;
+      int k;
+      int j;
+      int i;
+
+      try
+      {
+         inActsRead = in.readInt();
+         hidActsRead = in.readInt();
+         outActsRead = in.readInt();
+         if (inActsRead != numInAct || hidActsRead != numHidAct || outActsRead != numOutAct) {
+            Exit.exit("Network config doesn't match weights config in weights file: " + fileName);
+         }
+      } catch (IOException e) {
+         Exit.exit("Error reading config from weights file: " + fileName);
+      }
+
+      for (k = 0; k < numInAct; k++) {
+         for (j = 0; j < numHidAct; j++) {
+            try
+            {
+               kjWeights[k][j] = in.readDouble();
+            }
+            catch (IOException e)
+            {
+               Exit.exit("Error reading kjWeights[" + k + "][" + j + "] from weights file: " + fileName);
+            }
+         }
+      }
+
+      for (j = 0; j < numHidAct; j++) {
+         for (i = 0; i < numOutAct; i++) {
+            try
+            {
+               jiWeights[j][i] = in.readDouble();
+            }
+            catch (IOException e)
+            {
+               Exit.exit("Error reading jiWeights[" + j + "][" + i + "] from weights file: " + fileName);
+            }
+         }
+      }
+
       return true;
    }
 }

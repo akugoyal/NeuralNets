@@ -126,11 +126,11 @@ public class Main
  * Configuration parameters for the user to modify
  */
       numInAct = 2;
-      numHidAct = 5;
+      numHidAct = 100;
       numOutAct = 3;
-      loadWeights = true;
-      saveWeights = false;
-      isTraining = false;
+      loadWeights = false;
+      saveWeights = true;
+      isTraining = true;
 
 /**
  * The following parameters are only used when the network is running in train mode
@@ -149,8 +149,8 @@ public class Main
  */
       if (loadWeights || saveWeights)
       {
-         file = new FileIO(numLayers, numInAct, numHidAct, numOutAct);
-         weightsFile = "weights.txt";
+         weightsFile = "weights.bin";
+         file = new FileIO(numLayers, numInAct, numHidAct, numOutAct, weightsFile);
       }
 
 /**
@@ -721,6 +721,7 @@ public class Main
       if (isTraining)
       {
          train();
+         run();
       }
       else
       {
@@ -729,7 +730,7 @@ public class Main
 
       if (saveWeights)
       {
-         file.saveWeights(kjWeights, jiWeights, weightsFile);
+         file.mySaveWeights(kjWeights, jiWeights);
       }
 
       report();
