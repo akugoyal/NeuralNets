@@ -98,6 +98,9 @@ public class ConfigFileIO
                case "weights file":
                   config.weightsFile = read[1];
                   break;
+               case "randomize weights":
+                  config.randomizeWeights = Util.toBoolean(read[1]);
+                  break;
                default:
                   Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
             }
@@ -135,7 +138,22 @@ public class ConfigFileIO
    public void saveConfig() {
       try
       {
-         out.writeUTF(formatNetworkConfig());
+         out.writeUTF(Util.newLine(formatNetworkConfig()));
+         out.writeUTF(Util.newLine(""));
+         out.writeUTF(Util.newLine("Is training: " + config.isTraining));
+         out.writeUTF(Util.newLine("Number of training cases: " + config.numTrainingCases));
+         out.writeUTF(Util.newLine("Max training iterations: " + config.maxIters));
+         out.writeUTF(Util.newLine("Lambda: " + config.lambda));
+         out.writeUTF(Util.newLine("Error threshold: " + config.errThreshold));
+         out.writeUTF(Util.newLine("Truth table file: " + config.truthTableFile));
+         out.writeUTF(Util.newLine(""));
+         out.writeUTF(Util.newLine("Randomize weights: " + config.randomizeWeights));
+         out.writeUTF(Util.newLine("Random range lower bound: " + config.lowRand));
+         out.writeUTF(Util.newLine("Random range upper bound: " + config.highRand));
+         out.writeUTF(Util.newLine(""));
+         out.writeUTF(Util.newLine("Load weights: " + config.loadWeights));
+         out.writeUTF(Util.newLine("Save weights: " + config.saveWeights));
+         out.writeUTF(Util.newLine("Weights file: " + config.weightsFile));
       } catch (IOException e) {
          Util.exit("Error saving config", fileName);
       }
