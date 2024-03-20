@@ -1,16 +1,14 @@
 Network configuration: 2-5-3
-
-Is training: True
+Is Training: True
 Number of training cases: 4
 Max training iterations: 1e5
 Lambda: 0.3
 Error threshold: 2e-4
-Truth table file: AND.txt
-
-Randomize weights: True
 Random range lower bound: 0.1
 Random range upper bound: 1.5
-
-Load weights: False
+Truth table file: AND.txt
+Load weights: True
 Save weights: False
-Weights file: weights.txt
+Weights file: weights.bin
+
+EOF

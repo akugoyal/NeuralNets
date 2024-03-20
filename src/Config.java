@@ -4,7 +4,6 @@ public class Config
    public int numInAct;
    public int numHidAct;
    public int numOutAct;
-   public boolean randomizeWeights;
    public double lowRand;                         //Lower bound for random number range
    public double highRand;                        //Upper bound for random number range
    public boolean loadWeights;                    //Whether to randomize the weights
@@ -19,5 +18,6 @@ public class Config
 
    public Config() {
       weightsFile = "weights.bin";
+      truthTableFile = "AND.txt";
    }
 }

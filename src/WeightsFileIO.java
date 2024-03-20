@@ -23,7 +23,7 @@ public class WeightsFileIO
       }
       catch (FileNotFoundException e)
       {
-         Util.exit("Failed to find file: ", fileName);
+         Util.exit("Failed to find file", fileName);
       }
    }
 
@@ -92,7 +92,7 @@ public class WeightsFileIO
          hidActsRead = in.readInt();
          outActsRead = in.readInt();
          if (inActsRead != numInAct || hidActsRead != numHidAct || outActsRead != numOutAct) {
-            Util.exit("Network config doesn't match weights config from file: ", fileName);
+            Util.exit("Network config doesn't match weights config from file", fileName);
          }
       } catch (IOException e) {
          Util.exit("Error reading config", fileName);
