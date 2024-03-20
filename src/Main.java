@@ -127,8 +127,8 @@ public class Main
       config = configFileIO.loadConfig();
 
       truthTableFileIO = new TruthTableFileIO(config.numInAct, config.numOutAct,
-            config.numTrainingCases, config.truthTableFile);
-      if (config.loadWeights) {
+            config.numCases, config.truthTableFile);
+      if (config.loadWeights || config.saveWeights) {
          weightsFileIO = new WeightsFileIO(config.numInAct, config.numHidAct, config.numOutAct,
                config.weightsFile);
       }
@@ -144,7 +144,7 @@ public class Main
 
       if (config.isTraining)
       {
-         System.out.println("Number of training cases: " + config.numTrainingCases);
+         System.out.println("Number of training cases: " + config.numCases);
          System.out.println("Max training iterations: " + config.maxIters);
          System.out.println("Lambda value: " + config.lambda);
          System.out.println("Error threshold: " + config.errThreshold);
@@ -179,10 +179,11 @@ public class Main
 /**
  * Allocates the following memory only if the network is in training mode
  */
+      truthTableInputs = new double[config.numCases][config.numInAct];
+      truthTableOutputs = new double[config.numCases][config.numOutAct];
       if (config.isTraining)
       {
-         truthTableInputs = new double[config.numTrainingCases][config.numInAct];
-         truthTableOutputs = new double[config.numTrainingCases][config.numOutAct];
+
          omegaI = new double[config.numOutAct];
          psiI = new double[config.numOutAct];
          ePartialWji = 0.0;
@@ -312,7 +313,12 @@ public class Main
 //         truthTableOutputs[3][2] = 0.0;   //Test Case #4, Output #3
          truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
          if (!config.isTraining) {
-            a = truthTableInputs[0];
+            if (config.runAll)
+            {
+               a = truthTableInputs[0];
+            } else {
+               a = truthTableInputs[config.runCaseNum];
+            }
          }
 //      }  //if (isTraining)
 /**
@@ -371,7 +377,7 @@ public class Main
  * corresponding weight between the previous activation and the current activation. This
  * method does not save the theta values because they are not needed after the network runs.
  */
-   public static void run()
+   public static void runSingleCase()
    {
       int j;
       int k;
@@ -410,6 +416,17 @@ public class Main
          F[i] = sigmoid(thetaAccumulator);
       }
    } //public static void run()
+
+   public static void run() {
+      int caseIter;
+
+      if (config.runAll) {
+         for (caseIter = 0; caseIter < config.numCases; caseIter++) {
+            a = truthTableInputs[caseIter];
+            run();
+         }
+      }
+   }
 
 /**
  * Runs the network on the input given by the input activations array, a. Each hidden node is the
@@ -488,7 +505,7 @@ public class Main
       int i;
 
       double avgErrorAccumulator = 0.0;
-      for (trainIter = 0; trainIter < config.numTrainingCases; trainIter++)
+      for (trainIter = 0; trainIter < config.numCases; trainIter++)
       {
 /**
  * Run the network for the current training case
@@ -508,80 +525,60 @@ public class Main
                   (truthTableOutputs[trainIter][i] - F[i]);
          }
       }
-      return avgErrorAccumulator / ((double) config.numTrainingCases);
+      return avgErrorAccumulator / ((double) config.numCases);
    } //public static double avgError()
+
+   public static void report() {
+      if (config.isTraining)
+      {
+         if (trainIterations >= config.maxIters)
+         {
+            System.out.println("Ended training due to max iterations reached.");
+         } //if (trainIterations >= maxIters)
+         else
+         {
+            System.out.println("Ended training due to reaching error threshold.");
+         } //if (trainIterations >= maxIters)
+         System.out.println("Reached " + trainIterations + " iterations.");
+         System.out.println("Reached " + avgError() + " average error.");
+         reportForAllCases();
+      } //if (isTraining)
+
+   }
 
 /**
  * Prints a report at the end of either training or running. For training, it prints the
  * reason for ending training, the number of iterations, the average error, and the truth
  * table with outputs.
  */
-   public static void report()
+   public static void reportSingleCase()
    {
-      if (config.isTraining)
-      {
-         if (trainIterations >= config.maxIters)
-         {
-            System.out.println("Ended training due to max iterations reached.");
-         } //if (trainIterations >= maxIters)
-         else
-         {
-            System.out.println("Ended training due to reaching error threshold.");
-         } //if (trainIterations >= maxIters)
-         System.out.println("Reached " + trainIterations + " iterations.");
-         System.out.println("Reached " + avgError() + " average error.");
-
-         System.out.println("Input Case: " + Arrays.toString(a) + "     Output: " + Arrays.toString(F));
-      } //if (isTraining)
-      else
-      {
-         System.out.println("Network input: " + Arrays.toString(a));
-         System.out.println("Network output: " + Arrays.toString(F));
-      } //if (isTraining)
+      System.out.println("Network input: " + Arrays.toString(a));
+      System.out.println("Network output: " + Arrays.toString(F));
 /**
  * Prints the time elapsed since the start of the program.
  */
       printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
    } //public static void report()
 
-   public static void reportForAllCases() {
-      int trainIter;
-      int k;
+   public static void runAndReportAll() {
+      int caseIter;
 
-      if (config.isTraining)
-      {
-         if (trainIterations >= config.maxIters)
-         {
-            System.out.println("Ended training due to max iterations reached.");
-         } //if (trainIterations >= maxIters)
-         else
-         {
-            System.out.println("Ended training due to reaching error threshold.");
-         } //if (trainIterations >= maxIters)
-         System.out.println("Reached " + trainIterations + " iterations.");
-         System.out.println("Reached " + avgError() + " average error.");
+      for (caseIter = 0; caseIter < config.numCases; caseIter++) {
+         a = truthTableInputs[caseIter];
+         run();
 
-         for (trainIter = 0; trainIter < config.numTrainingCases; trainIter++)
+         if (config.isTraining)
          {
-            for (k = 0; k < config.numInAct; k++)
-            {
-               a[k] = truthTableInputs[trainIter][k];
-            } //for (k = 0; k < numInAct; k++) {
-            run();
-
-            System.out.println("Input Case #" + trainIter + ": " + Arrays.toString(a) +
-                  "     Expected: " + Arrays.toString(truthTableOutputs[trainIter]) + "     " +
+            System.out.println("Input Case #" + caseIter + ": " + Arrays.toString(a) +
+                  "     Expected: " + Arrays.toString(truthTableOutputs[caseIter]) + "     " +
                   "Output: " + Arrays.toString(F));
-         } //for (trainIter = 0; trainIter < numTrainingCases; trainIter++)
-      } //if (isTraining)
-      else
-      {
-         System.out.println("Network input: " + Arrays.toString(a));
-         System.out.println("Network output: " + Arrays.toString(F));
-      } //if (isTraining)
-/**
- * Prints the time elapsed since the start of the program.
- */
+         } else {
+            System.out.println("Input Case #" + caseIter + ": " + Arrays.toString(a) + "     " +
+                  "Output: " + Arrays.toString(F));
+         }
+      }
+
       printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
    }
 
@@ -606,7 +603,7 @@ public class Main
  */
       while (trainIterations < config.maxIters && avgError() > config.errThreshold)
       {
-         for (trainIter = 0; trainIter < config.numTrainingCases; trainIter++)
+         for (trainIter = 0; trainIter < config.numCases; trainIter++)
          {
             for (k = 0; k < config.numInAct; k++)
             {
@@ -728,14 +725,10 @@ public class Main
          train();
          run();
       }
-      else
-      {
-         run();
-      }
-
-      if (config.saveWeights)
-      {
-         weightsFileIO.saveWeights(kjWeights, jiWeights);
+      else if (config.runAll) {
+         runAndReportAll();
+      } else {
+         runSingleCase();
       }
 
       reportForAllCases();

@@ -1,3 +1,5 @@
+import java.math.BigDecimal;
+
 public abstract class Util
 {
    public static void exit(String msg) {
@@ -16,12 +18,12 @@ public abstract class Util
 
    public static int toInt(String s) throws NumberFormatException
    {
-      return Integer.parseInt(s);
+      return new BigDecimal(s).intValue();
    }
 
    public static double toDouble(String s) throws NumberFormatException
    {
-      return Double.parseDouble(s);
+      return new BigDecimal(s).doubleValue();
    }
 
    public static String newLine(String s) {

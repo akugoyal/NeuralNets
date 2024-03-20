@@ -10,11 +10,13 @@ public class Config
    public boolean saveWeights;                    //Whether to save the weights
    public String weightsFile;                     //File containing weights for the network
    public boolean isTraining;                     //Whether the network is in training mode
-   public int numTrainingCases;
-   public double maxIters;
+   public int numCases;
+   public int maxIters;
    public double lambda;
    public double errThreshold;
    public String truthTableFile;
+   public boolean runAll;
+   public int runCaseNum;
 
    public Config() {
       weightsFile = "weights.bin";

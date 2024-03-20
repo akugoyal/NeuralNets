@@ -20,14 +20,6 @@ public class TruthTableFileIO
       this.numTrainingCases = numCases;
       this.numConfigParams = 3;
       this.lnNumber = 0;
-
-      try
-      {
-         in = new DataInputStream(new FileInputStream(fileName));
-//         out = new DataOutputStream(new FileOutputStream(fileName));
-      } catch (FileNotFoundException e) {
-         Util.exit("Failed to find truth table file", fileName);
-      }
    }
 
    public void loadTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs) {
@@ -37,12 +29,18 @@ public class TruthTableFileIO
       int caseIter;
       int inIter;
       int outIter;
+      int blanksFound;
       String[] read;
+
+      try {
+         in = new DataInputStream(new FileInputStream(fileName));
+      } catch (FileNotFoundException e) {
+         Util.exit("Failed to open truth table file", fileName);
+      }
 
       try {
          lnNumber++;
          read = in.readLine().split("-");
-         System.out.println(Arrays.toString(read));
          if (read.length != this.numConfigParams) {
             Util.exit("Expected " + this.numConfigParams + " config params. Found " + read.length, fileName);
          } else {
@@ -67,16 +65,22 @@ public class TruthTableFileIO
          Util.exit("Error reading line " + lnNumber, fileName);
       }
 
-      for (caseIter = 0; caseIter < this.numTrainingCases; caseIter++) {
+      blanksFound = 0;
+      for (caseIter = 0; caseIter - blanksFound < this.numTrainingCases; caseIter++) {
          try
          {
-            read = in.readLine().split("\s*");
+            ln = in.readLine();
+            if (ln.isBlank()) {
+               blanksFound++;
+               continue;
+            }
+            read = ln.split("\s+");
             if (read.length != this.numInputs) {
-               Util.exit("Expected " + this.numInputs + " truth table inputs on line. Found " + read.length, fileName);
+               Util.exit("Expected " + this.numInputs + " truth table inputs on line. Found " + read.length + ".\nLine: " + Arrays.toString(read), fileName);
             }
 
             for (inIter = 0; inIter < this.numInputs; inIter++) {
-               truthTableInputs[caseIter][inIter] = Util.toDouble(read[inIter]);
+               truthTableInputs[caseIter - blanksFound][inIter] = Util.toDouble(read[inIter]);
             }
          } catch (EOFException e) {
             Util.exit("Reached end of truth table file too early", fileName);
@@ -89,16 +93,22 @@ public class TruthTableFileIO
          }
       }
 
-      for (caseIter = 0; caseIter < this.numTrainingCases; caseIter++) {
+      blanksFound = 0;
+      for (caseIter = 0; caseIter - blanksFound < this.numTrainingCases; caseIter++) {
          try
          {
-            read = in.readLine().split("\s*");
+            ln = in.readLine();
+            if (ln.isBlank()) {
+               blanksFound++;
+               continue;
+            }
+            read = ln.split("\s+");
             if (read.length != this.numOutputs) {
-               Util.exit("Expected " + this.numOutputs + " truth table outputs on line. Found " + read.length, fileName);
+               Util.exit("Expected " + this.numOutputs + " truth table outputs on line. Found " + read.length + ".\nLine: " + Arrays.toString(read), fileName);
             }
 
             for (outIter = 0; outIter < this.numOutputs; outIter++) {
-               truthTableOutputs[caseIter][outIter] = Util.toDouble(read[outIter]);
+               truthTableOutputs[caseIter - blanksFound][outIter] = Util.toDouble(read[outIter]);
             }
          } catch (EOFException e) {
             Util.exit("Reached end of truth table file too early", fileName);
@@ -117,6 +127,13 @@ public class TruthTableFileIO
       int numInputs;
       int numOutputs;
       int caseIter;
+
+      try
+      {
+         out = new DataOutputStream(new FileOutputStream(fileName));
+      } catch (FileNotFoundException e) {
+         Util.exit("Failed to write to truth table file", fileName);
+      }
 
       numCases = truthTableInputs.length;
       numInputs = truthTableInputs[0].length;

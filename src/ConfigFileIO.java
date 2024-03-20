@@ -14,16 +14,6 @@ public class ConfigFileIO
       this.fileName = fileName;
       lnNumber = 1;
       config = new Config();
-
-      try
-      {
-         in = new DataInputStream(new FileInputStream(fileName));
-//         out = new DataOutputStream(new FileOutputStream(fileName));
-      }
-      catch (FileNotFoundException e)
-      {
-         Util.exit("Failed to find config file", fileName);
-      }
    }
 
    public ConfigFileIO(String fileName, Config config)
@@ -35,6 +25,16 @@ public class ConfigFileIO
    public Config loadConfig()
    {
       String[] read;
+
+      try
+      {
+         in = new DataInputStream(new FileInputStream(fileName));
+      }
+      catch (FileNotFoundException e)
+      {
+         Util.exit("Failed to open config file", fileName);
+      }
+
       while (readLine())
       {
          if (ln.contains(":"))
@@ -51,10 +51,10 @@ public class ConfigFileIO
                case "is training":
                   config.isTraining = Util.toBoolean(read[1]);
                   break;
-               case "number of training cases":
+               case "number of cases":
                   try
                   {
-                     config.numTrainingCases = Util.toInt(read[1]);
+                     config.numCases = Util.toInt(read[1]);
                   }
                   catch (NumberFormatException e)
                   {
@@ -118,6 +118,11 @@ public class ConfigFileIO
                case "weights file":
                   config.weightsFile = read[1];
                   break;
+               case "run all":
+                  config.runAll = Util.toBoolean(read[1]);
+                  break;
+               case "run case number":
+                  config.runCaseNum = Util.toInt(read[1]);
                default:
                   Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
             }
@@ -133,8 +138,7 @@ public class ConfigFileIO
       {
          ln = in.readLine();
          lnNumber++;
-         System.out.println(ln);
-         if (ln.toLowerCase().trim().equals("eof")) {
+         if (ln.toLowerCase().trim().equals("eof") || ln == null) {
             return false;
          }
          return true;
@@ -165,10 +169,19 @@ public class ConfigFileIO
    {
       try
       {
+         out = new DataOutputStream(new FileOutputStream(fileName));
+      }
+      catch (FileNotFoundException e)
+      {
+         Util.exit("Failed to write to config file", fileName);
+      }
+
+      try
+      {
          out.writeUTF(Util.newLine(formatNetworkConfig()));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Is training: " + config.isTraining));
-         out.writeUTF(Util.newLine("Number of training cases: " + config.numTrainingCases));
+         out.writeUTF(Util.newLine("Number of training cases: " + config.numCases));
          out.writeUTF(Util.newLine("Max training iterations: " + config.maxIters));
          out.writeUTF(Util.newLine("Lambda: " + config.lambda));
          out.writeUTF(Util.newLine("Error threshold: " + config.errThreshold));

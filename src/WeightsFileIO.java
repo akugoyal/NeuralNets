@@ -15,16 +15,6 @@ public class WeightsFileIO
       this.numHidAct = numHidAct;
       this.numOutAct = numOutAct;
       this.fileName = fileName;
-
-      try
-      {
-         out = new DataOutputStream(new FileOutputStream(fileName));
-         in = new DataInputStream(new FileInputStream(fileName));
-      }
-      catch (FileNotFoundException e)
-      {
-         Util.exit("Failed to find file", fileName);
-      }
    }
 
    public boolean saveWeights(double[][] kjWeights, double[][] jiWeights)
@@ -32,6 +22,12 @@ public class WeightsFileIO
       int k;
       int j;
       int i;
+
+      try {
+         out = new DataOutputStream(new FileOutputStream(fileName));
+      } catch (FileNotFoundException e) {
+         Util.exit("Failed to write to weights file", fileName);
+      }
 
       try
       {
@@ -85,6 +81,12 @@ public class WeightsFileIO
       int k;
       int j;
       int i;
+
+      try {
+         in = new DataInputStream(new FileInputStream(fileName));
+      } catch (FileNotFoundException e) {
+         Util.exit("Failed to open weights file", fileName);
+      }
 
       try
       {
