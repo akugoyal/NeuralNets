@@ -1,15 +1,1 @@
-Network layers: 3
-Network configuration: 2-5-3
-Load weights: False
-Save weights: False
-Is training: True
-
-Max iterations: 1e5
-Lambda: 0.3
-Error threshold: 2e-4
-Number of training cases: 4
-
-Weights file: weights.txt
-
-Random range lower bound: 0.1
-Random range upper bound: 1.5
+Configuration File: "ABC.txt"

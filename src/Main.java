@@ -1,6 +1,5 @@
 import java.util.Arrays;
 import java.io.*;
-import java.util.Scanner;
 
 /**
  * This class is an A-B-C feedforward neural network. The network is fully connected and uses a
@@ -48,7 +47,7 @@ import java.util.Scanner;
 
 public class Main
 {
-   public static FileIO file;
+   public static WeightsFileIO file;
 /**
  * Variables for the printTime() method
  */
@@ -150,7 +149,7 @@ public class Main
       if (loadWeights || saveWeights)
       {
          weightsFile = "weights.bin";
-         file = new FileIO(numLayers, numInAct, numHidAct, numOutAct, weightsFile);
+         file = new WeightsFileIO(numInAct, numHidAct, numOutAct, weightsFile);
       }
 
 /**
@@ -358,7 +357,7 @@ public class Main
  * If the loadWeights boolean was set to true in setConfig(), the weights will be
  * loaded from file.
  */
-         file.loadWeights(kjWeights, jiWeights, weightsFile);
+         file.loadWeights(kjWeights, jiWeights);
       } //if (loadWeights)
       else
       {
@@ -730,7 +729,7 @@ public class Main
 
       if (saveWeights)
       {
-         file.mySaveWeights(kjWeights, jiWeights);
+         file.saveWeights(kjWeights, jiWeights);
       }
 
       report();
