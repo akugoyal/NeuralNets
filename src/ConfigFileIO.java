@@ -37,9 +37,16 @@ public class ConfigFileIO
 
       while (readLine())
       {
-         if (ln.contains(":"))
+         if (ln.trim().startsWith("#") || ln.isBlank()) {
+            continue;
+         }
+         else if (ln.contains(":"))
          {
             read = ln.split(":");
+            if (read.length < 2)
+            {
+               Util.exit("Missing key or value in config file. Line: \n\t" + ln, fileName);
+            }
             read[0] = read[0].trim().toLowerCase();
             read[1] = read[1].trim();
 
@@ -48,13 +55,21 @@ public class ConfigFileIO
                case "network configuration":
                   parseNetworkConfig(read[1]);
                   break;
-               case "is training":
-                  config.isTraining = Util.toBoolean(read[1]);
-                  break;
+               case "network mode":
+                  try
+                  {
+                     config.networkMode = Util.toInt(read[1]);
+                     break;
+                  }catch (NumberFormatException e)
+                  {
+                     Util.exit("Poorly formatted integer for Network Mode: " + read[1],
+                           fileName);
+                  }
                case "number of cases":
                   try
                   {
                      config.numCases = Util.toInt(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -64,6 +79,7 @@ public class ConfigFileIO
                   try
                   {
                      config.maxIters = Util.toInt(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -74,6 +90,7 @@ public class ConfigFileIO
                   try
                   {
                      config.lambda = Util.toDouble(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -83,6 +100,7 @@ public class ConfigFileIO
                   try
                   {
                      config.errThreshold = Util.toDouble(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -92,6 +110,7 @@ public class ConfigFileIO
                   try
                   {
                      config.lowRand = Util.toDouble(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -101,6 +120,7 @@ public class ConfigFileIO
                   try
                   {
                      config.highRand = Util.toDouble(read[1]);
+                     break;
                   }
                   catch (NumberFormatException e)
                   {
@@ -118,14 +138,25 @@ public class ConfigFileIO
                case "weights file":
                   config.weightsFile = read[1];
                   break;
-               case "run all":
-                  config.runAll = Util.toBoolean(read[1]);
-                  break;
                case "run case number":
-                  config.runCaseNum = Util.toInt(read[1]);
+                  try
+                  {
+                     config.runCaseNum = Util.toInt(read[1]);
+                     if (config.runCaseNum > config.numCases) {
+                        Util.exit("Case " + config.runCaseNum + " in config file exceeds total " +
+                              "number of cases: " + config.numCases, fileName);
+                     }
+                     break;
+                  }
+                  catch (NumberFormatException e)
+                  {
+                     Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
+                  }
                default:
                   Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
             }
+         } else {
+            System.out.println("File \"" + fileName + "\" - Ignoring garbage line: " + ln);
          }
       }
 
@@ -180,7 +211,7 @@ public class ConfigFileIO
       {
          out.writeUTF(Util.newLine(formatNetworkConfig()));
          out.writeUTF(Util.newLine(""));
-         out.writeUTF(Util.newLine("Is training: " + config.isTraining));
+         out.writeUTF(Util.newLine("Network mode: " + config.networkMode));
          out.writeUTF(Util.newLine("Number of training cases: " + config.numCases));
          out.writeUTF(Util.newLine("Max training iterations: " + config.maxIters));
          out.writeUTF(Util.newLine("Lambda: " + config.lambda));

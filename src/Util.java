@@ -2,13 +2,10 @@ import java.math.BigDecimal;
 
 public abstract class Util
 {
-   public static void exit(String msg) {
-      System.out.println(msg);
-      System.exit(1);
-   }
 
    public static void exit(String msg, String fileName) {
-      exit("File \"" + fileName + "\" - " + msg);
+      System.out.println("File \"" + fileName + "\" - " + msg);
+      System.exit(1);
    }
 
    public static boolean toBoolean(String s)
