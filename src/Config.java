@@ -18,9 +18,10 @@ public class Config
    public double errThreshold;
    public String truthTableFile;
    public int runCaseNum;
+   public int keepAliveInterval;
 
-   public Config() {
-      weightsFile = "weights.bin";
-      truthTableFile = "AND.txt";
+   public Config(String defaultWeightsFile, String defaultTruthTableFile) {
+      weightsFile = defaultWeightsFile;
+      truthTableFile = defaultTruthTableFile;
    }
 }

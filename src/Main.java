@@ -50,7 +50,9 @@ public class Main
    public static ConfigFileIO configFileIO;
    public static WeightsFileIO weightsFileIO;
    public static TruthTableFileIO truthTableFileIO;
-   public static final String DEFAULT_CONFIG_FILE = "ABC.txt";
+   public static final String DEFAULT_CONFIG_FILE = "ABC_config.txt";
+   public static final String DEFAULT_WEIGHTS_FILE = "weights.bin";
+   public static final String DEFAULT_TRUTH_TABLE_FILE = "truthTable.txt";
    public static Config config;
    public static final int TRAINING = 0;
    public static final int RUN_ALL = 1;
@@ -73,7 +75,7 @@ public class Main
 //   public static final double LAMBDA = 0.3;
 //   public static final double ERROR_THRESHOLD = 2.0e-4;
    public static double initTime;                          //Time at the start of the program
-
+   public static String[] commandLineArgs;
 /**
  * Variables used during both running and training modes
  */
@@ -105,14 +107,16 @@ public class Main
 /**
  * Variables used to calculate the delta weights during training mode only
  */
-   public static double[] omegaI;
+   public static double omegaI;
+   public static double Ti;
    public static double[] psiI;
    public static double ePartialWji;
-   public static double[][] deltaWji;
-   public static double[][] deltaWkj;
+   public static double deltaWji;
+   public static double deltaWkj;
    public static double omegaJ;
    public static double psiJ;
    public static double ePrimeWkj;
+   public static double error;
 
 /**
  * Initializes the configuration parameters: the number of nodes in the activation layer, the
@@ -122,12 +126,16 @@ public class Main
  */
    public static void setConfig()
    {
+      String configFile = DEFAULT_CONFIG_FILE;
       /**
        * Record the time at the start of the program. Not for the user to modify.
        */
       initTime = System.nanoTime();
 
-      configFileIO = new ConfigFileIO(DEFAULT_CONFIG_FILE);
+      if (commandLineArgs.length > 0) {
+         configFile = commandLineArgs[0];
+      }
+      configFileIO = new ConfigFileIO(configFile, DEFAULT_WEIGHTS_FILE, DEFAULT_TRUTH_TABLE_FILE);
       config = configFileIO.loadConfig();
 
       truthTableFileIO = new TruthTableFileIO(config.numInAct, config.numOutAct,
@@ -143,6 +151,7 @@ public class Main
  */
    public static void echoConfig()
    {
+      System.out.println("=======================================================================");
       System.out.println("Network configuration: " + config.numInAct + "-" + config.numHidAct +
             "-" + config.numOutAct);
 
@@ -187,15 +196,12 @@ public class Main
       truthTableOutputs = new double[config.numCases][config.numOutAct];
       if (config.networkMode == TRAINING)
       {
-
-         omegaI = new double[config.numOutAct];
          psiI = new double[config.numOutAct];
+         error = Double.MAX_VALUE;
          ePartialWji = 0.0;
-         deltaWji = new double[config.numHidAct][config.numOutAct];
          omegaJ = 0.0;
          psiJ = 0.0;
          ePrimeWkj = 0.0;
-         deltaWkj = new double[config.numInAct][config.numHidAct];
          trainIterations = 0;
          thetaJ = new double[config.numHidAct];
          thetaI = new double[config.numOutAct];
@@ -442,7 +448,7 @@ public class Main
  * corresponding weight between the previous activation and the current activation. This
  * method saves the theta values which are used when training.
  */
-   public static void runDuringTrain()
+   public static void runDuringTrain(int caseNum)
    {
       int j;
       int k;
@@ -479,6 +485,9 @@ public class Main
  * Computes the final output
  */
          F[i] = sigmoid(thetaI[i]);
+         Ti = truthTableOutputs[caseNum][i];
+         omegaI = Ti - F[i];
+         psiI[i] = omegaI * sigmoidPrime(thetaI[i]);
       }
    } //public static void runDuringTrain()
 
@@ -506,30 +515,17 @@ public class Main
  *
  * @return the average error
  */
-   public static double avgError()
+   public static double runError(int caseNum)
    {
-      int caseIter;
       int i;
 
       double avgErrorAccumulator = 0.0;
-      for (caseIter = 0; caseIter < config.numCases; caseIter++)
-      {
-/**
- * Run the network for the current training case
- */
-         a = truthTableInputs[caseIter];
-         runSingleCase();
-
-/**
- * Calculate error for each training case
- */
-         for (i = 0; i < config.numOutAct; i++)
-         {
-            avgErrorAccumulator += 0.5 * (truthTableOutputs[caseIter][i] - F[i]) *
-                  (truthTableOutputs[caseIter][i] - F[i]);
-         }
+      runSingleCase();
+      for (i = 0; i < config.numOutAct; i++) {
+         Ti = truthTableOutputs[caseNum][i];
+         avgErrorAccumulator += (Ti - F[i]) * (Ti - F[i]);
       }
-      return avgErrorAccumulator / ((double) config.numCases);
+      return 0.5 * avgErrorAccumulator;
    } //public static double avgError()
 
    public static void reportFull() {
@@ -543,13 +539,12 @@ public class Main
             {
                System.out.println("Ended training due to max iterations reached.");
             } //if (trainIterations >= maxIters)
-            else if (avgError() < config.errThreshold)
+            else if (error < config.errThreshold)
             {
-               System.out.println(avgError());
                System.out.println("Ended training due to reaching error threshold.");
             } //if (trainIterations >= maxIters)
             System.out.println("Reached " + trainIterations + " iterations.");
-            System.out.println("Reached " + avgError() + " average error.");
+            System.out.println("Reached " + error + " average error.");
          }
 
          for (caseIter = 0; caseIter < config.numCases; caseIter++) {
@@ -604,7 +599,7 @@ public class Main
 /**
  * Each iteration is defined as each execution of the body of the while loop
  */
-      while (trainIterations < config.maxIters && avgError() > config.errThreshold)
+      while (trainIterations < config.maxIters && error > config.errThreshold)
       {
          if (trainIterations % config.keepAliveInterval == 0) {
             System.out.println("Reached training iteration " + trainIterations + " with error " + error);
@@ -613,19 +608,7 @@ public class Main
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
             a = truthTableInputs[caseIter];
-            runDuringTrain();
-
-            for (i = 0; i < config.numOutAct; i++)
-            {
-               omegaI[i] = truthTableOutputs[caseIter][i] - F[i];
-               psiI[i] = omegaI[i] * sigmoidPrime(thetaI[i]);
-
-               for (j = 0; j < config.numHidAct; j++)
-               {
-                  ePartialWji = -h[j] * psiI[i];
-                  deltaWji[j][i] = -config.lambda * ePartialWji;
-               } //for (j = 0; j < numHidAct; j++)
-            } //for (i = 0; i < numOutAct; i++) {
+            runDuringTrain(caseIter);
 
             for (j = 0; j < config.numHidAct; j++)
             {
@@ -633,30 +616,21 @@ public class Main
                for (i = 0; i < config.numOutAct; i++)
                {
                   omegaJ += psiI[i] * jiWeights[j][i];
+                  deltaWji = config.lambda * h[j] * psiI[i];
+                  jiWeights[j][i] += deltaWji;
                }
 
                psiJ = omegaJ * sigmoidPrime(thetaJ[j]);
 
                for (k = 0; k < config.numInAct; k++)
                {
-                  ePrimeWkj = -a[k] * psiJ;
-                  deltaWkj[k][j] = -config.lambda * ePrimeWkj;
+                  deltaWkj = config.lambda * a[k] * psiJ;
+                  kjWeights[k][j] += deltaWkj;
                } //for (k = 0; k < numInAct; k++)
             } //for (j = 0; j < numHidAct; j++)
-
-            for (j = 0; j < config.numHidAct; j++)
-            {
-               for (i = 0; i < config.numOutAct; i++)
-               {
-                  jiWeights[j][i] += deltaWji[j][i];
-               }
-
-               for (k = 0; k < config.numInAct; k++)
-               {
-                  kjWeights[k][j] += deltaWkj[k][j];
-               }
-            } //for (j = 0; j < numHidAct; j++)
+            error += runError(caseIter);
          } //for (caseIter = 0; caseIter < numTrainingCases; caseIter++)
+         error /= (double) config.numCases;
          trainIterations++;
       } //while (trainIterations < maxIters && avgError() > errThreshold)
    } //public static void train()
@@ -719,6 +693,7 @@ public class Main
  */
    public static void main(String[] args) throws IOException
    {
+      commandLineArgs = args;
       setConfig();
       echoConfig();
       allocateMemory();
@@ -733,6 +708,10 @@ public class Main
          runAll();
       } else {
          runSingleCase();
+      }
+
+      if (config.saveWeights) {
+         weightsFileIO.saveWeights(kjWeights, jiWeights);
       }
 
       reportFull();

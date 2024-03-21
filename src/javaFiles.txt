@@ -1,0 +1,6 @@
+Config.java
+ConfigFileIO.java
+Main.java
+TruthTableFileIO.java
+Util.java
+WeightsFileIO.java

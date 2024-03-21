@@ -9,16 +9,17 @@ public class ConfigFileIO
    private int lnNumber;
    private Config config;
 
-   public ConfigFileIO(String fileName)
+   public ConfigFileIO(String fileName, String defaultWeightsFile, String defaultTruthTableFile)
    {
       this.fileName = fileName;
       lnNumber = 1;
-      config = new Config();
+      config = new Config(defaultWeightsFile, defaultTruthTableFile);
    }
 
-   public ConfigFileIO(String fileName, Config config)
+   public ConfigFileIO(String fileName, Config config, String defaultWeightsFile,
+                       String defaultTruthTableFile)
    {
-      this(fileName);
+      this(fileName, defaultWeightsFile, defaultTruthTableFile);
       this.config = config;
    }
 
@@ -152,6 +153,14 @@ public class ConfigFileIO
                   {
                      Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
                   }
+               case "keep alive interval":
+                  try {
+                     config.keepAliveInterval = Util.toInt(read[1]);
+                     break;
+                  } catch (NumberFormatException e) {
+                     Util.exit("Poorly formatted integer for Keep Alive Interval: " + read[1],
+                           fileName);
+                  }
                default:
                   Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
             }
@@ -169,7 +178,7 @@ public class ConfigFileIO
       {
          ln = in.readLine();
          lnNumber++;
-         if (ln.toLowerCase().trim().equals("eof") || ln == null) {
+         if (ln == null || ln.toLowerCase().trim().equals("eof")) {
             return false;
          }
          return true;
