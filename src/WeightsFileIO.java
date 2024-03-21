@@ -17,7 +17,7 @@ public class WeightsFileIO
       this.fileName = fileName;
    }
 
-   public boolean saveWeights(double[][] kjWeights, double[][] jiWeights)
+   public void saveWeights(double[][] kjWeights, double[][] jiWeights)
    {
       int k;
       int j;
@@ -70,10 +70,17 @@ public class WeightsFileIO
          }
       }
 
-      return true;
+      try
+      {
+         out.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing output stream", fileName);
+      }
    }
 
-   public boolean loadWeights(double[][] kjWeights, double[][] jiWeights)
+   public void loadWeights(double[][] kjWeights, double[][] jiWeights)
    {
       int inActsRead;
       int hidActsRead;
@@ -126,6 +133,13 @@ public class WeightsFileIO
          }
       }
 
-      return true;
+      try
+      {
+         in.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing input stream", fileName);
+      }
    }
 }

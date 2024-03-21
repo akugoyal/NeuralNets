@@ -1,17 +1,45 @@
+/**
+ * This class represents the configuration of the neural network. It stores the following paramters:
+ *
+ * numLayers:         the number of layers in the network. This defaults to 3.
+ * numInAct:          the number of input activations. This defaults to 1.
+ * numHidAct:         the number of hidden activations. This defaults to 1.
+ * numOutAct:         the number of output activations. This defaults to 1.
+ * lowRand:           the lower bound for the random number range, which may be used to randomize
+ *                    the weights. This defaults to 0.0.
+ * highRand:          the upper bound for the random number range, which may be used to randomize
+ *                    the weights. This defaults to 0.0.
+ * loadWeights:       whether to load the weights from a file. This defaults to false.
+ * saveWeights:       whether to save the weights to a file. This defaults to false.
+ * weightsFile:       the file to load/save the weights from/to. This defaults to the value
+ *                    passed in the constructor.
+ * networkMode:       0 if the network is training, 1 if the network is running all cases in the
+ *                    truth table, 2 if the network is running only one case in the truth table.
+ *                    This defaults to 0.
+ * numCases:          the number of cases in the truth table. This defaults to 1.
+ * maxIters:          the maximum number of iterations for training. This defaults to 0.
+ * lambda:            the learning rate. This defaults to 0.0.
+ * errThreshold:      the error threshold for training. This defaults to 0.0.
+ * truthTableFile:    the file containing the truth table. This defaults to the value passed in the
+ *                    constructor.
+ * runCaseNum:        the case number to run in the truth table. Used when networkMode is 2. This
+ *                    defaults to 0.
+ * keepAliveInterval: the interval to print status updates to the console during training. This
+ *                    defaults to 0.
+ */
+
 public class Config
 {
    public int numLayers;
    public int numInAct;
    public int numHidAct;
    public int numOutAct;
-   public double lowRand;                         //Lower bound for random number range
-   public double highRand;                        //Upper bound for random number range
-   public boolean loadWeights;                    //Whether to randomize the weights
-   public boolean saveWeights;                    //Whether to save the weights
-   public String weightsFile;                     //File containing weights for the network
-   public int networkMode;                         //0 if the network is training, 1 is the
-   // network is running all cases in the truth table, 2 if the network is running only one case
-   // in the truth table
+   public double lowRand;
+   public double highRand;
+   public boolean loadWeights;
+   public boolean saveWeights;
+   public String weightsFile;
+   public int networkMode;
    public int numCases;
    public int maxIters;
    public double lambda;
@@ -20,7 +48,14 @@ public class Config
    public int runCaseNum;
    public int keepAliveInterval;
 
-   public Config(String defaultWeightsFile, String defaultTruthTableFile) {
+/**
+ * Constructor for the Config class. Initializes the parameters to their default values.
+ *
+ * @param defaultWeightsFile    the default file to load/save the weights from/to
+ * @param defaultTruthTableFile the default file containing the truth table
+ */
+   public Config(String defaultWeightsFile, String defaultTruthTableFile)
+   {
       numLayers = 3;
       numInAct = 1;
       numHidAct = 1;

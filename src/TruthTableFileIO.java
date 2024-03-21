@@ -165,6 +165,15 @@ public class TruthTableFileIO
             Util.exit("Encountered IOException in truth table file", fileName);
          }
       }
+
+      try
+      {
+         in.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing input stream", fileName);
+      }
    }
 
    public void saveTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
@@ -222,6 +231,15 @@ public class TruthTableFileIO
          {
             Util.exit("Error saving truth table output case " + caseIter + " to file", fileName);
          }
+      }
+
+      try
+      {
+         out.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing output stream", fileName);
       }
    }
 

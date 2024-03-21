@@ -1,5 +1,47 @@
 import java.io.*;
 
+/**
+ * Class to read and write configuration files for the neural network. The configuration file is
+ * a text file that contains the parameters for the neural network. The file is expected to
+ * contain key:value pairs, with each pair on its own line. Keys are not case-sensitive, can be
+ * padded with whitespaces, and can appear in any order. Blank lines between key:value pairs are
+ * allowed. The accepted keys are:
+ *
+ * Network Configuration:     The number of input, hidden, and output neurons in the network,
+ *                            separated by dashes.
+ * Network Mode:              The mode of the network. 0 for training, 1 for running the entire
+ *                            truth table, 2 for running a single case.
+ * Number of Cases:           The number of cases in the truth table.
+ * Max Training Iterations:   The maximum number of iterations for training.
+ * Lambda:                    The learning rate.
+ * Error Threshold:           The error threshold for training.
+ * Keep Alive Interval:       The interval to print status updates to the console during training.
+ * Random Range Lower Bound:  The lower bound for the random number range, which may be used to
+ *                            randomize the weights.
+ * Random Range Upper Bound:  The upper bound for the random number range, which may be used to
+ *                            randomize the weights.
+ * Run Case Number:           The case number to run in the truth table. Used when networkMode is 2.
+ * Truth Table File:          The file containing the truth table.
+ * Load Weights:              Whether to load the weights from a file.
+ * Save Weights:              Whether to save the weights to a file.
+ * Weights File:              The file to load/save the weights from/to.
+ *
+ * An example configuration file is as follows:
+ * Network Configuration: 2-2-1
+ * Network Mode: 0
+ * Number of Cases: 4
+ * Max Training Iterations: 10000
+ * Lambda: 0.1
+ * Error Threshold: 0.01
+ * Random Range Lower Bound: -0.5
+ * Random Range Upper Bound: 0.5
+ * Truth Table File: truth_table.txt
+ * Load Weights: false
+ * Save Weights: false
+ * Weights File: weights.txt
+ * Run Case Number: 0
+ * Keep Alive Interval: 100
+ */
 public class ConfigFileIO
 {
    private DataOutputStream out;
@@ -9,6 +51,13 @@ public class ConfigFileIO
    private int lnNumber;
    private Config config;
 
+   /**
+    * Constructor for the ConfigFileIO class. Creates a config object with the default parameter
+    * values.
+    * @param fileName
+    * @param defaultWeightsFile
+    * @param defaultTruthTableFile
+    */
    public ConfigFileIO(String fileName, String defaultWeightsFile, String defaultTruthTableFile)
    {
       this.fileName = fileName;
@@ -172,6 +221,15 @@ public class ConfigFileIO
          }
       }
 
+      try
+      {
+         in.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing input stream", fileName);
+      }
+
       return config;
    }
 
@@ -249,6 +307,15 @@ public class ConfigFileIO
       catch (IOException e)
       {
          Util.exit("Error saving config", fileName);
+      }
+
+      try
+      {
+         out.close();
+      }
+      catch (IOException e)
+      {
+         Util.exit("Error closing output stream", fileName);
       }
    }
 
