@@ -26,7 +26,9 @@ import java.io.*;
  * Save Weights:              Whether to save the weights to a file.
  * Weights File:              The file to load/save the weights from/to.
  *
- * An example configuration file is as follows:
+ *
+ * An example configuration file may look like the following:
+ *
  * Network Configuration: 2-2-1
  * Network Mode: 0
  * Number of Cases: 4
@@ -52,11 +54,12 @@ public class ConfigFileIO
    private Config config;
 
    /**
-    * Constructor for the ConfigFileIO class. Creates a config object with the default parameter
+    * Constructor for the ConfigFileIO class. Creates a new Config object with the default parameter
     * values.
-    * @param fileName
-    * @param defaultWeightsFile
-    * @param defaultTruthTableFile
+    *
+    * @param fileName              the name of the configuration file
+    * @param defaultWeightsFile    the default file to load/save the weights from/to
+    * @param defaultTruthTableFile the default file containing the truth table
     */
    public ConfigFileIO(String fileName, String defaultWeightsFile, String defaultTruthTableFile)
    {
@@ -65,6 +68,15 @@ public class ConfigFileIO
       config = new Config(defaultWeightsFile, defaultTruthTableFile);
    }
 
+   /**
+    * Constructor for the ConfigFileIO class. Creates a config object with the given parameter
+    * values.
+    *
+    * @param fileName              the name of the configuration file
+    * @param config                the Config object to use
+    * @param defaultWeightsFile    the default file to load/save the weights from/to
+    * @param defaultTruthTableFile the default file containing the truth table
+    */
    public ConfigFileIO(String fileName, Config config, String defaultWeightsFile,
                        String defaultTruthTableFile)
    {
@@ -72,6 +84,13 @@ public class ConfigFileIO
       this.config = config;
    }
 
+   /**
+    * Loads the configuration from the file and returns a Config object with the parameters set.
+    * If the configuration file does not specify a parameter, the default value is used. This
+    * method will exit the program if it encounters an error in parsing the configuration file.
+    *
+    * @return a Config object with the parameters set from the configuration file
+    */
    public Config loadConfig()
    {
       String[] read;
@@ -87,137 +106,145 @@ public class ConfigFileIO
 
       while (readLine())
       {
-         if (ln.trim().startsWith("#") || ln.isBlank()) {
-            continue;
-         }
-         else if (ln.contains(":"))
+         if (!ln.trim().startsWith("#") && !ln.isBlank())
          {
-            read = ln.split(":");
-            if (read.length < 2)
+            if (ln.contains(":"))
             {
-               Util.exit("Missing key or value in config file. Line: \n\t" + ln, fileName);
-            }
-            read[0] = read[0].trim().toLowerCase();
-            read[1] = read[1].trim();
+               read = ln.split(":");
+               if (read.length < 2)
+               {
+                  Util.exit("Missing key or value in config file. Line: \n\t" + ln, fileName);
+               }
+               read[0] = read[0].trim().toLowerCase();
+               read[1] = read[1].trim();
 
-            switch (read[0])
-            {
-               case "network configuration":
-                  parseNetworkConfig(read[1]);
-                  break;
-               case "network mode":
-                  try
-                  {
-                     config.networkMode = Util.toInt(read[1]);
+               switch (read[0])
+               {
+                  case "network configuration":
+                     parseNetworkConfig(read[1]);
                      break;
-                  }catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted integer for Network Mode: " + read[1],
-                           fileName);
-                  }
-               case "number of cases":
-                  try
-                  {
-                     config.numCases = Util.toInt(read[1]);
-                     if (config.numCases == 0) {
-                        Util.exit("Invalid: \"Number of Cases\" parameter is 0." + ln, fileName);
+                  case "network mode":
+                     try
+                     {
+                        config.networkMode = Util.toInt(read[1]);
+                        break;
                      }
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted integer for Number of Training Cases: " + read[1], fileName);
-                  }
-               case "max training iterations":
-                  try
-                  {
-                     config.maxIters = Util.toInt(read[1]);
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted integer for Max Training Iterations: " + read[1],
-                           fileName);
-                  }
-               case "lambda":
-                  try
-                  {
-                     config.lambda = Util.toDouble(read[1]);
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted double for lambda: " + read[1], fileName);
-                  }
-               case "error threshold":
-                  try
-                  {
-                     config.errThreshold = Util.toDouble(read[1]);
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted double for error threshold: " + read[1], fileName);
-                  }
-               case "random range lower bound":
-                  try
-                  {
-                     config.lowRand = Util.toDouble(read[1]);
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted double for random number range lower bound: " + read[1], fileName);
-                  }
-               case "random range upper bound":
-                  try
-                  {
-                     config.highRand = Util.toDouble(read[1]);
-                     break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted double for random number range upper bound: " + read[1], fileName);
-                  }
-               case "truth table file":
-                  config.truthTableFile = read[1];
-                  break;
-               case "load weights":
-                  config.loadWeights = Util.toBoolean(read[1]);
-                  break;
-               case "save weights":
-                  config.saveWeights = Util.toBoolean(read[1]);
-                  break;
-               case "weights file":
-                  config.weightsFile = read[1];
-                  break;
-               case "run case number":
-                  try
-                  {
-                     config.runCaseNum = Util.toInt(read[1]);
-                     if (config.runCaseNum > config.numCases) {
-                        Util.exit("Case " + config.runCaseNum + " in config file exceeds total " +
-                              "number of cases: " + config.numCases, fileName);
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Network Mode: " + read[1],
+                              fileName);
                      }
+                  case "number of cases":
+                     try
+                     {
+                        config.numCases = Util.toInt(read[1]);
+                        if (config.numCases == 0)
+                        {
+                           Util.exit("Invalid: \"Number of Cases\" parameter is 0." + ln, fileName);
+                        }
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Number of Training Cases: " + read[1], fileName);
+                     }
+                  case "max training iterations":
+                     try
+                     {
+                        config.maxIters = Util.toInt(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Max Training Iterations: " + read[1],
+                              fileName);
+                     }
+                  case "lambda":
+                     try
+                     {
+                        config.lambda = Util.toDouble(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted double for lambda: " + read[1], fileName);
+                     }
+                  case "error threshold":
+                     try
+                     {
+                        config.errThreshold = Util.toDouble(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted double for error threshold: " + read[1], fileName);
+                     }
+                  case "random range lower bound":
+                     try
+                     {
+                        config.lowRand = Util.toDouble(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted double for random number range lower bound: " + read[1], fileName);
+                     }
+                  case "random range upper bound":
+                     try
+                     {
+                        config.highRand = Util.toDouble(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted double for random number range upper bound: " + read[1], fileName);
+                     }
+                  case "truth table file":
+                     config.truthTableFile = read[1];
                      break;
-                  }
-                  catch (NumberFormatException e)
-                  {
-                     Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
-                  }
-               case "keep alive interval":
-                  try {
-                     config.keepAliveInterval = Util.toInt(read[1]);
+                  case "load weights":
+                     config.loadWeights = Util.toBoolean(read[1]);
                      break;
-                  } catch (NumberFormatException e) {
-                     Util.exit("Poorly formatted integer for Keep Alive Interval: " + read[1],
-                           fileName);
-                  }
-               default:
-                  Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
+                  case "save weights":
+                     config.saveWeights = Util.toBoolean(read[1]);
+                     break;
+                  case "weights file":
+                     config.weightsFile = read[1];
+                     break;
+                  case "run case number":
+                     try
+                     {
+                        config.runCaseNum = Util.toInt(read[1]);
+                        if (config.runCaseNum > config.numCases)
+                        {
+                           Util.exit("Case " + config.runCaseNum + " in config file exceeds total " +
+                                 "number of cases: " + config.numCases, fileName);
+                        }
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
+                     }
+                  case "keep alive interval":
+                     try
+                     {
+                        config.keepAliveInterval = Util.toInt(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Keep Alive Interval: " + read[1],
+                              fileName);
+                     }
+                  default:
+                     Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
+               }
             }
-         } else {
-            System.out.println("File \"" + fileName + "\" - Ignoring garbage line: " + ln);
+            else
+            {
+               System.out.println("File \"" + fileName + "\" - Ignoring garbage line: " + ln);
+            }
          }
       }
 
@@ -233,13 +260,20 @@ public class ConfigFileIO
       return config;
    }
 
+   /**
+    * Reads a line from the input stream and increments the line number. If the line is null or
+    * is an EOF, the method returns false. Otherwise, it returns true.
+    *
+    * @return true if the end of the file has not been reached, false otherwise
+    */
    public boolean readLine()
    {
       try
       {
          ln = in.readLine();
          lnNumber++;
-         if (ln == null || ln.toLowerCase().trim().equals("eof")) {
+         if (ln == null || ln.toLowerCase().trim().equals("eof"))
+         {
             return false;
          }
          return true;
@@ -256,6 +290,12 @@ public class ConfigFileIO
       return false;
    }
 
+   /**
+    * Parses the network configuration from the given string and sets the parameters in the
+    * Config object.
+    *
+    * @param ln the string containing the network configuration
+    */
    public void parseNetworkConfig(String ln)
    {
       String[] read;
@@ -266,15 +306,23 @@ public class ConfigFileIO
          config.numInAct = Util.toInt(read[0].trim());
          config.numHidAct = Util.toInt(read[1].trim());
          config.numOutAct = Util.toInt(read[2].trim());
-      } else {
+      }
+      else
+      {
          Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
       }
 
-      if (config.numInAct == 0 || config.numHidAct == 0 || config.numOutAct == 0) {
+      if (config.numInAct == 0 || config.numHidAct == 0 || config.numOutAct == 0)
+      {
          Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
       }
    }
 
+   /**
+    * Saves the configuration to the file in a format compatible with the loadConfig() method.
+    * This method will exit the program if it encounters an error in writing to the configuration
+    * file.
+    */
    public void saveConfig()
    {
       try
@@ -319,6 +367,11 @@ public class ConfigFileIO
       }
    }
 
+   /**
+    * Formats the network configuration into a dash separated string.
+    *
+    * @return the formatted network configuration
+    */
    public String formatNetworkConfig()
    {
       return "Network configuration: " + config.numInAct + "-" + config.numHidAct + "-" + config.numOutAct;
