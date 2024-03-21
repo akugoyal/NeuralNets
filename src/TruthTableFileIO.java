@@ -46,7 +46,15 @@ public class TruthTableFileIO
       try
       {
          lnNumber++;
-         read = in.readLine().split("-");
+         ln = in.readLine();
+         if (ln == null) {
+            Util.exit("Empty truth table file", fileName);
+         } else {
+            while (ln.isBlank()) {
+               ln = in.readLine();
+            }
+         }
+         read = ln.split("-");
          if (read.length != this.numConfigParams)
          {
             Util.exit("Expected " + this.numConfigParams + " config params. Found " + read.length, fileName);
@@ -86,6 +94,9 @@ public class TruthTableFileIO
          try
          {
             ln = in.readLine();
+            if (ln == null) {
+               Util.exit("Truth table file missing inputs.", fileName);
+            }
             if (ln.isBlank())
             {
                blanksFound++;
@@ -122,6 +133,9 @@ public class TruthTableFileIO
          try
          {
             ln = in.readLine();
+            if (ln == null) {
+               Util.exit("Truth table file missing outputs.", fileName);
+            }
             if (ln.isBlank())
             {
                blanksFound++;

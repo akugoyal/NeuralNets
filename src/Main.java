@@ -50,7 +50,7 @@ public class Main
    public static ConfigFileIO configFileIO;
    public static WeightsFileIO weightsFileIO;
    public static TruthTableFileIO truthTableFileIO;
-   public static final String DEFAULT_CONFIG_FILE = "ABC_config.txt";
+   public static final String DEFAULT_CONFIG_FILE = "config.txt";
    public static final String DEFAULT_WEIGHTS_FILE = "weights.bin";
    public static final String DEFAULT_TRUTH_TABLE_FILE = "truthTable.txt";
    public static Config config;
@@ -152,6 +152,7 @@ public class Main
    public static void echoConfig()
    {
       System.out.println("=======================================================================");
+      System.out.println("=======================================================================");
       System.out.println("Network configuration: " + config.numInAct + "-" + config.numHidAct +
             "-" + config.numOutAct);
 
@@ -181,6 +182,7 @@ public class Main
       {
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
+      System.out.println("-----------------------------------------------------------------------");
    } //public static void echoConfig
 
 /**
@@ -225,36 +227,6 @@ public class Main
  * @param fileName the name of the file to save the weights to
  * @throws IOException if the file cannot be written to
  */
-//   public static void saveWeights(String fileName) throws IOException
-//   {
-//      int i;
-//      int j;
-//      int k;
-//      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-//      writer.write(Integer.toString(numInAct) + " " + Integer.toString(numHidAct) + " " +
-//            Integer.toString(numOutAct) + "\n");
-//
-//      for (k = 0; k < numInAct; k++)
-//      {
-//         for (j = 0; j < numHidAct - 1; j++)
-//         {
-//            writer.write(Double.toString(kjWeights[k][j]) + " ");
-//         }
-//         writer.write(Double.toString(kjWeights[k][numHidAct - 1]) + "\n");
-//      }
-//      for (j = 0; j < numHidAct; j++)
-//      {
-//         for (i = 0; i < numOutAct - 1; i++)
-//         {
-//            writer.write(Double.toString(jiWeights[j][i]) + " ");
-//         }
-//         writer.write(Double.toString(jiWeights[j][numOutAct - 1]) + "\n");
-//      }
-//
-//      writer.flush();
-//      writer.close();
-//      System.out.println("Saved weights successfully.");
-//   } //public static void saveWeights(String fileName) throws IOException
 
 /**
  * Loads the weights from a file. First, the network configuration is read from the file. If
@@ -291,36 +263,6 @@ public class Main
 /**
  * If the network is training, the user should populate the truth table with values.
  */
-//      if (config.isTraining)
-//      {
-//         truthTableInputs[0][0] = 0.0;    //Test Case #1, Input #1
-//         truthTableInputs[0][1] = 0.0;    //Test Case #1, Input #2
-//
-//         truthTableInputs[1][0] = 0.0;    //Test Case #2, Input #1
-//         truthTableInputs[1][1] = 1.0;    //Test Case #2, Input #2
-//
-//         truthTableInputs[2][0] = 1.0;    //Test Case #3, Input #1
-//         truthTableInputs[2][1] = 0.0;    //Test Case #3, Input #2
-//
-//         truthTableInputs[3][0] = 1.0;    //Test Case #4, Input #1
-//         truthTableInputs[3][1] = 1.0;    //Test Case #4, Input #2
-//
-//
-//         truthTableOutputs[0][0] = 0.0;   //Test Case #1, Output #1
-//         truthTableOutputs[0][1] = 0.0;   //Test Case #1, Output #2
-//         truthTableOutputs[0][2] = 0.0;   //Test Case #1, Output #3
-//
-//         truthTableOutputs[1][0] = 0.0;   //Test Case #2, Output #1
-//         truthTableOutputs[1][1] = 1.0;   //Test Case #2, Output #2
-//         truthTableOutputs[1][2] = 1.0;   //Test Case #2, Output #3
-//
-//         truthTableOutputs[2][0] = 0.0;   //Test Case #3, Output #1
-//         truthTableOutputs[2][1] = 1.0;   //Test Case #3, Output #2
-//         truthTableOutputs[2][2] = 1.0;   //Test Case #3, Output #3
-//
-//         truthTableOutputs[3][0] = 1.0;   //Test Case #4, Output #1
-//         truthTableOutputs[3][1] = 1.0;   //Test Case #4, Output #2
-//         truthTableOutputs[3][2] = 0.0;   //Test Case #4, Output #3
          truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
          if (config.networkMode != TRAINING) {
             if (config.networkMode == RUN_ALL)
@@ -330,16 +272,6 @@ public class Main
                a = truthTableInputs[config.runCaseNum];
             }
          }
-//      }  //if (isTraining)
-/**
- * If the network is in run mode, the user should populate the input activation array
- */
-//      else
-//      {
-//         a[0] = 0.0;
-//         a[1] = 1.0;   //Inputs #1 and #2
-//      }  //if (isTraining)
-
       if (config.loadWeights)
       {
 /*
@@ -530,6 +462,7 @@ public class Main
 
    public static void reportFull() {
       int caseIter;
+      System.out.println("-----------------------------------------------------------------------");
 
       if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
       {

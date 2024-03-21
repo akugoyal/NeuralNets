@@ -21,7 +21,22 @@ public class Config
    public int keepAliveInterval;
 
    public Config(String defaultWeightsFile, String defaultTruthTableFile) {
+      numLayers = 3;
+      numInAct = 1;
+      numHidAct = 1;
+      numOutAct = 1;
+      lowRand = 0.0;
+      highRand = 0.0;
+      loadWeights = false;
+      saveWeights = false;
       weightsFile = defaultWeightsFile;
+      networkMode = 0;
+      numCases = 1;
+      maxIters = 0;
+      lambda = 0.0;
+      errThreshold = 0.0;
       truthTableFile = defaultTruthTableFile;
+      runCaseNum = 0;
+      keepAliveInterval = 0;
    }
 }

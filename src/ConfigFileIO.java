@@ -70,6 +70,9 @@ public class ConfigFileIO
                   try
                   {
                      config.numCases = Util.toInt(read[1]);
+                     if (config.numCases == 0) {
+                        Util.exit("Invalid: \"Number of Cases\" parameter is 0." + ln, fileName);
+                     }
                      break;
                   }
                   catch (NumberFormatException e)
@@ -200,9 +203,18 @@ public class ConfigFileIO
       String[] read;
       read = ln.split("-");
       config.numLayers = read.length;
-      config.numInAct = Util.toInt(read[0].trim());
-      config.numHidAct = Util.toInt(read[1].trim());
-      config.numOutAct = Util.toInt(read[2].trim());
+      if (config.numLayers > 2)
+      {
+         config.numInAct = Util.toInt(read[0].trim());
+         config.numHidAct = Util.toInt(read[1].trim());
+         config.numOutAct = Util.toInt(read[2].trim());
+      } else {
+         Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
+      }
+
+      if (config.numInAct == 0 || config.numHidAct == 0 || config.numOutAct == 0) {
+         Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
+      }
    }
 
    public void saveConfig()
