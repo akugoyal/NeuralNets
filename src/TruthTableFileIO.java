@@ -1,6 +1,25 @@
 import java.io.*;
 import java.util.Arrays;
 
+/**
+ * Class to handle reading and writing truth tables to and from files. Expects the truth table
+ * file to adhere to the following format:
+ *
+ * The file configuration will appear as three dash-separated integers on the first line of the
+ * file, with the first integer representing the number of training cases, the second integer
+ * representing the number of inputs, and the third integer representing the number of outputs.
+ *
+ * The next section of the file will contain the input values for each training case, with each
+ * line containing space separated values for each input. The number of values on each line
+ * should match the number of inputs specified in the file configuration.
+ *
+ * The final section of the file will contain the output values for each training case, with each
+ * line containing space separated values for each output. The number of values on each line
+ * should match the number of outputs specified in the file configuration.
+ *
+ * Author: Akul Goyal
+ * Date of Creation: 03/19/2024
+ */
 public class TruthTableFileIO
 {
    private int numInputs;
@@ -13,6 +32,15 @@ public class TruthTableFileIO
    private DataInputStream in;
    private String fileName;
 
+/**
+ * Constructor for the TruthTableFileIO class. Initializes the expected number of inputs,
+ * outputs, cases, and the file to read/write the truth table from/to.
+ *
+ * @param numInputs  the expected number of inputs in the truth table.
+ * @param numOutputs the expected number of outputs in the truth table.
+ * @param numCases   the expected number of cases in the truth table.
+ * @param fileName   the file to read/write the truth table from/to.
+ */
    public TruthTableFileIO(int numInputs, int numOutputs, int numCases, String fileName)
    {
       this.numInputs = numInputs;
@@ -21,8 +49,15 @@ public class TruthTableFileIO
       this.numTrainingCases = numCases;
       this.numConfigParams = 3;
       this.lnNumber = 0;
-   }
+   } //public TruthTableFileIO(int numInputs, int numOutputs, int numCases, String fileName)
 
+/**
+ * Loads the truth table from a file and stores the input and output values in the provided
+ * arrays. If the file does not adhere to the expected format, the program will exit.
+ *
+ * @param truthTableInputs  the array to store the input values of the truth table.
+ * @param truthTableOutputs the array to store the output values of the truth table.
+ */
    public void loadTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
    {
       int numInRead;
@@ -47,14 +82,21 @@ public class TruthTableFileIO
       {
          lnNumber++;
          ln = in.readLine();
-         if (ln == null) {
+
+         if (ln == null)
+         {
             Util.exit("Empty truth table file", fileName);
-         } else {
-            while (ln.isBlank()) {
+         }
+         else
+         {
+            while (ln.isBlank())
+            {
                ln = in.readLine();
             }
          }
+
          read = ln.split("-");
+
          if (read.length != this.numConfigParams)
          {
             Util.exit("Expected " + this.numConfigParams + " config params. Found " + read.length, fileName);
@@ -71,13 +113,13 @@ public class TruthTableFileIO
                   Util.exit("Network config doesn't match truth table config from file. ",
                         fileName);
                }
-            }
+            } //try
             catch (NumberFormatException e)
             {
                Util.exit("Incorrectly formatted integer in parsed configuration: " + Arrays.toString(read), fileName);
             }
-         }
-      }
+         } //if (read.length != this.numConfigParams)...else
+      } //try
       catch (EOFException e)
       {
          Util.exit("Missing one or more truth table configuration tags: \"Number of training " +
@@ -94,7 +136,9 @@ public class TruthTableFileIO
          try
          {
             ln = in.readLine();
-            if (ln == null) {
+
+            if (ln == null)
+            {
                Util.exit("Truth table file missing inputs.", fileName);
             }
             if (ln.isBlank())
@@ -102,7 +146,9 @@ public class TruthTableFileIO
                blanksFound++;
                continue;
             }
+
             read = ln.split("\s+");
+
             if (read.length != this.numInputs)
             {
                Util.exit("Expected " + this.numInputs + " truth table inputs on line. Found " + read.length + ".\nLine: " + Arrays.toString(read), fileName);
@@ -112,7 +158,7 @@ public class TruthTableFileIO
             {
                truthTableInputs[caseIter - blanksFound][inIter] = Util.toDouble(read[inIter]);
             }
-         }
+         } //try
          catch (EOFException e)
          {
             Util.exit("Reached end of truth table file too early", fileName);
@@ -125,7 +171,7 @@ public class TruthTableFileIO
          {
             Util.exit("Encountered IOException in truth table file", fileName);
          }
-      }
+      } //for (caseIter = 0; caseIter - blanksFound < this.numTrainingCases; caseIter++)
 
       blanksFound = 0;
       for (caseIter = 0; caseIter - blanksFound < this.numTrainingCases; caseIter++)
@@ -133,7 +179,9 @@ public class TruthTableFileIO
          try
          {
             ln = in.readLine();
-            if (ln == null) {
+
+            if (ln == null)
+            {
                Util.exit("Truth table file missing outputs.", fileName);
             }
             if (ln.isBlank())
@@ -141,7 +189,9 @@ public class TruthTableFileIO
                blanksFound++;
                continue;
             }
+
             read = ln.split("\s+");
+
             if (read.length != this.numOutputs)
             {
                Util.exit("Expected " + this.numOutputs + " truth table outputs on line. Found " + read.length + ".\nLine: " + Arrays.toString(read), fileName);
@@ -149,9 +199,16 @@ public class TruthTableFileIO
 
             for (outIter = 0; outIter < this.numOutputs; outIter++)
             {
-               truthTableOutputs[caseIter - blanksFound][outIter] = Util.toDouble(read[outIter]);
-            }
-         }
+               try
+               {
+                  truthTableOutputs[caseIter - blanksFound][outIter] = Util.toDouble(read[outIter]);
+               }
+               catch (NumberFormatException e)
+               {
+                  Util.exit("Incorrectly formatted output in truth table file", fileName);
+               }
+            } //for (outIter = 0; outIter < this.numOutputs; outIter++)
+         } //try
          catch (EOFException e)
          {
             Util.exit("Reached end of truth table file too early", fileName);
@@ -164,7 +221,7 @@ public class TruthTableFileIO
          {
             Util.exit("Encountered IOException in truth table file", fileName);
          }
-      }
+      } //for (caseIter = 0; caseIter - blanksFound < this.numTrainingCases; caseIter++)
 
       try
       {
@@ -174,8 +231,14 @@ public class TruthTableFileIO
       {
          Util.exit("Error closing input stream", fileName);
       }
-   }
+   } //public void loadTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
 
+/**
+ * Saves the truth table to a file in a format compatible with the loadTruthTable method.
+ *
+ * @param truthTableInputs  the array containing the input values of the truth table.
+ * @param truthTableOutputs the array containing the output values of the truth table.
+ */
    public void saveTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
    {
       int numCases;
@@ -195,7 +258,8 @@ public class TruthTableFileIO
       numCases = truthTableInputs.length;
       numInputs = truthTableInputs[0].length;
       numOutputs = truthTableOutputs[0].length;
-      if (numCases != this.numTrainingCases || numCases != truthTableOutputs.length || numInputs != this.numInputs || numOutputs != this.numOutputs)
+      if (numCases != this.numTrainingCases || numCases != truthTableOutputs.length ||
+            numInputs != this.numInputs || numOutputs != this.numOutputs)
       {
          Util.exit("Saving truth table - Expected input table of size " + this.numTrainingCases + "x" + this.numInputs + " and output table of size " + this.numTrainingCases + "x" + this.numOutputs + ". Received input table of size " + truthTableInputs.length + "x" + truthTableInputs[0].length + " and output table of size " + truthTableOutputs.length + "x" + truthTableOutputs[0].length + ".", fileName);
       }
@@ -219,7 +283,7 @@ public class TruthTableFileIO
          {
             Util.exit("Error saving truth table input case " + caseIter + " to file", fileName);
          }
-      }
+      } //for (caseIter = 0; caseIter < this.numTrainingCases; caseIter++)
 
       for (caseIter = 0; caseIter < this.numTrainingCases; caseIter++)
       {
@@ -231,7 +295,7 @@ public class TruthTableFileIO
          {
             Util.exit("Error saving truth table output case " + caseIter + " to file", fileName);
          }
-      }
+      } //for (caseIter = 0; caseIter < this.numTrainingCases; caseIter++)
 
       try
       {
@@ -241,25 +305,36 @@ public class TruthTableFileIO
       {
          Util.exit("Error closing output stream", fileName);
       }
-   }
+   } //public void saveTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
 
+/**
+ * Formats the configuration of the truth table to be dash separated values.
+ *
+ * @return The formatted configuration.
+ */
    public String formatTableConfig()
    {
       return this.numTrainingCases + "-" + this.numInputs + "-" + this.numOutputs;
    }
 
+/**
+ * Formats a row of the truth table to be a set of space separated values.
+ *
+ * @param arr The row of the truth table to format.
+ * @param len The number of values in the row.
+ * @return The formatted row.
+ */
    public String formatRow(double[] arr, int len)
    {
       String res;
       int iter;
 
       res = "";
-
       for (iter = 0; iter < len; iter++)
       {
          res += arr[iter] + " ";
       }
 
       return res;
-   }
-}
+   } //public String formatRow(double[] arr, int len)
+} //public class TruthTableFileIO

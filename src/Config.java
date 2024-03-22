@@ -26,6 +26,9 @@
  *                    defaults to 0.
  * keepAliveInterval: the interval to print status updates to the console during training. This
  *                    defaults to 0.
+ *
+ * Author: Akul Goyal
+ * Date of Creation: 03/19/2024
  */
 
 public class Config

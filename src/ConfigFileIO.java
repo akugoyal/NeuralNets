@@ -43,6 +43,9 @@ import java.io.*;
  * Weights File: weights.txt
  * Run Case Number: 0
  * Keep Alive Interval: 100
+ *
+ * Author: Akul Goyal
+ * Date of Creation: 03/19/2024
  */
 public class ConfigFileIO
 {
