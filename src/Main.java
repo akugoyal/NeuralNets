@@ -533,6 +533,8 @@ public class Main
             System.out.println("Reached training iteration " + trainIterations + " with error " + error);
          }
 
+         error = 0.0;
+
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
             a = truthTableInputs[caseIter];
