@@ -1,6 +1,6 @@
-Network configuration: 3-100-3
+Network configuration: 2-11-3
 Network Mode: 0
-Number of cases: 8
+Number of cases: 4
 Max training iterations: 1e5
 Lambda: 0.3
 Error threshold: 2e-4
@@ -9,8 +9,8 @@ Random range lower bound: 0.1
 Random range upper bound: 1.5
 Run case Number: 1
 
-Truth table file: (8)_3_3_AND_OR_XOR.txt
+Truth table file: (4)_2_3_AND_OR_XOR.txt
 Load weights: false
 Save weights: true
-Weights file: weights_3_100_3.bin
+Weights file: weights_2_11_3.bin
 

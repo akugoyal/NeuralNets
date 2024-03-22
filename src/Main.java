@@ -140,16 +140,25 @@ public class Main
 
       if (config.networkMode == TRAINING)
       {
-         System.out.println("Network is in training mode.");
+         System.out.println("Network is in mode: " + config.networkMode + " (Training)");
          System.out.println("Number of training cases: " + config.numCases);
          System.out.println("Max training iterations: " + config.maxIters);
          System.out.println("Lambda value: " + config.lambda);
          System.out.println("Error threshold: " + config.errThreshold);
+         System.out.println("Keep alive interval: " + config.keepAliveInterval);
       } //if (config.networkMode == TRAINING)
+      else if (config.networkMode == RUN_ALL)
+      {
+
+         System.out.println("Network is in mode: " + config.networkMode + " (Run All)");
+      }
       else
       {
-         System.out.println("Network is in run mode.");
+         System.out.println("Network is in mode: " + config.networkMode + " (Run Single)");
+         System.out.println("Running case number: " + config.runCaseNum);
       }
+
+      System.out.println("Loading truth table from file: " + config.truthTableFile);
 
       if (config.loadWeights)
       {
