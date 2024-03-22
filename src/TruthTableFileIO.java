@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 /**
  * Class to handle reading and writing truth tables to and from files. Expects the truth table
- * file to adhere to the following format:
+ * file to be a text file adhering to the following format:
  *
  * The file configuration will appear as three dash-separated integers on the first line of the
  * file, with the first integer representing the number of training cases, the second integer
