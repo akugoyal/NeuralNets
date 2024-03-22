@@ -294,7 +294,7 @@ public class Main
          {
             thetaAccumulator += a[k] * kjWeights[k][j];
          }
-         h[j] = sigmoid(thetaAccumulator);
+         h[j] = activationFunction(thetaAccumulator);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -307,7 +307,7 @@ public class Main
          {
             thetaAccumulator += h[j] * jiWeights[j][i];
          }
-         F[i] = sigmoid(thetaAccumulator);
+         F[i] = activationFunction(thetaAccumulator);
       } //for (i = 0; i < config.numOutAct; i++)
    } //public static void runSingleCase()
 
@@ -355,7 +355,7 @@ public class Main
          {
             thetaJ[j] += a[k] * kjWeights[k][j];
          }
-         h[j] = sigmoid(thetaJ[j]);
+         h[j] = activationFunction(thetaJ[j]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -369,11 +369,11 @@ public class Main
          {
             thetaI += h[j] * jiWeights[j][i];
          }
-         F[i] = sigmoid(thetaI);
+         F[i] = activationFunction(thetaI);
 
          Ti = truthTableOutputs[caseNum][i];
          omegaI = Ti - F[i];
-         psiI[i] = omegaI * sigmoidPrime(thetaI);
+         psiI[i] = omegaI * activationFunctionPrime(thetaI);
       } //for (i = 0; i < config.numOutAct; i++)
    } //public static void runDuringTrain(int caseNum)
 
@@ -394,6 +394,26 @@ public class Main
       double sigValue = sigmoid(x);
       return sigValue * (1.0 - sigValue);
    } //public static double sigmoidPrime(double x)
+
+/**
+ * Activation function for the network.
+ * @param x the input to the activation function
+ * @return the output of the activation function
+ */
+   public static double activationFunction(double x)
+   {
+      return sigmoid(x);
+   } //public static double activationFunction(double x)
+
+/**
+ * Derivative of the activation function for the network.
+ * @param x the input to the derivative of the activation function
+ * @return the output of the derivative
+ */
+   public static double activationFunctionPrime(double x)
+   {
+      return sigmoidPrime(x);
+   } //public static double activationFunctionPrime(double x)
 
 /**
  * Calculates the error for the given case number by first running the network on the given truth
@@ -528,7 +548,7 @@ public class Main
                   jiWeights[j][i] += deltaWji;
                }
 
-               psiJ = omegaJ * sigmoidPrime(thetaJ[j]);
+               psiJ = omegaJ * activationFunctionPrime(thetaJ[j]);
 
                for (k = 0; k < config.numInAct; k++)
                {
