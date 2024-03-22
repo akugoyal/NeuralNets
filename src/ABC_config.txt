@@ -1,16 +1,16 @@
-Network configuration: 2-5-1
-Network Mode: 0
+Network configuration: 2-30-3
+Network Mode: 1
 Number of cases: 4
 Max training iterations: 1e5
 Lambda: 0.3
 Error threshold: 2e-4
-Keep Alive Interval: 1e4
-Random range lower bound: -1.5
+Keep Alive Interval: 1e6
+Random range lower bound: 0.1
 Random range upper bound: 1.5
 Run case Number: 1
 Decimal Precision: 17
 
-Truth table file: (4)_2_1_AND.txt
-Load weights: false
-Save weights: true
-Weights file: weights_2_5_1.bin
+Truth table file: (4)_2_3_AND_OR_XOR.txt
+Load weights: true
+Save weights: false
+Weights file: weights_2_30_3.bin
