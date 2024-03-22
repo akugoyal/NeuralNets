@@ -140,22 +140,22 @@ public class Main
 
       if (config.networkMode == TRAINING)
       {
-         System.out.println("Network is in mode: " + config.networkMode + " (Training)");
+         System.out.println("Network is in mode: " + config.networkMode + " (Training)\n");
          System.out.println("Number of training cases: " + config.numCases);
          System.out.println("Max training iterations: " + config.maxIters);
          System.out.println("Lambda value: " + config.lambda);
          System.out.println("Error threshold: " + config.errThreshold);
-         System.out.println("Keep alive interval: " + config.keepAliveInterval);
+         System.out.println("Keep alive interval: " + config.keepAliveInterval + "\n");
       } //if (config.networkMode == TRAINING)
       else if (config.networkMode == RUN_ALL)
       {
 
-         System.out.println("Network is in mode: " + config.networkMode + " (Run All)");
+         System.out.println("Network is in mode: " + config.networkMode + " (Run All)\n");
       }
       else
       {
          System.out.println("Network is in mode: " + config.networkMode + " (Run Single)");
-         System.out.println("Running case number: " + config.runCaseNum);
+         System.out.println("Running case number: " + config.runCaseNum + "\n");
       }
 
       System.out.println("Loading truth table from file: " + config.truthTableFile);
@@ -496,6 +496,33 @@ public class Main
    } //public static void reportFull()
 
 /**
+ * Formats the given double array into a string with all the doubles formatted to the given
+ * precision.
+ * @param arr the double array to format
+ * @param len the length of the array
+ * @param precision the number of decimal places to format the doubles to
+ * @return the formatted string
+ */
+   public static String formatDoubleArray(double[] arr, int len, int precision)
+   {
+      int iter;
+      StringBuilder res;
+
+      res = new StringBuilder();
+      for (iter = 0; iter < len; iter++)
+      {
+         res.append(String.format("%." + precision + "f", arr[iter]));
+         if (iter < len - 1)
+         {
+            res.append(", ");
+         }
+      } //for (iter = 0; iter < len; iter++)
+      res.append("]");
+
+      return res.toString();
+   } //public static String formatDoubleArray(double[] arr, int len, int precision)
+
+/**
  * Prints a report for the given case number. If the network is in training mode, it prints the
  * input case, the expected output, and the actual output. If the network is in run mode, it just
  * prints the input case and the output. Does not run the network.
@@ -506,14 +533,14 @@ public class Main
    {
       if (config.networkMode == TRAINING)
       {
-         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Expected: "
-               + Arrays.toString(truthTableOutputs[num]) + "     " + "Output: " +
-               Arrays.toString(F));
+         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Expected: " +
+               Arrays.toString(truthTableOutputs[num]) + "     Output: " + formatDoubleArray(F,
+               config.numOutAct, config.decimalPrecision));
       }
       else
       {
-         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     " +
-               "Output: " + Arrays.toString(F));
+         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Output: " +
+               formatDoubleArray(F, config.numOutAct, config.decimalPrecision));
       }
    } //public static void reportSingleCase(int num)
 

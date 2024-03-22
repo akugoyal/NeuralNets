@@ -26,6 +26,7 @@
  *                    defaults to 0.
  * keepAliveInterval: the interval to print status updates to the console during training. This
  *                    defaults to 0.
+ * decimalPrecision:  the number of decimal places to round the weights to
  *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
@@ -50,6 +51,7 @@ public class Config
    public String truthTableFile;
    public int runCaseNum;
    public int keepAliveInterval;
+   public int decimalPrecision;
 
 /**
  * Constructor for the Config class. Initializes the parameters to their default values.
@@ -76,5 +78,6 @@ public class Config
       truthTableFile = defaultTruthTableFile;
       runCaseNum = 0;
       keepAliveInterval = 0;
+      decimalPrecision = 17;
    } //public Config(String defaultWeightsFile, String defaultTruthTableFile)
 } //public class Config

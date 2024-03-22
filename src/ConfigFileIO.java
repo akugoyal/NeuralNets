@@ -25,6 +25,7 @@ import java.io.*;
  * Load Weights:              Whether to load the weights from a file.
  * Save Weights:              Whether to save the weights to a file.
  * Weights File:              The file to load/save the weights from/to.
+ * Decimal Precision:         The number of decimal places to round the weights to when saving.
  *
  *
  * An example configuration file may look like the following:
@@ -43,6 +44,7 @@ import java.io.*;
  * Weights File: weights.txt
  * Run Case Number: 0
  * Keep Alive Interval: 100
+ * Decimal Precision: 17
  *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
@@ -240,6 +242,16 @@ public class ConfigFileIO
                         Util.exit("Poorly formatted integer for Keep Alive Interval: " + read[1],
                               fileName);
                      }
+                  case "decimal precision":
+                     try {
+                        config.decimalPrecision = Util.toInt(read[1]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Decimal Precision: " + read[1],
+                              fileName);
+                     }
                   default:
                      Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
                } //switch (read[0])
@@ -276,11 +288,7 @@ public class ConfigFileIO
          ln = in.readLine();
          lnNumber++;
 
-         if (ln == null || ln.toLowerCase().trim().equals("eof"))
-         {
-            return false;
-         }
-         return true;
+         return ln != null && !ln.toLowerCase().trim().equals("eof");
       } //try
       catch (EOFException e)
       {
