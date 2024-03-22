@@ -73,5 +73,5 @@ public class Config
       truthTableFile = defaultTruthTableFile;
       runCaseNum = 0;
       keepAliveInterval = 0;
-   }
-}
+   } //public Config(String defaultWeightsFile, String defaultTruthTableFile)
+} //public class Config

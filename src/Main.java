@@ -1,59 +1,53 @@
 import java.util.Arrays;
-import java.io.*;
 
 /**
- * This class is an A-B-C feedforward neural network. The network is fully connected and uses a
- * sigmoid activation function. The network can be run in training mode or run mode. In training
- * mode, the network uses a gradient descent algorithm to calculate the delta weights, until
- * either the maximum number of iterations is reached or the average error is under the error
- * threshold. In run mode, the network simply runs the input through the network and prints the
- * value of the output node(s).
- * <p>
- * The network can also be set to load and/or save weights to and from a file. Weights are loaded
- * from a text file which is expected to contain the network configuration followed by the
- * weights. If the network configuration saved in the file does not match the network
- * configuration set by the user, the program will exit with an error. If weights are not
- * loaded from file, they are randomized within the user configured range. Weights are saved to a
- * file which contains the network configuration followed by the weights.
- * </p>
- * <p>
- * The user can modify the following configuration parameters to change the behavior of the
- * network.
- * numInAct: the number of input activation nodes
- * numHidAct: the number of hidden activation nodes
- * numOutAct: the number of output activation nodes
- * loadWeights: whether to load weights from a file. If loadWeights is false, the weights will be
- * randomized between the given range.
- * saveWeights: whether to save the weights to a file
- * weightsFile: the file containing the weights for the network. This parameter is only used when
- * loading or saving weights to or from file.
- * lowRand: the lower bound for the random number range
- * highRand: the upper bound for the random number range
- * randomizeWeights: whether to randomize the weights. If randomizeWeights is true, the weights
- * will be randomized using the Math.random() function. If randomizeWeights is
- * false, the weights will be set manually in the populateArrays() method.
- * isTraining: whether the network is in training or run mode. If the network is in training
- * mode, the user should set the number of training cases in setConfig() and manually
- * populate the truth table in populateArrays() with the input and output values. If
- * the network is in run mode, the user should manually populate the input activation
- * array, a, in populateArrays().
- * maxIters: the maximum number of training iterations to run before ending training mode
- * lambda: the lambda value used to scale delta weights during training mode
- * errThreshold: the error threshold used to determine when to end training
- * <p>
+ * This class is an A-B-C feedforward neural network. The network is fully connected and supports
+ * a sigmoid activation function. The network can be run in training, run-all, or run single mode.
+ * In training mode, the network uses a gradient descent algorithm with backpropagation to
+ * calculate the delta weights, until either the maximum number of iterations is reached or the
+ * average error is under the error threshold. In run-all mode, the network runs each input in
+ * the truth table through the network and prints the value of the output node(s).
+ *
+ * The network reads the configuration parameters from a file. The configuration file contains
+ * the following parameters:
+ *
+ * Network Configuration:     The number of input, hidden, and output neurons in the network,
+ *                            separated by dashes.
+ * Network Mode:              The mode of the network. 0 for training, 1 for running the entire
+ *                            truth table, 2 for running a single case.
+ * Number of Cases:           The number of cases in the truth table.
+ * Max Training Iterations:   The maximum number of iterations for training.
+ * Lambda:                    The learning rate.
+ * Error Threshold:           The error threshold for training.
+ * Keep Alive Interval:       The interval to print status updates to the console during training.
+ * Random Range Lower Bound:  The lower bound for the random number range, which may be used to
+ *                            randomize the weights.
+ * Random Range Upper Bound:  The upper bound for the random number range, which may be used to
+ *                            randomize the weights.
+ * Run Case Number:           The case number to run in the truth table. Used when networkMode is 2.
+ * Truth Table File:          The file containing the truth table.
+ * Load Weights:              Whether to load the weights from a file.
+ * Save Weights:              Whether to save the weights to a file.
+ * Weights File:              The file to load/save the weights from/to.
+ *
+ * Missing parameters will be set to their default values.
+ *
  * Author: Akul Goyal
  * Date of Creation: 01/30/2024
  */
 
 public class Main
 {
-   public static ConfigFileIO configFileIO;
-   public static WeightsFileIO weightsFileIO;
-   public static TruthTableFileIO truthTableFileIO;
+/**
+ * Variables for reading and writing the configuration, weights, and truth table files.
+ */
    public static final String DEFAULT_CONFIG_FILE = "config.txt";
    public static final String DEFAULT_WEIGHTS_FILE = "weights.bin";
    public static final String DEFAULT_TRUTH_TABLE_FILE = "truthTable.txt";
-   public static Config config;
+
+/**
+ * Variables for the network configuration
+ */
    public static final int TRAINING = 0;
    public static final int RUN_ALL = 1;
    public static final int RUN_SINGLE = 2;
@@ -67,84 +61,72 @@ public class Main
    public static final double MIN_PER_HR = 60.0;           //Minutes per hour
    public static final double HR_PER_DAY = 24.0;           //Hours per day
    public static final double DAYS_PER_WK = 7.0;           //Days per week
-
-/**
- * Variables used during training mode only
- */
-//   public static final int MAX_ITERATIONS = 100000;
-//   public static final double LAMBDA = 0.3;
-//   public static final double ERROR_THRESHOLD = 2.0e-4;
+   public static ConfigFileIO configFileIO;
+   public static WeightsFileIO weightsFileIO;
+   public static TruthTableFileIO truthTableFileIO;
+   public static Config config;
    public static double initTime;                          //Time at the start of the program
-   public static String[] commandLineArgs;
+
 /**
  * Variables used during both running and training modes
  */
-//   public static int numLayers;
-//   public static int numInAct;                           //Number of input activation nodes
-//   public static int numHidAct;                          //Number of hidden activation nodes
-//   public static int numOutAct;                          //Number of output activation nodes
-//   public static double lowRand;                         //Lower bound for random number range
-//   public static double highRand;                        //Upper bound for random number range
-//   public static boolean loadWeights;                    //Whether to randomize the weights
-//   public static boolean saveWeights;                    //Whether to save the weights
-//   public static String weightsFile;                     //File containing weights for the network
-//   public static boolean isTraining;                     //Whether the network is in training mode
    public static double[] a;                             //Array of input activation nodes
    public static double[] h;                             //Array of hidden activation nodes
    public static double[] F;                             //Output activation nodes
    public static double[][] kjWeights;                   //Weights between input and hidden layer
    public static double[][] jiWeights;                   //Weights between hidden and output layer
-//   public static double maxIters;
-//   public static double lambda;
-//   public static double errThreshold;
-//   public static int numTrainingCases;
-   public static int trainIterations;
+   public static int trainIterations;                    //Number of iterations done during training
    public static double[][] truthTableInputs;
    public static double[][] truthTableOutputs;
-   public static double[] thetaJ;
-   public static double[] thetaI;
 
 /**
  * Variables used to calculate the delta weights during training mode only
  */
+   public static double[] thetaJ;
+   public static double thetaI;
    public static double omegaI;
    public static double Ti;
    public static double[] psiI;
-   public static double ePartialWji;
    public static double deltaWji;
    public static double deltaWkj;
    public static double omegaJ;
    public static double psiJ;
-   public static double ePrimeWkj;
    public static double error;
 
 /**
- * Initializes the configuration parameters: the number of nodes in the activation layer, the
- * number of nodes in the hidden layer, and the low and high bounds of the random number
- * range, whether to randomize the weights, and whether to train or run the network. The user
- * changes these values to modify the behavior of the network.
+ * Loads the configuration from the file passed as the first command line argument. If no file is
+ * passed, the default configuration file is used. The configuration is stored in a Config object.
+ * It also creates objects which can read and write the weights and truth table files, but doesn't
+ * load or save either yet.
  */
-   public static void setConfig()
+   public static void setConfig(String[] args)
    {
       String configFile = DEFAULT_CONFIG_FILE;
-      /**
-       * Record the time at the start of the program. Not for the user to modify.
-       */
+
+/**
+ * Record the time at the start of the program. Not for the user to modify.
+ */
       initTime = System.nanoTime();
 
-      if (commandLineArgs.length > 0) {
-         configFile = commandLineArgs[0];
+/**
+ * Load the configuration from file.
+ */
+      if (args.length > 0)
+      {
+         configFile = args[0];
       }
+
       configFileIO = new ConfigFileIO(configFile, DEFAULT_WEIGHTS_FILE, DEFAULT_TRUTH_TABLE_FILE);
       config = configFileIO.loadConfig();
 
       truthTableFileIO = new TruthTableFileIO(config.numInAct, config.numOutAct,
             config.numCases, config.truthTableFile);
-      if (config.loadWeights || config.saveWeights) {
+      if (config.loadWeights || config.saveWeights)
+      {
          weightsFileIO = new WeightsFileIO(config.numInAct, config.numHidAct, config.numOutAct,
                config.weightsFile);
       }
-   } //public static void setConfig
+   } //public static void setConfig(String[] args)
 
 /**
  * Prints the configuration parameters.
@@ -163,90 +145,64 @@ public class Main
          System.out.println("Max training iterations: " + config.maxIters);
          System.out.println("Lambda value: " + config.lambda);
          System.out.println("Error threshold: " + config.errThreshold);
-      } //if (isTraining)
+      } //if (config.networkMode == TRAINING)
       else
       {
          System.out.println("Network is in run mode.");
-      } //if (isTraining)
+      }
 
       if (config.loadWeights)
       {
          System.out.println("Loading weights from file: " + config.weightsFile);
-      }
+      } //if (config.loadWeights)
       else
       {
-         System.out.println("Randomizing weights with range: " + config.lowRand + " to " + config.highRand);
-      } //if (loadWeights)
+         System.out.println("Randomizing weights with range: " + config.lowRand + " to " +
+               config.highRand);
+      }
 
       if (config.saveWeights)
       {
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
+
       System.out.println("-----------------------------------------------------------------------");
    } //public static void echoConfig
 
 /**
- * Initializes the activation and weights arrays. Allocates space on the heap for the arrays
- * and variables used.
+ * Initializes the activation, weights, and truth table arrays. Allocates space on the heap for the
+ * arrays and variables used.
  */
    public static void allocateMemory()
    {
 /**
- * Allocates the following memory only if the network is in training mode
+ * Allocates the following memory only if the network is in training mode.
  */
-      truthTableInputs = new double[config.numCases][config.numInAct];
-      truthTableOutputs = new double[config.numCases][config.numOutAct];
       if (config.networkMode == TRAINING)
       {
          psiI = new double[config.numOutAct];
          error = Double.MAX_VALUE;
-         ePartialWji = 0.0;
-         omegaJ = 0.0;
-         psiJ = 0.0;
-         ePrimeWkj = 0.0;
-         trainIterations = 0;
          thetaJ = new double[config.numHidAct];
-         thetaI = new double[config.numOutAct];
-      } //if (isTraining)
+      } //if (config.networkMode == TRAINING)
 
 /**
- * The following memory is always allocated
+ * The following memory is always allocated.
  */
       a = new double[config.numInAct];
       h = new double[config.numHidAct];
       F = new double[config.numOutAct];
       kjWeights = new double[config.numInAct][config.numHidAct];
       jiWeights = new double[config.numHidAct][config.numOutAct];
-   } //public static void allocateArrays()
+      truthTableInputs = new double[config.numCases][config.numInAct];
+      truthTableOutputs = new double[config.numCases][config.numOutAct];
+   } //public static void allocateMemory()
 
 /**
- * Saves the weights to a file. First denotes the network configuration by saving three
- * integers representing the number of input, hidden, and output activation nodes. Then, the
- * weights for each connectivity layer are saved to the file.
- *
- * @param fileName the name of the file to save the weights to
- * @throws IOException if the file cannot be written to
- */
-
-/**
- * Loads the weights from a file. First, the network configuration is read from the file. If
- * the loaded configuration does not match the configuration set by the user in the setParams()
- * method, the program will exit with an error. Then, the weights for each connectivity layer
- * are read from the file.
- *
- * @param fileName the name of the file to load the weights from
- * @throws IOException if the file cannot be read from
- */
-//   public static void loadWeights(String fileName) throws IOException
-//   {
-//   } //public static void loadWeights(String fileName) throws IOException
-
-/**
- * Uses Math.random() to return a random number between low and high.
+ * Uses Math.random() to return a random number between low (inclusive) and high (exclusive).
  *
  * @param low  the lower bound for the random number range
  * @param high the higher bound for the random number range
- * @return a random double between
+ * @return a random double between low and high
  */
    public static double randomize(double low, double high)
    {
@@ -255,51 +211,53 @@ public class Main
 
 /**
  * Populates the weights from file or randomly, depending on the value of the loadWeights
- * boolean. Also, manually populates the array of activation nodes or the truth table depending on
- * whether the network is training.
+ * boolean. Also, populates the truth table from the specified file.
  */
-   public static void populateArrays() throws IOException
+   public static void populateArrays()
    {
-/**
- * If the network is training, the user should populate the truth table with values.
- */
-         truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
-         if (config.networkMode != TRAINING) {
-            if (config.networkMode == RUN_ALL)
-            {
-               a = truthTableInputs[0];
-            } else {
-               a = truthTableInputs[config.runCaseNum];
-            }
+      truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
+      if (config.networkMode != TRAINING)
+      {
+         if (config.networkMode == RUN_ALL)
+         {
+            a = truthTableInputs[0];
          }
+         else
+         {
+            a = truthTableInputs[config.runCaseNum];
+         }
+      } //if (config.networkMode != TRAINING)
+
       if (config.loadWeights)
       {
-/*
- * If the loadWeights boolean was set to true in setConfig(), the weights will be
- * loaded from file.
- */
          weightsFileIO.loadWeights(kjWeights, jiWeights);
-      } //if (loadWeights)
+      } //if (config.loadWeights)
       else
       {
          randomizeWeights();
       }
    } //public static void populateArrays()
 
-   public static void randomizeWeights() {
+/**
+ * Populates the weights with random values between the lowRand and highRand values specified in
+ * the configuration file.
+ */
+   public static void randomizeWeights()
+   {
       int k;
       int j;
       int i;
-      /**
-       * Populates kjWeights with random weights
-       */
+
+/**
+ * Populates kjWeights with random weights
+ */
       for (k = 0; k < config.numInAct; k++)
       {
          for (j = 0; j < config.numHidAct; j++)
          {
             kjWeights[k][j] = randomize(config.lowRand, config.highRand);
-         } //for (j = 0; j < numHidAct; j++)
-      } //for (k = 0; k < numInAct; k++)
+         } //for (j = 0; j < config.numHidAct; j++)
+      } //for (k = 0; k < config.numInAct; k++)
 
 /**
  * Populates jiWeights with random weights
@@ -309,9 +267,9 @@ public class Main
          for (i = 0; i < config.numOutAct; i++)
          {
             jiWeights[j][i] = randomize(config.lowRand, config.highRand);
-         } //for (i = 0; i < numOutAct; i++)
-      } //for (j = 0; j < numHidAct; j++)
-   } //if (loadWeights)
+         } //for (i = 0; i < config.numOutAct; i++)
+      } //for (j = 0; j < config.numHidAct; j++)
+   } //public static void randomizeWeights()
 
 /**
  * Runs the network on the input given by the input activations array, a. Each hidden node is the
@@ -324,11 +282,10 @@ public class Main
       int j;
       int k;
       int i;
-
-      double thetaAccumulator = 0.0;
+      double thetaAccumulator;
 
 /**
- * Computes the theta values for the hidden layer
+ * Computes the hidden layer.
  */
       for (j = 0; j < config.numHidAct; j++)
       {
@@ -336,49 +293,51 @@ public class Main
          for (k = 0; k < config.numInAct; k++)
          {
             thetaAccumulator += a[k] * kjWeights[k][j];
-         } //for (k = 0; k < numInAct; k++)
+         }
          h[j] = sigmoid(thetaAccumulator);
-      } //for (j = 0; j < numHidAct; j++)
+      } //for (j = 0; j < config.numHidAct; j++)
 
 /**
- * Computes the output layer
+ * Computes the output layer.
  */
       for (i = 0; i < config.numOutAct; i++)
       {
-         //Computes the theta values for the output layer
          thetaAccumulator = 0.0;
          for (j = 0; j < config.numHidAct; j++)
          {
             thetaAccumulator += h[j] * jiWeights[j][i];
          }
+         F[i] = sigmoid(thetaAccumulator);
+      } //for (i = 0; i < config.numOutAct; i++)
+   } //public static void runSingleCase()
 
 /**
- * Computes the final output
+ * If the network is in the training or run all modes, it runs the network on all the inputs
+ * given by the truth table. If the network is in run single mode, it runs the network on the
+ * input specified in the configuration file.
  */
-         F[i] = sigmoid(thetaAccumulator);
-      }
-   } //public static void run()
-
-   public static void runAll() {
+   public static void runAll()
+   {
       int caseIter;
-      if (config.networkMode == RUN_ALL)
+
+      if (config.networkMode == RUN_ALL || config.networkMode == TRAINING)
       {
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
             a = truthTableInputs[caseIter];
             runSingleCase();
          }
-      } else {
+      } //if (config.networkMode == RUN_ALL || config.networkMode == TRAINING)
+      else
+      {
          a = truthTableInputs[config.runCaseNum];
          runSingleCase();
       }
-   }
+   } //public static void runAll()
 
 /**
- * Runs the network on the input given by the input activations array, a. Each hidden node is the
- * sigmoid of the sum of the dot products of each of the previous activations and the
- * corresponding weight between the previous activation and the current activation. This
- * method saves the theta values which are used when training.
+ * Runs the network the same as the runSingleCase() method, but also saves the theta values for
+ * the hidden layer and saves the psi values for the output layer.
  */
    public static void runDuringTrain(int caseNum)
    {
@@ -387,7 +346,7 @@ public class Main
       int i;
 
 /**
- * Computes and saves the theta values for the hidden layer
+ * Computes and saves the theta values for the hidden layer.
  */
       for (j = 0; j < config.numHidAct; j++)
       {
@@ -395,33 +354,28 @@ public class Main
          for (k = 0; k < config.numInAct; k++)
          {
             thetaJ[j] += a[k] * kjWeights[k][j];
-         } //for (k = 0; k < numInAct; k++)
+         }
          h[j] = sigmoid(thetaJ[j]);
-      } //for (j = 0; j < numHidAct; j++)
+      } //for (j = 0; j < config.numHidAct; j++)
 
 /**
- * Computes and saves the values for the output layer
+ * Computes the output layer and the psi values for the output layer. Does not save the theta
+ * values.
  */
       for (i = 0; i < config.numOutAct; i++)
       {
-/**
- * Computes and saves the theta values for the output layer
- */
-         thetaI[i] = 0.0;
+         thetaI = 0.0;
          for (j = 0; j < config.numHidAct; j++)
          {
-            thetaI[i] += h[j] * jiWeights[j][i];
+            thetaI += h[j] * jiWeights[j][i];
          }
+         F[i] = sigmoid(thetaI);
 
-/**
- * Computes the final output
- */
-         F[i] = sigmoid(thetaI[i]);
          Ti = truthTableOutputs[caseNum][i];
          omegaI = Ti - F[i];
-         psiI[i] = omegaI * sigmoidPrime(thetaI[i]);
-      }
-   } //public static void runDuringTrain()
+         psiI[i] = omegaI * sigmoidPrime(thetaI);
+      } //for (i = 0; i < config.numOutAct; i++)
+   } //public static void runDuringTrain(int caseNum)
 
 /**
  * Computes the sigmoid of the passed double using Math.exp() to compute the exponent of e.
@@ -429,7 +383,7 @@ public class Main
    public static double sigmoid(double x)
    {
       return 1.0 / (1.0 + Math.exp(-x));
-   } //public static double sigmoid(double in)
+   } //public static double sigmoid(double x)
 
 /**
  * Computes the derivative of the sigmoid at the passed double using the previously
@@ -442,83 +396,103 @@ public class Main
    } //public static double sigmoidPrime(double x)
 
 /**
- * Calculates the average error across all the test.txt cases by running each one, accumulating
- * the error for each output, and then dividing by the total number of training cases.
+ * Calculates the error for the given case number by first running the network on the given truth
+ * table case. The error is half the sum of the squares of the differences between the expected
+ * output and the actual output.
  *
+ * @param caseNum the case number to calculate the error for
  * @return the average error
  */
    public static double runError(int caseNum)
    {
       int i;
+      double avgErrorAccumulator;
 
-      double avgErrorAccumulator = 0.0;
+      a = truthTableInputs[caseNum];
       runSingleCase();
-      for (i = 0; i < config.numOutAct; i++) {
+
+      avgErrorAccumulator = 0.0;
+      for (i = 0; i < config.numOutAct; i++)
+      {
          Ti = truthTableOutputs[caseNum][i];
          avgErrorAccumulator += (Ti - F[i]) * (Ti - F[i]);
       }
+
       return 0.5 * avgErrorAccumulator;
-   } //public static double avgError()
-
-   public static void reportFull() {
-      int caseIter;
-      System.out.println("-----------------------------------------------------------------------");
-
-      if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
-      {
-         if (config.networkMode != RUN_ALL)
-         {
-            if (trainIterations >= config.maxIters)
-            {
-               System.out.println("Ended training due to max iterations reached.");
-            } //if (trainIterations >= maxIters)
-            else if (error < config.errThreshold)
-            {
-               System.out.println("Ended training due to reaching error threshold.");
-            } //if (trainIterations >= maxIters)
-            System.out.println("Reached " + trainIterations + " iterations.");
-            System.out.println("Reached " + error + " average error.");
-         }
-
-         for (caseIter = 0; caseIter < config.numCases; caseIter++) {
-            a = truthTableInputs[caseIter];
-            runSingleCase();
-            reportSingleCase(caseIter);
-         }
-      } //if (isTraining)
-      else if (config.networkMode == RUN_SINGLE) {
-         reportSingleCase(config.runCaseNum);
-      }
-/**
- * Prints the time elapsed since the start of the program.
- */
-      printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
-   }
+   } //public static double runError(int caseNum)
 
 /**
  * Prints a report at the end of either training or running. For training, it prints the
  * reason for ending training, the number of iterations, the average error, and the truth
- * table with outputs.
+ * table with outputs. If the network is in the run all mode, it runs every truth table case
+ * and reports each case. If the network is in the run single mode, it just reports the specified
+ * case. It also prints the time elapsed since the start of the program.
+ */
+   public static void reportFull()
+   {
+      int caseIter;
+
+      System.out.println("-----------------------------------------------------------------------");
+
+      if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
+      {
+         if (config.networkMode == TRAINING)
+         {
+            if (trainIterations >= config.maxIters)
+            {
+               System.out.println("Ended training due to max iterations reached.");
+            }
+            else if (error < config.errThreshold)
+            {
+               System.out.println("Ended training due to reaching error threshold.");
+            }
+
+            System.out.println("Reached " + trainIterations + " iterations.");
+            System.out.println("Reached " + error + " average error.");
+         } //if (config.networkMode == TRAINING)
+
+         for (caseIter = 0; caseIter < config.numCases; caseIter++)
+         {
+            a = truthTableInputs[caseIter];
+            runSingleCase();
+            reportSingleCase(caseIter);
+         } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
+      } //if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
+      else if (config.networkMode == RUN_SINGLE)
+      {
+         reportSingleCase(config.runCaseNum);
+      }
+
+      printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
+   } //public static void reportFull()
+
+/**
+ * Prints a report for the given case number. If the network is in training mode, it prints the
+ * input case, the expected output, and the actual output. If the network is in run mode, it just
+ * prints the input case and the output. Does not run the network.
+ *
+ * @param num the case number to report
  */
    public static void reportSingleCase(int num)
    {
       if (config.networkMode == TRAINING)
       {
-         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) +
-               "     Expected: " + Arrays.toString(truthTableOutputs[num]) + "     " +
-               "Output: " + Arrays.toString(F));
-      } else {
+         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Expected: "
+               + Arrays.toString(truthTableOutputs[num]) + "     " + "Output: " +
+               Arrays.toString(F));
+      }
+      else
+      {
          System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     " +
                "Output: " + Arrays.toString(F));
       }
-   } //public static void report()
+   } //public static void reportSingleCase(int num)
 
 /**
- * Trains the network using a gradient descent algorithm. The method trains until the max
- * number of iterations has been reached or the average error is under the error threshold.
- * For each iteration, every test.txt case is run, the error is computed, and then the partial
- * derivatives are calculated. The lambda value is then multiplied by the partial derivatives
- * to compute the delta weights, which are applied for each test.txt case.
+ * Trains the network using a gradient descent algorithm with backpropagation. The method trains
+ * until the max number of iterations has been reached or the average error is under the error
+ * threshold. For each iteration, every truth table case is run, the error is computed, and then
+ * the delta weights are calculated and applied.
  */
    public static void train()
    {
@@ -530,11 +504,12 @@ public class Main
       System.out.println("Training...");
 
 /**
- * Each iteration is defined as each execution of the body of the while loop
+ * Each iteration is defined as each execution of the body of the while loop.
  */
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
-         if (trainIterations % config.keepAliveInterval == 0) {
+         if (trainIterations % config.keepAliveInterval == 0)
+         {
             System.out.println("Reached training iteration " + trainIterations + " with error " + error);
          }
 
@@ -559,19 +534,20 @@ public class Main
                {
                   deltaWkj = config.lambda * a[k] * psiJ;
                   kjWeights[k][j] += deltaWkj;
-               } //for (k = 0; k < numInAct; k++)
-            } //for (j = 0; j < numHidAct; j++)
+               }
+            } //for (j = 0; j < config.numHidAct; j++)
             error += runError(caseIter);
-         } //for (caseIter = 0; caseIter < numTrainingCases; caseIter++)
+         } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
+
          error /= (double) config.numCases;
          trainIterations++;
-      } //while (trainIterations < maxIters && avgError() > errThreshold)
+      } //while (trainIterations < config.maxIters && error > config.errThreshold)
    } //public static void train()
 
 /**
  * Accept a value representing seconds elapsed and print out a decimal value in easier to
  * digest units.
- * <p>
+ *
  * Author: Dr. Eric R. Nelson
  * This method was modified by Akul Goyal to remove magic numbers.
  */
@@ -609,25 +585,25 @@ public class Main
 
                   System.out.printf("%g weeks", weeks);
                }
-            } // if (hours < hrPerDay)...else
-         } // if (minutes < minPerHr)...else
-      } // else if (seconds < secPerMin)...else
+            } //if (hours < HR_PER_DAY)...else
+         } //if (minutes < MIN_PER_HR)...else
+      } //else if (seconds < SEC_PER_MIN)...else
 
       System.out.printf("\n\n");
-   } // public static void printTime(double seconds)
+   } //public static void printTime(double seconds)
 
 /**
  * Sets the configuration parameters, echos the network's settings, allocates memory for all
- * arrays and variables, populates all the arrays, either trains or runs the network depending
- * on the isTraining boolean. Then saves the weights to file depending on the saveWeights
- * boolean, and prints a final report.
+ * arrays and variables, populates all the arrays, loading the weights from file depending on
+ * the loadWeights boolean and loading the truth table from file. Either trains or runs the
+ * network depending on the network mode configuration. Then saves the weights to file depending
+ * on the saveWeights configuration, and prints a final report.
  *
  * @param args the command line arguments
  */
-   public static void main(String[] args) throws IOException
+   public static void main(String[] args)
    {
-      commandLineArgs = args;
-      setConfig();
+      setConfig(args);
       echoConfig();
       allocateMemory();
       populateArrays();
@@ -637,13 +613,13 @@ public class Main
          train();
          runAll();
       }
-      else if (config.networkMode == RUN_ALL){
+      else
+      {
          runAll();
-      } else {
-         runSingleCase();
       }
 
-      if (config.saveWeights) {
+      if (config.saveWeights)
+      {
          weightsFileIO.saveWeights(kjWeights, jiWeights);
       }
 

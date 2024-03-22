@@ -53,14 +53,14 @@ public class ConfigFileIO
    private int lnNumber;
    private Config config;
 
-   /**
-    * Constructor for the ConfigFileIO class. Creates a new Config object with the default parameter
-    * values.
-    *
-    * @param fileName              the name of the configuration file
-    * @param defaultWeightsFile    the default file to load/save the weights from/to
-    * @param defaultTruthTableFile the default file containing the truth table
-    */
+/**
+ * Constructor for the ConfigFileIO class. Creates a new Config object with the default parameter
+ * values.
+ *
+ * @param fileName              the name of the configuration file
+ * @param defaultWeightsFile    the default file to load/save the weights from/to
+ * @param defaultTruthTableFile the default file containing the truth table
+ */
    public ConfigFileIO(String fileName, String defaultWeightsFile, String defaultTruthTableFile)
    {
       this.fileName = fileName;
@@ -68,15 +68,15 @@ public class ConfigFileIO
       config = new Config(defaultWeightsFile, defaultTruthTableFile);
    }
 
-   /**
-    * Constructor for the ConfigFileIO class. Creates a config object with the given parameter
-    * values.
-    *
-    * @param fileName              the name of the configuration file
-    * @param config                the Config object to use
-    * @param defaultWeightsFile    the default file to load/save the weights from/to
-    * @param defaultTruthTableFile the default file containing the truth table
-    */
+/**
+ * Constructor for the ConfigFileIO class. Creates a config object with the given parameter
+ * values.
+ *
+ * @param fileName              the name of the configuration file
+ * @param config                the Config object to use
+ * @param defaultWeightsFile    the default file to load/save the weights from/to
+ * @param defaultTruthTableFile the default file containing the truth table
+ */
    public ConfigFileIO(String fileName, Config config, String defaultWeightsFile,
                        String defaultTruthTableFile)
    {
@@ -84,18 +84,18 @@ public class ConfigFileIO
       this.config = config;
    }
 
-   /**
-    * Loads the configuration from the file and returns a Config object with the parameters set.
-    * If the configuration file does not specify a parameter, the default value is used. This
-    * method will exit the program if it encounters an error in parsing the configuration file.
-    *
-    * @return a Config object with the parameters set from the configuration file
-    */
+/**
+ * Loads the configuration from the file and returns a Config object with the parameters set.
+ * If the configuration file does not specify a parameter, the default value is used. This
+ * method will exit the program if it encounters an error in parsing the configuration file.
+ *
+ * @return a Config object with the parameters set from the configuration file
+ */
    public Config loadConfig()
    {
       String[] read;
 
-      try
+      try //Create input stream for the file
       {
          in = new DataInputStream(new FileInputStream(fileName));
       }
@@ -221,7 +221,7 @@ public class ConfigFileIO
                                  "number of cases: " + config.numCases, fileName);
                         }
                         break;
-                     }
+                     } //try
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
@@ -239,14 +239,14 @@ public class ConfigFileIO
                      }
                   default:
                      Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
-               }
-            }
+               } //switch (read[0])
+            } //if (ln.contains(":"))
             else
             {
                System.out.println("File \"" + fileName + "\" - Ignoring garbage line: " + ln);
             }
-         }
-      }
+         } //if (!ln.trim().startsWith("#") && !ln.isBlank())
+      } //while (readLine())
 
       try
       {
@@ -258,26 +258,27 @@ public class ConfigFileIO
       }
 
       return config;
-   }
+   } //public Config loadConfig()
 
-   /**
-    * Reads a line from the input stream and increments the line number. If the line is null or
-    * is an EOF, the method returns false. Otherwise, it returns true.
-    *
-    * @return true if the end of the file has not been reached, false otherwise
-    */
+/**
+ * Reads a line from the input stream and increments the line number. If the line is null or
+ * is an EOF, the method returns false. Otherwise, it returns true.
+ *
+ * @return true if the end of the file has not been reached, false otherwise
+ */
    public boolean readLine()
    {
       try
       {
          ln = in.readLine();
          lnNumber++;
+
          if (ln == null || ln.toLowerCase().trim().equals("eof"))
          {
             return false;
          }
          return true;
-      }
+      } //try
       catch (EOFException e)
       {
          return false;
@@ -288,19 +289,21 @@ public class ConfigFileIO
       }
 
       return false;
-   }
+   } //public boolean readLine()
 
-   /**
-    * Parses the network configuration from the given string and sets the parameters in the
-    * Config object.
-    *
-    * @param ln the string containing the network configuration
-    */
+/**
+ * Parses the network configuration from the given string and sets the parameters in the
+ * Config object.
+ *
+ * @param ln the string containing the network configuration
+ */
    public void parseNetworkConfig(String ln)
    {
       String[] read;
+
       read = ln.split("-");
       config.numLayers = read.length;
+
       if (config.numLayers > 2)
       {
          config.numInAct = Util.toInt(read[0].trim());
@@ -316,13 +319,13 @@ public class ConfigFileIO
       {
          Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
       }
-   }
+   } //public void parseNetworkConfig(String ln)
 
-   /**
-    * Saves the configuration to the file in a format compatible with the loadConfig() method.
-    * This method will exit the program if it encounters an error in writing to the configuration
-    * file.
-    */
+/**
+ * Saves the configuration to the file in a format compatible with the loadConfig() method.
+ * This method will exit the program if it encounters an error in writing to the configuration
+ * file.
+ */
    public void saveConfig()
    {
       try
@@ -351,7 +354,7 @@ public class ConfigFileIO
          out.writeUTF(Util.newLine("Load weights: " + config.loadWeights));
          out.writeUTF(Util.newLine("Save weights: " + config.saveWeights));
          out.writeUTF(Util.newLine("Weights file: " + config.weightsFile));
-      }
+      } //try
       catch (IOException e)
       {
          Util.exit("Error saving config", fileName);
@@ -365,15 +368,15 @@ public class ConfigFileIO
       {
          Util.exit("Error closing output stream", fileName);
       }
-   }
+   } //public void saveConfig()
 
-   /**
-    * Formats the network configuration into a dash separated string.
-    *
-    * @return the formatted network configuration
-    */
+/**
+ * Formats the network configuration into a dash separated string.
+ *
+ * @return the formatted network configuration
+ */
    public String formatNetworkConfig()
    {
       return "Network configuration: " + config.numInAct + "-" + config.numHidAct + "-" + config.numOutAct;
    }
-}
+} //public class ConfigFileIO
