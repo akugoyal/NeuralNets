@@ -12,6 +12,9 @@ import java.io.*;
  */
 public class WeightsFileIO
 {
+   public static final int MK_LAYER = 0;
+   public static final int KJ_LAYER = 1;
+   public static final int JI_LAYER = 2;
    private int numInAct;
    private int numHid1Act;
    private int numHid2Act;
@@ -42,12 +45,10 @@ public class WeightsFileIO
 /**
  * Method to save the weights to the binary file in a format that is compatible with the
  * loadWeights method.
- *
- * @param kjWeights the weights from input to hidden layer
- * @param jiWeights the weights from hidden to output layer
  */
-   public void saveWeights(double[][] mkWeights, double[][] kjWeights, double[][] jiWeights)
+   public void saveWeights(double[][][] w)
    {
+      int n;
       int m;
       int k;
       int j;
@@ -74,13 +75,14 @@ public class WeightsFileIO
          Util.exit("Error writing network configuration", fileName);
       }
 
+      n = MK_LAYER;
       for (m = 0; m < numInAct; m++)
       {
          for (k = 0; k < numHid1Act; k++)
          {
             try
             {
-               out.writeDouble(mkWeights[m][k]);
+               out.writeDouble(w[n][m][k]);
             }
             catch (IOException e)
             {
@@ -89,13 +91,14 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
+      n = KJ_LAYER;
       for (k = 0; k < numHid1Act; k++)
       {
          for (j = 0; j < numHid2Act; j++)
          {
             try
             {
-               out.writeDouble(kjWeights[k][j]);
+               out.writeDouble(w[n][k][j]);
             }
             catch (IOException e)
             {
@@ -104,13 +107,14 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
+      n = JI_LAYER;
       for (j = 0; j < numHid2Act; j++)
       {
          for (i = 0; i < numOutAct; i++)
          {
             try
             {
-               out.writeDouble(jiWeights[j][i]);
+               out.writeDouble(w[n][j][i]);
             }
             catch (IOException e)
             {
@@ -132,16 +136,14 @@ public class WeightsFileIO
 /**
  * Method to load the weights from the binary file. The weights are loaded into the provided
  * arrays.
- *
- * @param kjWeights the array to store the weights from input to hidden layer
- * @param jiWeights the array to store the weights from hidden to output layer
  */
-   public void loadWeights(double[][] mkWeights, double[][] kjWeights, double[][] jiWeights)
+   public void loadWeights(double[][][] w)
    {
       int inActsRead;
       int hid1ActsRead;
       int hid2ActsRead;
       int outActsRead;
+      int n;
       int m;
       int k;
       int j;
@@ -172,13 +174,14 @@ public class WeightsFileIO
          Util.exit("Error reading config", fileName);
       }
 
+      n = MK_LAYER;
       for (m = 0; m < numInAct; m++)
       {
          for (k = 0; k < numHid1Act; k++)
          {
             try
             {
-               mkWeights[m][k] = in.readDouble();
+               w[n][m][k] = in.readDouble();
             }
             catch (IOException e)
             {
@@ -187,13 +190,14 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
+      n = KJ_LAYER;
       for (k = 0; k < numHid1Act; k++)
       {
          for (j = 0; j < numHid2Act; j++)
          {
             try
             {
-               kjWeights[k][j] = in.readDouble();
+               w[n][k][j] = in.readDouble();
             }
             catch (IOException e)
             {
@@ -202,13 +206,14 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
+      n = JI_LAYER;
       for (j = 0; j < numHid2Act; j++)
       {
          for (i = 0; i < numOutAct; i++)
          {
             try
             {
-               jiWeights[j][i] = in.readDouble();
+               w[n][j][i] = in.readDouble();
             }
             catch (IOException e)
             {

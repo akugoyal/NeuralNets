@@ -39,6 +39,10 @@ import java.util.Arrays;
 
 public class Main
 {
+   public static final int INPUT_LAYER = 0;
+   public static final int HIDDEN_LAYER1 = 1;
+   public static final int HIDDEN_LAYER2 = 2;
+   public static final int OUTPUT_LAYER = 3;
 /**
  * Variables for reading and writing the configuration, weights, and truth table files.
  */
@@ -70,13 +74,9 @@ public class Main
 /**
  * Variables used during both running and training modes
  */
-   public static double[] a;                             //Array of input activation nodes
-   public static double[] h1;                             //Array of hidden1 activation nodes
-   public static double[] h2;                             //Array of hidden2 activation nodes
-   public static double[] F;                             //Output activation nodes
-   public static double[][] mkWeights;                   //Weights between input and hidden1 layer
-   public static double[][] kjWeights;                   //Weights between hidden1 and hidden2 layer
-   public static double[][] jiWeights;                   //Weights between hidden2 and output layer
+   public static int n;
+public static double[][] a;                              //Array of input activation nodes
+   public static double[][][] w;                         //Weights between input and hidden1 layer
    public static int trainIterations;                    //Number of iterations done during training
    public static double[][] truthTableInputs;
    public static double[][] truthTableOutputs;
@@ -202,13 +202,24 @@ public class Main
 /**
  * The following memory is always allocated.
  */
-      a = new double[config.numInAct];
-      h1 = new double[config.numHidAct1];
-      h2 = new double[config.numHidAct2];
-      F = new double[config.numOutAct];
-      mkWeights = new double[config.numInAct][config.numHidAct1];
-      kjWeights = new double[config.numHidAct1][config.numHidAct2];
-      jiWeights = new double[config.numHidAct2][config.numOutAct];
+      a = new double[config.numLayers][];
+      n = INPUT_LAYER;
+      a[n] = new double[config.numInAct];
+      n = HIDDEN_LAYER1;
+      a[n] = new double[config.numHidAct1];
+      n = HIDDEN_LAYER2;
+      a[n] = new double[config.numHidAct2];
+      n = OUTPUT_LAYER;
+      a[n] = new double[config.numOutAct];
+
+      w = new double[config.numLayers - 1][][];
+      n = INPUT_LAYER;
+      w[n] =  new double[config.numInAct][config.numHidAct1];
+      n = HIDDEN_LAYER1;
+      w[n] = new double[config.numHidAct1][config.numHidAct2];
+      n = HIDDEN_LAYER2;
+      w[n] = new double[config.numHidAct2][config.numOutAct];
+
       truthTableInputs = new double[config.numCases][config.numInAct];
    } //public static void allocateMemory()
 
@@ -233,13 +244,14 @@ public class Main
       if (config.networkMode != TRAINING)
       {
          truthTableFileIO.loadTruthTableInputs(truthTableInputs);
+         n = INPUT_LAYER;
          if (config.networkMode == RUN_ALL)
          {
-            a = truthTableInputs[0];
+            a[n] = truthTableInputs[0];
          }
          else
          {
-            a = truthTableInputs[config.runCaseNum];
+            a[n] = truthTableInputs[config.runCaseNum];
          }
       } //if (config.networkMode != TRAINING)
       else {
@@ -248,7 +260,7 @@ public class Main
 
       if (config.loadWeights)
       {
-         weightsFileIO.loadWeights(mkWeights, kjWeights, jiWeights);
+         weightsFileIO.loadWeights(w);
       } //if (config.loadWeights)
       else
       {
@@ -270,33 +282,36 @@ public class Main
 /**
  * Populates mkWeights with random weights
  */
+      n = INPUT_LAYER;
       for (m = 0; m < config.numInAct; m++)
       {
          for (k = 0; k < config.numHidAct1; k++)
          {
-            mkWeights[m][k] = randomize(config.lowRand, config.highRand);
+            w[n][m][k] = randomize(config.lowRand, config.highRand);
          } //for (j = 0; j < config.numHidAct; j++)
       } //for (k = 0; k < config.numInAct; k++)
 
 /**
  * Populates kjWeights with random weights
  */
+      n = HIDDEN_LAYER1;
       for (k = 0; k < config.numHidAct1; k++)
       {
          for (j = 0; j < config.numHidAct2; j++)
          {
-            kjWeights[k][j] = randomize(config.lowRand, config.highRand);
+            w[n][k][j] = randomize(config.lowRand, config.highRand);
          } //for (j = 0; j < config.numHidAct; j++)
       } //for (k = 0; k < config.numInAct; k++)
 
 /**
  * Populates jiWeights with random weights
  */
+      n = HIDDEN_LAYER2;
       for (j = 0; j < config.numHidAct2; j++)
       {
          for (i = 0; i < config.numOutAct; i++)
          {
-            jiWeights[j][i] = randomize(config.lowRand, config.highRand);
+            w[n][j][i] = randomize(config.lowRand, config.highRand);
          } //for (i = 0; i < config.numOutAct; i++)
       } //for (j = 0; j < config.numHidAct; j++)
    } //public static void randomizeWeights()
@@ -321,11 +336,13 @@ public class Main
       for (k = 0; k < config.numHidAct1; k++)
       {
          thetaAccumulator = 0.0;
+         n = INPUT_LAYER;
          for (m = 0; m < config.numInAct; m++)
          {
-            thetaAccumulator += a[m] * mkWeights[m][k];
+            thetaAccumulator += a[n][m] * w[n][m][k];
          }
-         h1[k] = activationFunction(thetaAccumulator);
+         n = HIDDEN_LAYER1;
+         a[n][k] = activationFunction(thetaAccumulator);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -334,11 +351,13 @@ public class Main
       for (j = 0; j < config.numHidAct2; j++)
       {
          thetaAccumulator = 0.0;
+         n = HIDDEN_LAYER1;
          for (k = 0; k < config.numHidAct1; k++)
          {
-            thetaAccumulator += h1[k] * kjWeights[k][j];
+            thetaAccumulator += a[n][k] * w[n][k][j];
          }
-         h2[j] = activationFunction(thetaAccumulator);
+         n = HIDDEN_LAYER2;
+         a[n][j] = activationFunction(thetaAccumulator);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -347,11 +366,20 @@ public class Main
       for (i = 0; i < config.numOutAct; i++)
       {
          thetaAccumulator = 0.0;
+         n = HIDDEN_LAYER2;
          for (j = 0; j < config.numHidAct2; j++)
          {
-            thetaAccumulator += h2[j] * jiWeights[j][i];
+            thetaAccumulator += a[n][j] * w[n][j][i];
          }
-         F[i] = activationFunction(thetaAccumulator);
+
+         n = OUTPUT_LAYER;
+//         System.out.println();
+//         for (int hi = 0; hi < 4; hi++) {
+//            System.out.println(a[hi].length);
+//         }
+//         System.out.println(n + " " + i + " " + config.numOutAct);
+//         System.out.println();
+         a[n][i] = activationFunction(thetaAccumulator);
       } //for (i = 0; i < config.numOutAct; i++)
    } //public static void runSingleCase()
 
@@ -368,13 +396,15 @@ public class Main
       {
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
-            a = truthTableInputs[caseIter];
+            n = INPUT_LAYER;
+            a[n] = truthTableInputs[caseIter];
             runSingleCase();
          }
       } //if (config.networkMode == RUN_ALL || config.networkMode == TRAINING)
       else
       {
-         a = truthTableInputs[config.runCaseNum];
+         n = INPUT_LAYER;
+         a[n] = truthTableInputs[config.runCaseNum];
          runSingleCase();
       }
    } //public static void runAll()
@@ -396,11 +426,13 @@ public class Main
       for (k = 0; k < config.numHidAct1; k++)
       {
          thetaK[k] = 0.0;
+         n = INPUT_LAYER;
          for (m = 0; m < config.numInAct; m++)
          {
-            thetaK[k] += a[m] * mkWeights[m][k];
+            thetaK[k] += a[n][m] * w[n][m][k];
          }
-         h1[k] = activationFunction(thetaK[k]);
+         n = HIDDEN_LAYER1;
+         a[n][k] = activationFunction(thetaK[k]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -409,11 +441,13 @@ public class Main
       for (j = 0; j < config.numHidAct2; j++)
       {
          thetaJ[j] = 0.0;
+         n = HIDDEN_LAYER1;
          for (k = 0; k < config.numHidAct1; k++)
          {
-            thetaJ[j] += h1[k] * kjWeights[k][j];
+            thetaJ[j] += a[n][k] * w[n][k][j];
          }
-         h2[j] = activationFunction(thetaJ[j]);
+         n = HIDDEN_LAYER2;
+         a[n][j] = activationFunction(thetaJ[j]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -423,14 +457,16 @@ public class Main
       for (i = 0; i < config.numOutAct; i++)
       {
          thetaI = 0.0;
+         n = HIDDEN_LAYER2;
          for (j = 0; j < config.numHidAct2; j++)
          {
-            thetaI += h2[j] * jiWeights[j][i];
+            thetaI += a[n][j] * w[n][j][i];
          }
-         F[i] = activationFunction(thetaI);
+         n = OUTPUT_LAYER;
+         a[n][i] = activationFunction(thetaI);
 
          Ti = truthTableOutputs[caseNum][i];
-         omegaI = Ti - F[i];
+         omegaI = Ti - a[n][i];
          psiI[i] = omegaI * activationFunctionPrime(thetaI);
       } //for (i = 0; i < config.numOutAct; i++)
    } //public static void runDuringTrain(int caseNum)
@@ -491,10 +527,11 @@ public class Main
       runSingleCase();
 
       avgErrorAccumulator = 0.0;
+      n = OUTPUT_LAYER;
       for (i = 0; i < config.numOutAct; i++)
       {
          Ti = truthTableOutputs[caseNum][i];
-         avgErrorAccumulator += (Ti - F[i]) * (Ti - F[i]);
+         avgErrorAccumulator += (Ti - a[n][i]) * (Ti - a[n][i]);
       }
 
       return 0.5 * avgErrorAccumulator;
@@ -532,7 +569,8 @@ public class Main
 
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
-            a = truthTableInputs[caseIter];
+            n = INPUT_LAYER;
+            a[n] = truthTableInputs[caseIter];
             runSingleCase();
             reportSingleCase(caseIter);
          } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
@@ -583,14 +621,24 @@ public class Main
    {
       if (config.networkMode == TRAINING)
       {
-         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Expected: " +
-               Arrays.toString(truthTableOutputs[num]) + "     Output: " + formatDoubleArray(F,
+         n = INPUT_LAYER;
+         System.out.print("Input Case #" + num + ": " + Arrays.toString(a[n]) + "     Expected:" +
+               " " +
+               Arrays.toString(truthTableOutputs[num]));
+
+         n = OUTPUT_LAYER;
+         System.out.println("     Output: " + formatDoubleArray(a[n],
                config.numOutAct, config.decimalPrecision));
       }
       else
       {
-         System.out.println("Input Case #" + num + ": " + Arrays.toString(a) + "     Output: " +
-               formatDoubleArray(F, config.numOutAct, config.decimalPrecision));
+         n = INPUT_LAYER;
+         System.out.print("Input Case #" + num + ": " + Arrays.toString(a[n]));
+
+         n = OUTPUT_LAYER;
+         System.out.println("     Output:" +
+            " " +
+               formatDoubleArray(a[n], config.numOutAct, config.decimalPrecision));
       }
    } //public static void reportSingleCase(int num)
 
@@ -629,17 +677,19 @@ public class Main
 
          for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
-            a = truthTableInputs[caseIter];
+            n = INPUT_LAYER;
+            a[n] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
 
+            n = HIDDEN_LAYER2;
             for (j = 0; j < config.numHidAct2; j++)
             {
                omegaJ = 0.0;
                for (i = 0; i < config.numOutAct; i++)
                {
-                  omegaJ += psiI[i] * jiWeights[j][i];
-                  deltaWji = config.lambda * h2[j] * psiI[i];
-                  jiWeights[j][i] += deltaWji;
+                  omegaJ += psiI[i] * w[n][j][i];
+                  deltaWji = config.lambda * a[n][j] * psiI[i];
+                  w[n][j][i] += deltaWji;
                }
 
                psiJ[j] = omegaJ * activationFunctionPrime(thetaJ[j]);
@@ -648,16 +698,18 @@ public class Main
             for (k = 0; k < config.numHidAct1; k++)
             {
                omegaK = 0.0;
+               n = HIDDEN_LAYER1;
                for (j = 0; j < config.numHidAct2; j++)
                {
-                  omegaK += psiJ[j] * kjWeights[k][j];
-                  kjWeights[k][j] += config.lambda * h1[k] * psiJ[j];
+                  omegaK += psiJ[j] * w[n][k][j];
+                  w[n][k][j] += config.lambda * a[n][k] * psiJ[j];
                }
 
+               n = INPUT_LAYER;
                psiK = omegaK * activationFunctionPrime(thetaK[k]);
                for (m = 0; m < config.numInAct; m++)
                {
-                  mkWeights[m][k] += config.lambda * a[m] * psiK;
+                  w[n][m][k] += config.lambda * a[n][m] * psiK;
                }
             } //for (j = 0; j < config.numHidAct; j++)
 
@@ -745,7 +797,7 @@ public class Main
 
       if (config.saveWeights)
       {
-         weightsFileIO.saveWeights(mkWeights, kjWeights, jiWeights);
+         weightsFileIO.saveWeights(w);
       }
 
       reportFull();
