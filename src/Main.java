@@ -74,8 +74,7 @@ public class Main
 /**
  * Variables used during both running and training modes
  */
-   public static int n;
-public static double[][] a;                              //Array of input activation nodes
+   public static double[][] a;                              //Array of input activation nodes
    public static double[][][] w;                         //Weights between input and hidden1 layer
    public static int trainIterations;                    //Number of iterations done during training
    public static double[][] truthTableInputs;
@@ -84,8 +83,7 @@ public static double[][] a;                              //Array of input activa
 /**
  * Variables used during training mode only
  */
-   public static double[] thetaJ;
-   public static double[] thetaK;
+   public static double[][] theta;
    public static double[] psiI;
    public static double[] psiJ;
    public static double error;
@@ -186,6 +184,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void allocateMemory()
    {
+      int n;
 /**
  * Allocates the following memory only if the network is in training mode.
  */
@@ -194,9 +193,13 @@ public static double[][] a;                              //Array of input activa
          psiI = new double[config.numOutAct];
          psiJ = new double[config.numHidAct2];
          error = Double.MAX_VALUE;
-         thetaJ = new double[config.numHidAct2];
-         thetaK = new double[config.numHidAct1];
          truthTableOutputs = new double[config.numCases][config.numOutAct];
+
+         theta = new double[config.numLayers][];
+         n = HIDDEN_LAYER1;
+         theta[n] = new double[config.numHidAct1];
+         n = HIDDEN_LAYER2;
+         theta[n] = new double[config.numHidAct2];
       } //if (config.networkMode == TRAINING)
 
 /**
@@ -241,6 +244,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void populateArrays()
    {
+      int n;
       if (config.networkMode != TRAINING)
       {
          truthTableFileIO.loadTruthTableInputs(truthTableInputs);
@@ -274,6 +278,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void randomizeWeights()
    {
+      int n;
       int m;
       int k;
       int j;
@@ -324,6 +329,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void runSingleCase()
    {
+      int n;
       int m;
       int k;
       int j;
@@ -390,6 +396,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void runAll()
    {
+      int n;
       int caseIter;
 
       if (config.networkMode == RUN_ALL || config.networkMode == TRAINING)
@@ -415,6 +422,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void runDuringTrain(int caseNum)
    {
+      int n;
       int m;
       int k;
       int j;
@@ -423,50 +431,47 @@ public static double[][] a;                              //Array of input activa
       double omegaI;
       double Ti;
 
+      n = INPUT_LAYER;
       for (k = 0; k < config.numHidAct1; k++)
       {
-         thetaK[k] = 0.0;
-         n = INPUT_LAYER;
+         theta[n + 1][k] = 0.0;
          for (m = 0; m < config.numInAct; m++)
          {
-            thetaK[k] += a[n][m] * w[n][m][k];
+            theta[n + 1][k] += a[n][m] * w[n][m][k];
          }
-         n = HIDDEN_LAYER1;
-         a[n][k] = activationFunction(thetaK[k]);
+         a[n + 1][k] = activationFunction(theta[n + 1][k]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
  * Computes and saves the theta values for the hidden layer.
  */
+      n = HIDDEN_LAYER1;
       for (j = 0; j < config.numHidAct2; j++)
       {
-         thetaJ[j] = 0.0;
-         n = HIDDEN_LAYER1;
+         theta[n + 1][j] = 0.0;
          for (k = 0; k < config.numHidAct1; k++)
          {
-            thetaJ[j] += a[n][k] * w[n][k][j];
+            theta[n + 1][j] += a[n][k] * w[n][k][j];
          }
-         n = HIDDEN_LAYER2;
-         a[n][j] = activationFunction(thetaJ[j]);
+         a[n + 1][j] = activationFunction(theta[n + 1][j]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
  * Computes the output layer and the psi values for the output layer. Does not save the theta
  * values.
  */
+      n = HIDDEN_LAYER2;
       for (i = 0; i < config.numOutAct; i++)
       {
          thetaI = 0.0;
-         n = HIDDEN_LAYER2;
          for (j = 0; j < config.numHidAct2; j++)
          {
             thetaI += a[n][j] * w[n][j][i];
          }
-         n = OUTPUT_LAYER;
-         a[n][i] = activationFunction(thetaI);
+         a[n + 1][i] = activationFunction(thetaI);
 
          Ti = truthTableOutputs[caseNum][i];
-         omegaI = Ti - a[n][i];
+         omegaI = Ti - a[n + 1][i];
          psiI[i] = omegaI * activationFunctionPrime(thetaI);
       } //for (i = 0; i < config.numOutAct; i++)
    } //public static void runDuringTrain(int caseNum)
@@ -520,6 +525,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static double runError(int caseNum)
    {
+      int n;
       int i;
       double avgErrorAccumulator;
       double Ti;
@@ -546,6 +552,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void reportFull()
    {
+      int n;
       int caseIter;
 
       System.out.println("----------------------------------------------------------------------------------------------------");
@@ -619,6 +626,7 @@ public static double[][] a;                              //Array of input activa
  */
    public static void reportSingleCase(int num)
    {
+      int n;
       if (config.networkMode == TRAINING)
       {
          n = INPUT_LAYER;
@@ -650,13 +658,12 @@ public static double[][] a;                              //Array of input activa
  */
    public static void train()
    {
+      int n;
       int m;
       int k;
       int j;
       int i;
       int caseIter;
-      double deltaWji;
-      double deltaWkj;
       double omegaJ;
       double omegaK;
       double psiK;
@@ -688,17 +695,17 @@ public static double[][] a;                              //Array of input activa
                for (i = 0; i < config.numOutAct; i++)
                {
                   omegaJ += psiI[i] * w[n][j][i];
-                  deltaWji = config.lambda * a[n][j] * psiI[i];
-                  w[n][j][i] += deltaWji;
+                  w[n][j][i] += config.lambda * a[n][j] * psiI[i];
                }
 
-               psiJ[j] = omegaJ * activationFunctionPrime(thetaJ[j]);
+               psiJ[j] = omegaJ * activationFunctionPrime(theta[n][j]);
             } //for (j = 0; j < config.numHidAct; j++)
+
 
             for (k = 0; k < config.numHidAct1; k++)
             {
-               omegaK = 0.0;
                n = HIDDEN_LAYER1;
+               omegaK = 0.0;
                for (j = 0; j < config.numHidAct2; j++)
                {
                   omegaK += psiJ[j] * w[n][k][j];
@@ -706,7 +713,7 @@ public static double[][] a;                              //Array of input activa
                }
 
                n = INPUT_LAYER;
-               psiK = omegaK * activationFunctionPrime(thetaK[k]);
+               psiK = omegaK * activationFunctionPrime(theta[n + 1][k]);
                for (m = 0; m < config.numInAct; m++)
                {
                   w[n][m][k] += config.lambda * a[n][m] * psiK;
