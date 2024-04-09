@@ -13,7 +13,8 @@ import java.io.*;
 public class WeightsFileIO
 {
    private int numInAct;
-   private int numHidAct;
+   private int numHid1Act;
+   private int numHid2Act;
    private int numOutAct;
    private DataOutputStream out;
    private DataInputStream in;
@@ -24,14 +25,16 @@ public class WeightsFileIO
  * the file name.
  *
  * @param numInAct  the expected number of input activations
- * @param numHidAct the expected number of hidden activations
+ * @param numHid1Act the expected number of hidden activations
  * @param numOutAct the expected number of output activations
  * @param fileName  the name of the file to read/write weights
  */
-   public WeightsFileIO(int numInAct, int numHidAct, int numOutAct, String fileName)
+   public WeightsFileIO(int numInAct, int numHid1Act, int numHid2Act, int numOutAct,
+                        String fileName)
    {
       this.numInAct = numInAct;
-      this.numHidAct = numHidAct;
+      this.numHid1Act = numHid1Act;
+      this.numHid2Act = numHid2Act;
       this.numOutAct = numOutAct;
       this.fileName = fileName;
    } //public WeightsFileIO(int numInAct, int numHidAct, int numOutAct, String fileName)
@@ -43,8 +46,9 @@ public class WeightsFileIO
  * @param kjWeights the weights from input to hidden layer
  * @param jiWeights the weights from hidden to output layer
  */
-   public void saveWeights(double[][] kjWeights, double[][] jiWeights)
+   public void saveWeights(double[][] mkWeights, double[][] kjWeights, double[][] jiWeights)
    {
+      int m;
       int k;
       int j;
       int i;
@@ -61,7 +65,8 @@ public class WeightsFileIO
       try
       {
          out.writeInt(numInAct);
-         out.writeInt(numHidAct);
+         out.writeInt(numHid1Act);
+         out.writeInt(numHid2Act);
          out.writeInt(numOutAct);
       }
       catch (IOException e)
@@ -69,9 +74,24 @@ public class WeightsFileIO
          Util.exit("Error writing network configuration", fileName);
       }
 
-      for (k = 0; k < numInAct; k++)
+      for (m = 0; m < numInAct; m++)
       {
-         for (j = 0; j < numHidAct; j++)
+         for (k = 0; k < numHid1Act; k++)
+         {
+            try
+            {
+               out.writeDouble(mkWeights[m][k]);
+            }
+            catch (IOException e)
+            {
+               Util.exit("Error writing mkWeights[" + m + "][" + k + "]", fileName);
+            }
+         } //for (j = 0; j < numHidAct; j++)
+      } //for (k = 0; k < numInAct; k++)
+
+      for (k = 0; k < numHid1Act; k++)
+      {
+         for (j = 0; j < numHid2Act; j++)
          {
             try
             {
@@ -84,7 +104,7 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      for (j = 0; j < numHidAct; j++)
+      for (j = 0; j < numHid2Act; j++)
       {
          for (i = 0; i < numOutAct; i++)
          {
@@ -116,11 +136,13 @@ public class WeightsFileIO
  * @param kjWeights the array to store the weights from input to hidden layer
  * @param jiWeights the array to store the weights from hidden to output layer
  */
-   public void loadWeights(double[][] kjWeights, double[][] jiWeights)
+   public void loadWeights(double[][] mkWeights, double[][] kjWeights, double[][] jiWeights)
    {
       int inActsRead;
-      int hidActsRead;
+      int hid1ActsRead;
+      int hid2ActsRead;
       int outActsRead;
+      int m;
       int k;
       int j;
       int i;
@@ -137,9 +159,10 @@ public class WeightsFileIO
       try
       {
          inActsRead = in.readInt();
-         hidActsRead = in.readInt();
+         hid1ActsRead = in.readInt();
+         hid2ActsRead = in.readInt();
          outActsRead = in.readInt();
-         if (inActsRead != numInAct || hidActsRead != numHidAct || outActsRead != numOutAct)
+         if (inActsRead != numInAct || hid1ActsRead != numHid1Act || hid2ActsRead != numHid2Act || outActsRead != numOutAct)
          {
             Util.exit("Network config doesn't match weights config from file", fileName);
          }
@@ -149,9 +172,24 @@ public class WeightsFileIO
          Util.exit("Error reading config", fileName);
       }
 
-      for (k = 0; k < numInAct; k++)
+      for (m = 0; m < numInAct; m++)
       {
-         for (j = 0; j < numHidAct; j++)
+         for (k = 0; k < numHid1Act; k++)
+         {
+            try
+            {
+               mkWeights[m][k] = in.readDouble();
+            }
+            catch (IOException e)
+            {
+               Util.exit("Error reading mkWeights[" + m + "][" + k + "]", fileName);
+            }
+         } //for (j = 0; j < numHidAct; j++)
+      } //for (k = 0; k < numInAct; k++)
+
+      for (k = 0; k < numHid1Act; k++)
+      {
+         for (j = 0; j < numHid2Act; j++)
          {
             try
             {
@@ -164,7 +202,7 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      for (j = 0; j < numHidAct; j++)
+      for (j = 0; j < numHid2Act; j++)
       {
          for (i = 0; i < numOutAct; i++)
          {
@@ -188,4 +226,4 @@ public class WeightsFileIO
          Util.exit("Error closing input stream", fileName);
       }
    } //public void loadWeights(double[][] kjWeights, double[][] jiWeights)
-}
+} //public class WeightsFileIO

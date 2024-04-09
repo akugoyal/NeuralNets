@@ -1,4 +1,4 @@
-Network configuration: 2-5-3
+Network configuration: 2-40-10-3
 Network Mode: 0
 Number of cases: 4
 Max training iterations: 1e5
@@ -10,7 +10,7 @@ Random range upper bound: 1.5
 Run case Number: 1
 Decimal Precision: 17
 
-Truth table file: (4)_2_3_AND_OR_XOR.txt
+Truth table file: (8)_3_3_AND_OR_XOR.txt
 Load weights: false
 Save weights: false
-Weights file: weights_2_30_3.bin
+Weights file: weights_2_5_100_3.bin

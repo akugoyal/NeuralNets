@@ -315,18 +315,19 @@ public class ConfigFileIO
       read = ln.split("-");
       config.numLayers = read.length;
 
-      if (config.numLayers > 2)
+      if (config.numLayers > 3)
       {
          config.numInAct = Util.toInt(read[0].trim());
-         config.numHidAct = Util.toInt(read[1].trim());
-         config.numOutAct = Util.toInt(read[2].trim());
+         config.numHidAct1 = Util.toInt(read[1].trim());
+         config.numHidAct2 = Util.toInt(read[2].trim());
+         config.numOutAct = Util.toInt(read[3].trim());
       }
       else
       {
          Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
       }
 
-      if (config.numInAct == 0 || config.numHidAct == 0 || config.numOutAct == 0)
+      if (config.numInAct == 0 || config.numHidAct1 == 0 || config.numHidAct2 == 0 || config.numOutAct == 0)
       {
          Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
       }
@@ -388,6 +389,6 @@ public class ConfigFileIO
  */
    public String formatNetworkConfig()
    {
-      return "Network configuration: " + config.numInAct + "-" + config.numHidAct + "-" + config.numOutAct;
+      return "Network configuration: " + config.numInAct + "-" + config.numHidAct1 + "-" + config.numHidAct2 + "-" + config.numOutAct;
    }
 } //public class ConfigFileIO

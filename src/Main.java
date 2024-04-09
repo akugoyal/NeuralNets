@@ -1,7 +1,8 @@
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
- * This class is an A-B-C feedforward neural network. The network is fully connected and supports
+ * This class is an A-B-C-D feedforward neural network. The network is fully connected and supports
  * a sigmoid activation function. The network can be run in training, run-all, or run single mode.
  * In training mode, the network uses a gradient descent algorithm with backpropagation to
  * calculate the delta weights, until either the maximum number of iterations is reached or the
@@ -61,7 +62,6 @@ public class Main
    public static final double MIN_PER_HR = 60.0;           //Minutes per hour
    public static final double HR_PER_DAY = 24.0;           //Hours per day
    public static final double DAYS_PER_WK = 7.0;           //Days per week
-   public static ConfigFileIO configFileIO;
    public static WeightsFileIO weightsFileIO;
    public static TruthTableFileIO truthTableFileIO;
    public static Config config;
@@ -71,26 +71,23 @@ public class Main
  * Variables used during both running and training modes
  */
    public static double[] a;                             //Array of input activation nodes
-   public static double[] h;                             //Array of hidden activation nodes
+   public static double[] h1;                             //Array of hidden1 activation nodes
+   public static double[] h2;                             //Array of hidden2 activation nodes
    public static double[] F;                             //Output activation nodes
-   public static double[][] kjWeights;                   //Weights between input and hidden layer
-   public static double[][] jiWeights;                   //Weights between hidden and output layer
+   public static double[][] mkWeights;                   //Weights between input and hidden1 layer
+   public static double[][] kjWeights;                   //Weights between hidden1 and hidden2 layer
+   public static double[][] jiWeights;                   //Weights between hidden2 and output layer
    public static int trainIterations;                    //Number of iterations done during training
    public static double[][] truthTableInputs;
    public static double[][] truthTableOutputs;
 
 /**
- * Variables used to calculate the delta weights during training mode only
+ * Variables used during training mode only
  */
    public static double[] thetaJ;
-   public static double thetaI;
-   public static double omegaI;
-   public static double Ti;
+   public static double[] thetaK;
    public static double[] psiI;
-   public static double deltaWji;
-   public static double deltaWkj;
-   public static double omegaJ;
-   public static double psiJ;
+   public static double[] psiJ;
    public static double error;
 
 /**
@@ -101,6 +98,7 @@ public class Main
  */
    public static void setConfig(String[] args)
    {
+      ConfigFileIO configFileIO;
       String configFile = DEFAULT_CONFIG_FILE;
 
 /**
@@ -123,7 +121,8 @@ public class Main
             config.numCases, config.truthTableFile);
       if (config.loadWeights || config.saveWeights)
       {
-         weightsFileIO = new WeightsFileIO(config.numInAct, config.numHidAct, config.numOutAct,
+         weightsFileIO = new WeightsFileIO(config.numInAct, config.numHidAct1,
+               config.numHidAct2, config.numOutAct,
                config.weightsFile);
       }
    } //public static void setConfig(String[] args)
@@ -133,10 +132,13 @@ public class Main
  */
    public static void echoConfig()
    {
-      System.out.println("=======================================================================");
-      System.out.println("=======================================================================");
-      System.out.println("Network configuration: " + config.numInAct + "-" + config.numHidAct +
-            "-" + config.numOutAct);
+      System.out.println(
+            "\n" +
+                  "=========================================================================================================================");
+      System.out.println("=========================================================================================================================");
+      System.out.println("=========================================================================================================================");
+      System.out.println("Network configuration: " + config.numInAct + "-" + config.numHidAct1 +
+            "-" + config.numHidAct2 + "-" + config.numOutAct);
 
       if (config.networkMode == TRAINING)
       {
@@ -175,7 +177,7 @@ public class Main
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
 
-      System.out.println("-----------------------------------------------------------------------");
+      System.out.println("----------------------------------------------------------------------------------------------------");
    } //public static void echoConfig
 
 /**
@@ -190,20 +192,24 @@ public class Main
       if (config.networkMode == TRAINING)
       {
          psiI = new double[config.numOutAct];
+         psiJ = new double[config.numHidAct2];
          error = Double.MAX_VALUE;
-         thetaJ = new double[config.numHidAct];
+         thetaJ = new double[config.numHidAct2];
+         thetaK = new double[config.numHidAct1];
+         truthTableOutputs = new double[config.numCases][config.numOutAct];
       } //if (config.networkMode == TRAINING)
 
 /**
  * The following memory is always allocated.
  */
       a = new double[config.numInAct];
-      h = new double[config.numHidAct];
+      h1 = new double[config.numHidAct1];
+      h2 = new double[config.numHidAct2];
       F = new double[config.numOutAct];
-      kjWeights = new double[config.numInAct][config.numHidAct];
-      jiWeights = new double[config.numHidAct][config.numOutAct];
+      mkWeights = new double[config.numInAct][config.numHidAct1];
+      kjWeights = new double[config.numHidAct1][config.numHidAct2];
+      jiWeights = new double[config.numHidAct2][config.numOutAct];
       truthTableInputs = new double[config.numCases][config.numInAct];
-      truthTableOutputs = new double[config.numCases][config.numOutAct];
    } //public static void allocateMemory()
 
 /**
@@ -224,9 +230,9 @@ public class Main
  */
    public static void populateArrays()
    {
-      truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
       if (config.networkMode != TRAINING)
       {
+         truthTableFileIO.loadTruthTableInputs(truthTableInputs);
          if (config.networkMode == RUN_ALL)
          {
             a = truthTableInputs[0];
@@ -236,10 +242,13 @@ public class Main
             a = truthTableInputs[config.runCaseNum];
          }
       } //if (config.networkMode != TRAINING)
+      else {
+         truthTableFileIO.loadTruthTable(truthTableInputs, truthTableOutputs);
+      }
 
       if (config.loadWeights)
       {
-         weightsFileIO.loadWeights(kjWeights, jiWeights);
+         weightsFileIO.loadWeights(mkWeights, kjWeights, jiWeights);
       } //if (config.loadWeights)
       else
       {
@@ -253,16 +262,28 @@ public class Main
  */
    public static void randomizeWeights()
    {
+      int m;
       int k;
       int j;
       int i;
 
 /**
+ * Populates mkWeights with random weights
+ */
+      for (m = 0; m < config.numInAct; m++)
+      {
+         for (k = 0; k < config.numHidAct1; k++)
+         {
+            mkWeights[m][k] = randomize(config.lowRand, config.highRand);
+         } //for (j = 0; j < config.numHidAct; j++)
+      } //for (k = 0; k < config.numInAct; k++)
+
+/**
  * Populates kjWeights with random weights
  */
-      for (k = 0; k < config.numInAct; k++)
+      for (k = 0; k < config.numHidAct1; k++)
       {
-         for (j = 0; j < config.numHidAct; j++)
+         for (j = 0; j < config.numHidAct2; j++)
          {
             kjWeights[k][j] = randomize(config.lowRand, config.highRand);
          } //for (j = 0; j < config.numHidAct; j++)
@@ -271,7 +292,7 @@ public class Main
 /**
  * Populates jiWeights with random weights
  */
-      for (j = 0; j < config.numHidAct; j++)
+      for (j = 0; j < config.numHidAct2; j++)
       {
          for (i = 0; i < config.numOutAct; i++)
          {
@@ -288,22 +309,36 @@ public class Main
  */
    public static void runSingleCase()
    {
-      int j;
+      int m;
       int k;
+      int j;
       int i;
       double thetaAccumulator;
 
 /**
- * Computes the hidden layer.
+ * Computes the hidden1 layer.
  */
-      for (j = 0; j < config.numHidAct; j++)
+      for (k = 0; k < config.numHidAct1; k++)
       {
          thetaAccumulator = 0.0;
-         for (k = 0; k < config.numInAct; k++)
+         for (m = 0; m < config.numInAct; m++)
          {
-            thetaAccumulator += a[k] * kjWeights[k][j];
+            thetaAccumulator += a[m] * mkWeights[m][k];
          }
-         h[j] = activationFunction(thetaAccumulator);
+         h1[k] = activationFunction(thetaAccumulator);
+      } //for (j = 0; j < config.numHidAct; j++)
+
+/**
+ * Computes the hidden2 layer.
+ */
+      for (j = 0; j < config.numHidAct2; j++)
+      {
+         thetaAccumulator = 0.0;
+         for (k = 0; k < config.numHidAct1; k++)
+         {
+            thetaAccumulator += h1[k] * kjWeights[k][j];
+         }
+         h2[j] = activationFunction(thetaAccumulator);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -312,9 +347,9 @@ public class Main
       for (i = 0; i < config.numOutAct; i++)
       {
          thetaAccumulator = 0.0;
-         for (j = 0; j < config.numHidAct; j++)
+         for (j = 0; j < config.numHidAct2; j++)
          {
-            thetaAccumulator += h[j] * jiWeights[j][i];
+            thetaAccumulator += h2[j] * jiWeights[j][i];
          }
          F[i] = activationFunction(thetaAccumulator);
       } //for (i = 0; i < config.numOutAct; i++)
@@ -350,21 +385,35 @@ public class Main
  */
    public static void runDuringTrain(int caseNum)
    {
-      int j;
+      int m;
       int k;
+      int j;
       int i;
+      double thetaI;
+      double omegaI;
+      double Ti;
+
+      for (k = 0; k < config.numHidAct1; k++)
+      {
+         thetaK[k] = 0.0;
+         for (m = 0; m < config.numInAct; m++)
+         {
+            thetaK[k] += a[m] * mkWeights[m][k];
+         }
+         h1[k] = activationFunction(thetaK[k]);
+      } //for (j = 0; j < config.numHidAct; j++)
 
 /**
  * Computes and saves the theta values for the hidden layer.
  */
-      for (j = 0; j < config.numHidAct; j++)
+      for (j = 0; j < config.numHidAct2; j++)
       {
          thetaJ[j] = 0.0;
-         for (k = 0; k < config.numInAct; k++)
+         for (k = 0; k < config.numHidAct1; k++)
          {
-            thetaJ[j] += a[k] * kjWeights[k][j];
+            thetaJ[j] += h1[k] * kjWeights[k][j];
          }
-         h[j] = activationFunction(thetaJ[j]);
+         h2[j] = activationFunction(thetaJ[j]);
       } //for (j = 0; j < config.numHidAct; j++)
 
 /**
@@ -374,9 +423,9 @@ public class Main
       for (i = 0; i < config.numOutAct; i++)
       {
          thetaI = 0.0;
-         for (j = 0; j < config.numHidAct; j++)
+         for (j = 0; j < config.numHidAct2; j++)
          {
-            thetaI += h[j] * jiWeights[j][i];
+            thetaI += h2[j] * jiWeights[j][i];
          }
          F[i] = activationFunction(thetaI);
 
@@ -425,9 +474,10 @@ public class Main
    } //public static double activationFunctionPrime(double x)
 
 /**
- * Calculates the error for the given case number by first running the network on the given truth
- * table case. The error is half the sum of the squares of the differences between the expected
- * output and the actual output.
+ * Calculates the error for the given case number by first running the network on the current
+ * input activations and then comparing it to the expected values in the truth table for the
+ * given case number. The error is half the sum of the squares of the differences between the
+ * expected output and the actual output.
  *
  * @param caseNum the case number to calculate the error for
  * @return the average error
@@ -436,8 +486,8 @@ public class Main
    {
       int i;
       double avgErrorAccumulator;
+      double Ti;
 
-      a = truthTableInputs[caseNum];
       runSingleCase();
 
       avgErrorAccumulator = 0.0;
@@ -461,7 +511,7 @@ public class Main
    {
       int caseIter;
 
-      System.out.println("-----------------------------------------------------------------------");
+      System.out.println("----------------------------------------------------------------------------------------------------");
 
       if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
       {
@@ -552,10 +602,16 @@ public class Main
  */
    public static void train()
    {
-      int j;
+      int m;
       int k;
+      int j;
       int i;
       int caseIter;
+      double deltaWji;
+      double deltaWkj;
+      double omegaJ;
+      double omegaK;
+      double psiK;
 
       System.out.println("Training...");
 
@@ -576,24 +632,35 @@ public class Main
             a = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
 
-            for (j = 0; j < config.numHidAct; j++)
+            for (j = 0; j < config.numHidAct2; j++)
             {
                omegaJ = 0.0;
                for (i = 0; i < config.numOutAct; i++)
                {
                   omegaJ += psiI[i] * jiWeights[j][i];
-                  deltaWji = config.lambda * h[j] * psiI[i];
+                  deltaWji = config.lambda * h2[j] * psiI[i];
                   jiWeights[j][i] += deltaWji;
                }
 
-               psiJ = omegaJ * activationFunctionPrime(thetaJ[j]);
+               psiJ[j] = omegaJ * activationFunctionPrime(thetaJ[j]);
+            } //for (j = 0; j < config.numHidAct; j++)
 
-               for (k = 0; k < config.numInAct; k++)
+            for (k = 0; k < config.numHidAct1; k++)
+            {
+               omegaK = 0.0;
+               for (j = 0; j < config.numHidAct2; j++)
                {
-                  deltaWkj = config.lambda * a[k] * psiJ;
-                  kjWeights[k][j] += deltaWkj;
+                  omegaK += psiJ[j] * kjWeights[k][j];
+                  kjWeights[k][j] += config.lambda * h1[k] * psiJ[j];
+               }
+
+               psiK = omegaK * activationFunctionPrime(thetaK[k]);
+               for (m = 0; m < config.numInAct; m++)
+               {
+                  mkWeights[m][k] += config.lambda * a[m] * psiK;
                }
             } //for (j = 0; j < config.numHidAct; j++)
+
             error += runError(caseIter);
          } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
 
@@ -613,7 +680,7 @@ public class Main
    {
       double minutes, hours, days, weeks;
 
-      System.out.printf("Elapsed time: ");
+      System.out.print("Elapsed time: ");
 
       if (seconds < 1.)
          System.out.printf("%g milliseconds", seconds * MILLIS_PER_SEC);
@@ -647,7 +714,7 @@ public class Main
          } //if (minutes < MIN_PER_HR)...else
       } //else if (seconds < SEC_PER_MIN)...else
 
-      System.out.printf("\n\n");
+      System.out.print("\n\n");
    } //public static void printTime(double seconds)
 
 /**
@@ -678,7 +745,7 @@ public class Main
 
       if (config.saveWeights)
       {
-         weightsFileIO.saveWeights(kjWeights, jiWeights);
+         weightsFileIO.saveWeights(mkWeights, kjWeights, jiWeights);
       }
 
       reportFull();

@@ -1,5 +1,6 @@
 /**
- * This class represents the configuration of the neural network. It stores the following paramters:
+ * This class represents the configuration of the neural network. It stores the following
+ * parameters:
  *
  * numLayers:         the number of layers in the network. This defaults to 3.
  * numInAct:          the number of input activations. This defaults to 1.
@@ -36,7 +37,8 @@ public class Config
 {
    public int numLayers;
    public int numInAct;
-   public int numHidAct;
+   public int numHidAct1;
+   public int numHidAct2;
    public int numOutAct;
    public double lowRand;
    public double highRand;
@@ -63,7 +65,8 @@ public class Config
    {
       numLayers = 3;
       numInAct = 1;
-      numHidAct = 1;
+      numHidAct1 = 1;
+      numHidAct2 = 1;
       numOutAct = 1;
       lowRand = 0.0;
       highRand = 0.0;
