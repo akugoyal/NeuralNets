@@ -804,26 +804,33 @@ public class Main
  */
    public static void main(String[] args)
    {
-      setConfig(args);
-      echoConfig();
-      allocateMemory();
-      populateArrays();
-
-      if (config.networkMode == TRAINING)
+      try
       {
-         train();
-         runAll();
-      }
-      else
-      {
-         runAll();
-      }
+         setConfig(args);
+         echoConfig();
+         allocateMemory();
+         populateArrays();
 
-      if (config.saveWeights)
-      {
-         weightsFileIO.saveWeights(w);
-      }
+         if (config.networkMode == TRAINING)
+         {
+            train();
+            runAll();
+         }
+         else
+         {
+            runAll();
+         }
 
-      reportFull();
+         if (config.saveWeights)
+         {
+            weightsFileIO.saveWeights(w);
+         }
+
+         reportFull();
+      } //try
+      catch (IllegalArgumentException e)
+      {
+         System.out.println(e.getMessage());
+      }
    } //public static void main(String[] args)
 } //public class Main
