@@ -1,11 +1,15 @@
+import java.util.Arrays;
+
 /**
- * This class represents the configuration of the neural network. It stores the following
+ * This class represents the configuration of the A-B-C-D neural network. It stores the following
  * parameters:
  *
- * numLayers:         the number of layers in the network. This defaults to 3.
- * numInAct:          the number of input activations. This defaults to 1.
- * numHidAct:         the number of hidden activations. This defaults to 1.
- * numOutAct:         the number of output activations. This defaults to 1.
+ * INPUT_LAYER:       the index of the input layer in the network. This is always 0.
+ * HIDDEN_LAYER1:     the index of the first hidden layer in the network. This is always 1.
+ * HIDDEN_LAYER2:     the index of the second hidden layer in the network. This is always 2.
+ * OUTPUT_LAYER:      the index of the output layer in the network. This is always 3.
+ * numLayers:         the number of layers in the network. This is always 4.
+ * numActsInLayers:   the number of activations in each layer. This defaults to 1 for each layer.
  * lowRand:           the lower bound for the random number range, which may be used to randomize
  *                    the weights. This defaults to 0.0.
  * highRand:          the upper bound for the random number range, which may be used to randomize
@@ -13,20 +17,20 @@
  * loadWeights:       whether to load the weights from a file. This defaults to false.
  * saveWeights:       whether to save the weights to a file. This defaults to false.
  * weightsFile:       the file to load/save the weights from/to. This defaults to the value
- *                    passed in the constructor.
+ * passed in the constructor.
  * networkMode:       0 if the network is training, 1 if the network is running all cases in the
- *                    truth table, 2 if the network is running only one case in the truth table.
- *                    This defaults to 0.
+ * truth table, 2 if the network is running only one case in the truth table.
+ * This defaults to 0.
  * numCases:          the number of cases in the truth table. This defaults to 1.
  * maxIters:          the maximum number of iterations for training. This defaults to 0.
- * lambda:            the learning rate. This defaults to 0.0.
+ * Lambda:            the learning rate. This defaults to 0.0.
  * errThreshold:      the error threshold for training. This defaults to 0.0.
  * truthTableFile:    the file containing the truth table. This defaults to the value passed in the
- *                    constructor.
+ * constructor.
  * runCaseNum:        the case number to run in the truth table. Used when networkMode is 2. This
- *                    defaults to 0.
+ * defaults to 0.
  * keepAliveInterval: the interval to print status updates to the console during training. This
- *                    defaults to 0.
+ * defaults to 0.
  * decimalPrecision:  the number of decimal places to round the weights to
  *
  * Author: Akul Goyal
@@ -35,11 +39,12 @@
 
 public class Config
 {
-   public int numLayers;
-   public int numInAct;
-   public int numHidAct1;
-   public int numHidAct2;
-   public int numOutAct;
+   public static final int INPUT_LAYER = 0;
+   public static final int HIDDEN_LAYER1 = 1;
+   public static final int HIDDEN_LAYER2 = 2;
+   public static final int OUTPUT_LAYER = 3;
+   public static final int numLayers = 4;
+   public int[] numActsInLayers;
    public double lowRand;
    public double highRand;
    public boolean loadWeights;
@@ -55,19 +60,16 @@ public class Config
    public int keepAliveInterval;
    public int decimalPrecision;
 
-/**
- * Constructor for the Config class. Initializes the parameters to their default values.
- *
- * @param defaultWeightsFile    the default file to load/save the weights from/to
- * @param defaultTruthTableFile the default file containing the truth table
- */
+   /**
+    * Constructor for the Config class. Initializes the parameters to their default values.
+    *
+    * @param defaultWeightsFile    the default file to load/save the weights from/to
+    * @param defaultTruthTableFile the default file containing the truth table
+    */
    public Config(String defaultWeightsFile, String defaultTruthTableFile)
    {
-      numLayers = 3;
-      numInAct = 1;
-      numHidAct1 = 1;
-      numHidAct2 = 1;
-      numOutAct = 1;
+      numActsInLayers = new int[numLayers];
+      Arrays.fill(numActsInLayers, 1);
       lowRand = 0.0;
       highRand = 0.0;
       loadWeights = false;

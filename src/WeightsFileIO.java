@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Class to read and write weights to a file. Expects the weights file to be a binary file
@@ -12,13 +13,7 @@ import java.io.*;
  */
 public class WeightsFileIO
 {
-   public static final int MK_LAYER = 0;
-   public static final int KJ_LAYER = 1;
-   public static final int JI_LAYER = 2;
-   private int numInAct;
-   private int numHid1Act;
-   private int numHid2Act;
-   private int numOutAct;
+   private int[] numActsInLayers;
    private DataOutputStream out;
    private DataInputStream in;
    private String fileName;
@@ -27,18 +22,12 @@ public class WeightsFileIO
  * Constructor to initialize the expected number of input, hidden, and output activations and
  * the file name.
  *
- * @param numInAct  the expected number of input activations
- * @param numHid1Act the expected number of hidden activations
- * @param numOutAct the expected number of output activations
  * @param fileName  the name of the file to read/write weights
  */
-   public WeightsFileIO(int numInAct, int numHid1Act, int numHid2Act, int numOutAct,
+   public WeightsFileIO(int[] numActsInLayers,
                         String fileName)
    {
-      this.numInAct = numInAct;
-      this.numHid1Act = numHid1Act;
-      this.numHid2Act = numHid2Act;
-      this.numOutAct = numOutAct;
+      this.numActsInLayers = numActsInLayers;
       this.fileName = fileName;
    } //public WeightsFileIO(int numInAct, int numHidAct, int numOutAct, String fileName)
 
@@ -65,20 +54,24 @@ public class WeightsFileIO
 
       try
       {
-         out.writeInt(numInAct);
-         out.writeInt(numHid1Act);
-         out.writeInt(numHid2Act);
-         out.writeInt(numOutAct);
+         n = Config.INPUT_LAYER;
+         out.writeInt(numActsInLayers[n]);
+         n = Config.HIDDEN_LAYER1;
+         out.writeInt(numActsInLayers[n]);
+         n = Config.HIDDEN_LAYER2;
+         out.writeInt(numActsInLayers[n]);
+         n = Config.OUTPUT_LAYER;
+         out.writeInt(numActsInLayers[n]);
       }
       catch (IOException e)
       {
          Util.exit("Error writing network configuration", fileName);
       }
 
-      n = MK_LAYER;
-      for (m = 0; m < numInAct; m++)
+      n = Config.INPUT_LAYER;
+      for (m = 0; m < numActsInLayers[n]; m++)
       {
-         for (k = 0; k < numHid1Act; k++)
+         for (k = 0; k < numActsInLayers[n + 1]; k++)
          {
             try
             {
@@ -91,10 +84,10 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      n = KJ_LAYER;
-      for (k = 0; k < numHid1Act; k++)
+      n = Config.HIDDEN_LAYER1;
+      for (k = 0; k < numActsInLayers[n]; k++)
       {
-         for (j = 0; j < numHid2Act; j++)
+         for (j = 0; j < numActsInLayers[n + 1]; j++)
          {
             try
             {
@@ -107,10 +100,10 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      n = JI_LAYER;
-      for (j = 0; j < numHid2Act; j++)
+      n = Config.HIDDEN_LAYER2;
+      for (j = 0; j < numActsInLayers[n]; j++)
       {
-         for (i = 0; i < numOutAct; i++)
+         for (i = 0; i < numActsInLayers[n + 1]; i++)
          {
             try
             {
@@ -139,10 +132,7 @@ public class WeightsFileIO
  */
    public void loadWeights(double[][][] w)
    {
-      int inActsRead;
-      int hid1ActsRead;
-      int hid2ActsRead;
-      int outActsRead;
+      int[] layersRead;
       int n;
       int m;
       int k;
@@ -160,11 +150,8 @@ public class WeightsFileIO
 
       try
       {
-         inActsRead = in.readInt();
-         hid1ActsRead = in.readInt();
-         hid2ActsRead = in.readInt();
-         outActsRead = in.readInt();
-         if (inActsRead != numInAct || hid1ActsRead != numHid1Act || hid2ActsRead != numHid2Act || outActsRead != numOutAct)
+         layersRead = new int[] {in.readInt(), in.readInt(), in.readInt(), in.readInt()};
+         if (!Arrays.equals(layersRead, numActsInLayers))
          {
             Util.exit("Network config doesn't match weights config from file", fileName);
          }
@@ -174,10 +161,10 @@ public class WeightsFileIO
          Util.exit("Error reading config", fileName);
       }
 
-      n = MK_LAYER;
-      for (m = 0; m < numInAct; m++)
+      n = Config.INPUT_LAYER;
+      for (m = 0; m < numActsInLayers[n]; m++)
       {
-         for (k = 0; k < numHid1Act; k++)
+         for (k = 0; k < numActsInLayers[n + 1]; k++)
          {
             try
             {
@@ -190,10 +177,10 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      n = KJ_LAYER;
-      for (k = 0; k < numHid1Act; k++)
+      n = Config.HIDDEN_LAYER1;
+      for (k = 0; k < numActsInLayers[n]; k++)
       {
-         for (j = 0; j < numHid2Act; j++)
+         for (j = 0; j < numActsInLayers[n + 1]; j++)
          {
             try
             {
@@ -206,10 +193,10 @@ public class WeightsFileIO
          } //for (j = 0; j < numHidAct; j++)
       } //for (k = 0; k < numInAct; k++)
 
-      n = JI_LAYER;
-      for (j = 0; j < numHid2Act; j++)
+      n = Config.HIDDEN_LAYER2;
+      for (j = 0; j < numActsInLayers[n]; j++)
       {
-         for (i = 0; i < numOutAct; i++)
+         for (i = 0; i < numActsInLayers[n + 1]; i++)
          {
             try
             {

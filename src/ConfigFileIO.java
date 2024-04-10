@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Class to read and write configuration files for the neural network. The configuration file is
@@ -310,24 +311,29 @@ public class ConfigFileIO
  */
    public void parseNetworkConfig(String ln)
    {
+      int n;
       String[] read;
 
       read = ln.split("-");
-      config.numLayers = read.length;
+      config.numActsInLayers = new int[config.numLayers];
 
-      if (config.numLayers > 3)
+      if (read.length > 3)
       {
-         config.numInAct = Util.toInt(read[0].trim());
-         config.numHidAct1 = Util.toInt(read[1].trim());
-         config.numHidAct2 = Util.toInt(read[2].trim());
-         config.numOutAct = Util.toInt(read[3].trim());
+         n = Config.INPUT_LAYER;
+         config.numActsInLayers[n] = Util.toInt(read[n].trim());
+         n = Config.HIDDEN_LAYER1;
+         config.numActsInLayers[n] = Util.toInt(read[n].trim());
+         n = Config.HIDDEN_LAYER2;
+         config.numActsInLayers[n] = Util.toInt(read[n].trim());
+         n = Config.OUTPUT_LAYER;
+         config.numActsInLayers[n] = Util.toInt(read[n].trim());
       }
       else
       {
          Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
       }
 
-      if (config.numInAct == 0 || config.numHidAct1 == 0 || config.numHidAct2 == 0 || config.numOutAct == 0)
+      if (Arrays.asList(config.numActsInLayers).contains(0))
       {
          Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
       }
@@ -351,7 +357,8 @@ public class ConfigFileIO
 
       try
       {
-         out.writeUTF(Util.newLine(formatNetworkConfig()));
+         out.writeUTF(Util.newLine("Network configuration: " + Util.formatConfiguration(config.numActsInLayers,
+               config.numLayers)));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Network mode: " + config.networkMode));
          out.writeUTF(Util.newLine("Number of training cases: " + config.numCases));
@@ -381,14 +388,4 @@ public class ConfigFileIO
          Util.exit("Error closing output stream", fileName);
       }
    } //public void saveConfig()
-
-/**
- * Formats the network configuration into a dash separated string.
- *
- * @return the formatted network configuration
- */
-   public String formatNetworkConfig()
-   {
-      return "Network configuration: " + config.numInAct + "-" + config.numHidAct1 + "-" + config.numHidAct2 + "-" + config.numOutAct;
-   }
 } //public class ConfigFileIO

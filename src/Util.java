@@ -68,4 +68,16 @@ public abstract class Util
    {
       return s + "\n";
    }
+
+   public static String formatConfiguration(int[] config, int numLayers) {
+      int x;
+      StringBuilder res;
+      res = new StringBuilder();
+
+      for (x = 0; x < numLayers; x++) {
+         res.append(config[x]).append("-");
+      }
+
+      return res.substring(0, res.length() - 1);
+   }
 } //public abstract class Util
