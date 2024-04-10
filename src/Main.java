@@ -220,6 +220,7 @@ public class Main
          psi[n] = new double[config.numActsInLayers[n]];
 
          error = Double.MAX_VALUE;
+         trainIterations = 0;
 
          n = Config.OUTPUT_LAYER;
          truthTableOutputs = new double[config.numCases][config.numActsInLayers[n]];
@@ -628,7 +629,7 @@ public class Main
 
       res = new StringBuilder();
 
-      df = new DecimalFormat("#".repeat(precision) + "." + "#".repeat(precision));
+      df = new DecimalFormat("#".repeat(precision) + "." + "0".repeat(precision));
       df.setRoundingMode(java.math.RoundingMode.FLOOR);
 
       for (iter = 0; iter < len; iter++)
@@ -660,7 +661,7 @@ public class Main
 
       if (config.networkMode == TRAINING)
       {
-         System.out.println("     Expected: " + Arrays.toString(truthTableOutputs[num]));
+         System.out.print("     Expected: " + Arrays.toString(truthTableOutputs[num]));
       }
 
       n = Config.OUTPUT_LAYER;
