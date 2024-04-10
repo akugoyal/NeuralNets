@@ -5,6 +5,14 @@ import java.math.BigDecimal;
  * doubles. It also provides a method to exit the program with an error message and a method to
  * add a new line to the end of a string.
  *
+ * Table of Contents:
+ * 1. exit(String msg, String fileName)
+ * 2. toBoolean(String s)
+ * 3. toInt(String s)
+ * 4. toDouble(String s)
+ * 5. newLine(String s)
+ * 6. formatConfiguration(int[] config, int numLayers)
+ *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
  */
@@ -12,15 +20,14 @@ public abstract class Util
 {
 
 /**
- * Exits the program with an error message.
+ * Exits the program with an error message by throwing a new exception.
  *
  * @param msg      The error message.
  * @param fileName The name of the file that caused the error.
  */
    public static void exit(String msg, String fileName)
    {
-      System.out.println("File \"" + fileName + "\" - " + msg);
-      System.exit(1);
+      throw new IllegalArgumentException("File \"" + fileName + "\" - " + msg);
    }
 
 /**
@@ -69,15 +76,24 @@ public abstract class Util
       return s + "\n";
    }
 
-   public static String formatConfiguration(int[] config, int numLayers) {
+/**
+ * Formats the configuration of the neural network into dash-separated integers.
+ *
+ * @param config    The configuration of the neural network.
+ * @param numLayers The number of layers in the neural network.
+ * @return the formatted configuration.
+ */
+   public static String formatConfiguration(int[] config, int numLayers)
+   {
       int x;
       StringBuilder res;
       res = new StringBuilder();
 
-      for (x = 0; x < numLayers; x++) {
+      for (x = 0; x < numLayers; x++)
+      {
          res.append(config[x]).append("-");
       }
 
       return res.substring(0, res.length() - 1);
-   }
+   } //public static String formatConfiguration(int[] config, int numLayers)
 } //public abstract class Util

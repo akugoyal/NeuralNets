@@ -2,8 +2,8 @@ import java.io.*;
 import java.util.Arrays;
 
 /**
- * Class to read and write configuration files for the neural network. The configuration file is
- * a text file that contains the parameters for the neural network. The file is expected to
+ * This is a class to read and write configuration files for the neural network. The configuration
+ * file is a text file that contains the parameters for the neural network. The file is expected to
  * contain key:value pairs, with each pair on its own line. Keys are not case-sensitive, can be
  * padded with whitespaces, and can appear in any order. Blank lines between key:value pairs are
  * allowed. The accepted keys are:
@@ -28,8 +28,8 @@ import java.util.Arrays;
  * Weights File:              The file to load/save the weights from/to.
  * Decimal Precision:         The number of decimal places to round the weights to when saving.
  *
- *
- * An example configuration file may look like the following:
+ * Keys which do not match the above list will be ignored. Lines beginning with a '#' are treated
+ * as comments and are ignored. An example configuration file may look like the following:
  *
  * Network Configuration: 2-2-1
  * Network Mode: 0
@@ -46,6 +46,16 @@ import java.util.Arrays;
  * Run Case Number: 0
  * Keep Alive Interval: 100
  * Decimal Precision: 17
+ *
+ *
+ * Table of Contents:
+ * 1. ConfigFileIO(String fileName, String defaultWeightsFile, String defaultTruthTableFile)
+ * 2. ConfigFileIO(String fileName, Config config, String defaultWeightsFile,
+ *                String defaultTruthTableFile)
+ * 3. public Config loadConfig()
+ * 4. public boolean readLine()
+ * 5. public void parseNetworkConfig(String ln)
+ * 6. public void saveConfig()
  *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
@@ -92,8 +102,9 @@ public class ConfigFileIO
 
 /**
  * Loads the configuration from the file and returns a Config object with the parameters set.
- * If the configuration file does not specify a parameter, the default value is used. This
- * method will exit the program if it encounters an error in parsing the configuration file.
+ * If the configuration file does not specify a parameter, the default value specified in the
+ * Config class is used. This method will throw an exception if it encounters an error in parsing
+ * the configuration file.
  *
  * @return a Config object with the parameters set from the configuration file
  */
@@ -119,7 +130,8 @@ public class ConfigFileIO
                read = ln.split(":");
                if (read.length < 2)
                {
-                  Util.exit("Missing key or value in config file. Line: \n\t" + ln, fileName);
+                  Util.exit("Missing key or value in config file. Line " + lnNumber +
+                        ": \n\t" + ln, fileName);
                }
                read[0] = read[0].trim().toLowerCase();
                read[1] = read[1].trim();
@@ -146,13 +158,15 @@ public class ConfigFileIO
                         config.numCases = Util.toInt(read[1]);
                         if (config.numCases == 0)
                         {
-                           Util.exit("Invalid: \"Number of Cases\" parameter is 0." + ln, fileName);
+                           Util.exit("Invalid: \"Number of Cases\" parameter is 0. Read - "
+                                       + ln, fileName);
                         }
                         break;
-                     }
+                     } //try
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted integer for Number of Training Cases: " + read[1], fileName);
+                        Util.exit("Poorly formatted integer for Number of Training Cases: "
+                              + read[1], fileName);
                      }
                   case "max training iterations":
                      try
@@ -162,8 +176,8 @@ public class ConfigFileIO
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted integer for Max Training Iterations: " + read[1],
-                              fileName);
+                        Util.exit("Poorly formatted integer for Max Training Iterations: "
+                                    + read[1], fileName);
                      }
                   case "lambda":
                      try
@@ -183,7 +197,8 @@ public class ConfigFileIO
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted double for error threshold: " + read[1], fileName);
+                        Util.exit("Poorly formatted double for error threshold: "
+                              + read[1], fileName);
                      }
                   case "random range lower bound":
                      try
@@ -193,7 +208,8 @@ public class ConfigFileIO
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted double for random number range lower bound: " + read[1], fileName);
+                        Util.exit("Poorly formatted double for random number range lower" +
+                              " bound: " + read[1], fileName);
                      }
                   case "random range upper bound":
                      try
@@ -203,7 +219,8 @@ public class ConfigFileIO
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted double for random number range upper bound: " + read[1], fileName);
+                        Util.exit("Poorly formatted double for random number range upper" +
+                              " bound: " + read[1], fileName);
                      }
                   case "truth table file":
                      config.truthTableFile = read[1];
@@ -223,14 +240,15 @@ public class ConfigFileIO
                         config.runCaseNum = Util.toInt(read[1]);
                         if (config.runCaseNum > config.numCases)
                         {
-                           Util.exit("Case " + config.runCaseNum + " in config file exceeds total " +
-                                 "number of cases: " + config.numCases, fileName);
+                           Util.exit("Case " + config.runCaseNum + " in config file exceeds" +
+                                 " total number of cases: " + config.numCases, fileName);
                         }
                         break;
                      } //try
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted double for Run Case Number: " + read[1], fileName);
+                        Util.exit("Poorly formatted double for Run Case Number: "
+                              + read[1], fileName);
                      }
                   case "keep alive interval":
                      try
@@ -240,21 +258,23 @@ public class ConfigFileIO
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted integer for Keep Alive Interval: " + read[1],
-                              fileName);
+                        Util.exit("Poorly formatted integer for Keep Alive Interval:" +
+                                    " " + read[1], fileName);
                      }
                   case "decimal precision":
-                     try {
+                     try
+                     {
                         config.decimalPrecision = Util.toInt(read[1]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted integer for Decimal Precision: " + read[1],
-                              fileName);
+                        Util.exit("Poorly formatted integer for Decimal Precision: "
+                                    + read[1], fileName);
                      }
                   default:
-                     Util.exit("Invalid configuration parameter \"" + read[0] + "\"", fileName);
+                     Util.exit("Invalid configuration parameter \"" + read[0] + "\"",
+                           fileName);
                } //switch (read[0])
             } //if (ln.contains(":"))
             else
@@ -284,23 +304,26 @@ public class ConfigFileIO
  */
    public boolean readLine()
    {
+      boolean success;
+      success = false;
+
       try
       {
          ln = in.readLine();
          lnNumber++;
 
-         return ln != null && !ln.toLowerCase().trim().equals("eof");
+         success = ln != null && !ln.toLowerCase().trim().equals("eof");
       } //try
       catch (EOFException e)
       {
-         return false;
+         success = false;
       }
       catch (IOException e)
       {
          Util.exit("Error reading line " + lnNumber, fileName);
       }
 
-      return false;
+      return success;
    } //public boolean readLine()
 
 /**
@@ -327,7 +350,7 @@ public class ConfigFileIO
          config.numActsInLayers[n] = Util.toInt(read[n].trim());
          n = Config.OUTPUT_LAYER;
          config.numActsInLayers[n] = Util.toInt(read[n].trim());
-      }
+      } //if (read.length > 3)
       else
       {
          Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
@@ -357,8 +380,8 @@ public class ConfigFileIO
 
       try
       {
-         out.writeUTF(Util.newLine("Network configuration: " + Util.formatConfiguration(config.numActsInLayers,
-               config.numLayers)));
+         out.writeUTF(Util.newLine("Network configuration: " +
+               Util.formatConfiguration(config.numActsInLayers, config.numLayers)));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Network mode: " + config.networkMode));
          out.writeUTF(Util.newLine("Number of training cases: " + config.numCases));

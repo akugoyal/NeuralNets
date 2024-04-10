@@ -8,6 +8,11 @@ import java.util.Arrays;
  * The first three integers are the number of input, hidden, and output activations, respectively.
  * The remaining data are the kjWeights and the jiWeights weights written in row major order.
  *
+ * Table of Contents:
+ * 1. WeightsFileIO(int[] numActsInLayers, String fileName)
+ * 2. void saveWeights(double[][][] w)
+ * 3. void loadWeights(double[][][] w)
+ *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
  */
@@ -19,21 +24,22 @@ public class WeightsFileIO
    private String fileName;
 
 /**
- * Constructor to initialize the expected number of input, hidden, and output activations and
- * the file name.
+ * Constructor to initialize the expected number of activations in each layer and the file name.
  *
- * @param fileName  the name of the file to read/write weights
+ * @param numActsInLayers the number of activations in each layer
+ * @param fileName        the name of the file to read/write weights
  */
-   public WeightsFileIO(int[] numActsInLayers,
-                        String fileName)
+   public WeightsFileIO(int[] numActsInLayers, String fileName)
    {
       this.numActsInLayers = numActsInLayers;
       this.fileName = fileName;
-   } //public WeightsFileIO(int numInAct, int numHidAct, int numOutAct, String fileName)
+   } //public WeightsFileIO(int[] numActsInLayers, String fileName)
 
 /**
  * Method to save the weights to the binary file in a format that is compatible with the
  * loadWeights method.
+ *
+ * @param w the weights to save
  */
    public void saveWeights(double[][][] w)
    {
@@ -79,10 +85,10 @@ public class WeightsFileIO
             }
             catch (IOException e)
             {
-               Util.exit("Error writing mkWeights[" + m + "][" + k + "]", fileName);
+               Util.exit("Error writing weights[" + n + "][" + m + "][" + k + "]", fileName);
             }
-         } //for (j = 0; j < numHidAct; j++)
-      } //for (k = 0; k < numInAct; k++)
+         } //for (k = 0; k < numActsInLayers[n + 1]; k++)
+      } //for (m = 0; m < numActsInLayers[n]; m++)
 
       n = Config.HIDDEN_LAYER1;
       for (k = 0; k < numActsInLayers[n]; k++)
@@ -95,10 +101,10 @@ public class WeightsFileIO
             }
             catch (IOException e)
             {
-               Util.exit("Error writing kjWeights[" + k + "][" + j + "]", fileName);
+               Util.exit("Error writing weights[" + n + "][" + k + "][" + j + "]", fileName);
             }
-         } //for (j = 0; j < numHidAct; j++)
-      } //for (k = 0; k < numInAct; k++)
+         } //for (j = 0; j < numActsInLayers[n + 1]; j++)
+      } //for (k = 0; k < numActsInLayers[n]; k++)
 
       n = Config.HIDDEN_LAYER2;
       for (j = 0; j < numActsInLayers[n]; j++)
@@ -111,10 +117,10 @@ public class WeightsFileIO
             }
             catch (IOException e)
             {
-               Util.exit("Error writing jiWeights[" + j + "][" + i + "]", fileName);
+               Util.exit("Error writing weights[" + n + "][" + j + "][" + i + "]", fileName);
             }
-         } //for (i = 0; i < numOutAct; i++)
-      } //for (j = 0; j < numHidAct; j++)
+         } //for (i = 0; i < numActsInLayers[n + 1]; i++)
+      } //for (j = 0; j < numActsInLayers[n]; j++)
 
       try
       {
@@ -124,11 +130,13 @@ public class WeightsFileIO
       {
          Util.exit("Error closing output stream", fileName);
       }
-   } //public void saveWeights(double[][] kjWeights, double[][] jiWeights)
+   } //public void saveWeights(double[][][] w)
 
 /**
  * Method to load the weights from the binary file. The weights are loaded into the provided
- * arrays.
+ * array.
+ *
+ * @param w the array to load the weights into
  */
    public void loadWeights(double[][][] w)
    {
@@ -150,7 +158,7 @@ public class WeightsFileIO
 
       try
       {
-         layersRead = new int[] {in.readInt(), in.readInt(), in.readInt(), in.readInt()};
+         layersRead = new int[]{in.readInt(), in.readInt(), in.readInt(), in.readInt()};
          if (!Arrays.equals(layersRead, numActsInLayers))
          {
             Util.exit("Network config doesn't match weights config from file", fileName);
@@ -174,8 +182,8 @@ public class WeightsFileIO
             {
                Util.exit("Error reading mkWeights[" + m + "][" + k + "]", fileName);
             }
-         } //for (j = 0; j < numHidAct; j++)
-      } //for (k = 0; k < numInAct; k++)
+         } //for (k = 0; k < numActsInLayers[n + 1]; k++)
+      } //for (m = 0; m < numActsInLayers[n]; m++)
 
       n = Config.HIDDEN_LAYER1;
       for (k = 0; k < numActsInLayers[n]; k++)
@@ -190,8 +198,8 @@ public class WeightsFileIO
             {
                Util.exit("Error reading kjWeights[" + k + "][" + j + "]", fileName);
             }
-         } //for (j = 0; j < numHidAct; j++)
-      } //for (k = 0; k < numInAct; k++)
+         } //for (j = 0; j < numActsInLayers[n + 1]; j++)
+      } //for (k = 0; k < numActsInLayers[n]; k++)
 
       n = Config.HIDDEN_LAYER2;
       for (j = 0; j < numActsInLayers[n]; j++)
@@ -206,8 +214,8 @@ public class WeightsFileIO
             {
                Util.exit("Error reading jiWeights[" + j + "][" + i + "]", fileName);
             }
-         } //for (i = 0; i < numOutAct; i++)
-      } //for (j = 0; j < numHidAct; j++)
+         } //for (i = 0; i < numActsInLayers[n + 1]; i++)
+      } //for (j = 0; j < numActsInLayers[n]; j++)
 
       try
       {
@@ -217,5 +225,5 @@ public class WeightsFileIO
       {
          Util.exit("Error closing input stream", fileName);
       }
-   } //public void loadWeights(double[][] kjWeights, double[][] jiWeights)
+   } //public void loadWeights(double[][][] w)
 } //public class WeightsFileIO

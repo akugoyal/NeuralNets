@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
@@ -29,8 +30,29 @@ import java.util.Arrays;
  * Load Weights:              Whether to load the weights from a file.
  * Save Weights:              Whether to save the weights to a file.
  * Weights File:              The file to load/save the weights from/to.
+ * Decimal Precision:         The number of decimal places to print the output to.
  *
  * Missing parameters will be set to their default values.
+ *
+ * Table of Contents:
+ * 1. setConfig(String[] args)
+ * 2. echoConfig()
+ * 3. allocateMemory()
+ * 4. randomize(double low, double high)
+ * 5. populateArrays()
+ * 6. randomizeWeights()
+ * 7. runSingleCase()
+ * 8. runAll()
+ * 9. runDuringTrain(int caseNum)
+ * 10. sigmoid(double x)
+ * 11. sigmoidPrime(double x)
+ * 12. activationFunction(double x)
+ * 13. activationFunctionPrime(double x)
+ * 14. runError(int caseNum)
+ * 15. reportFull()
+ * 16. formatDoubleArray(double[] arr, int len, int precision)
+ * 17. printTime(double seconds)
+ * 18. main(String[] args)
  *
  * Author: Akul Goyal
  * Date of Creation: 01/30/2024
@@ -39,21 +61,21 @@ import java.util.Arrays;
 public class Main
 {
 /**
- * Variables for reading and writing the configuration, weights, and truth table files.
+ * Default files for reading and writing the configuration, weights, and truth table files.
  */
    public static final String DEFAULT_CONFIG_FILE = "config.txt";
    public static final String DEFAULT_WEIGHTS_FILE = "weights.bin";
    public static final String DEFAULT_TRUTH_TABLE_FILE = "truthTable.txt";
 
 /**
- * Variables for the network configuration
+ * Constants for the network mode
  */
    public static final int TRAINING = 0;
    public static final int RUN_ALL = 1;
    public static final int RUN_SINGLE = 2;
 
 /**
- * Variables for the printTime() method
+ * Constants and variables for tracking the time elapsed since the start of the program.
  */
    public static final double NANO_PER_SEC = 1.0e9;        //Nanoseconds per second
    public static final double MILLIS_PER_SEC = 1000.0;     //Milliseconds per second
@@ -61,26 +83,31 @@ public class Main
    public static final double MIN_PER_HR = 60.0;           //Minutes per hour
    public static final double HR_PER_DAY = 24.0;           //Hours per day
    public static final double DAYS_PER_WK = 7.0;           //Days per week
-   public static WeightsFileIO weightsFileIO;
-   public static TruthTableFileIO truthTableFileIO;
-   public static Config config;
    public static double initTime;                          //Time at the start of the program
 
 /**
- * Variables used during both running and training modes
+ * Variables for the IO objects for the configuration, weights, and truth table files.
  */
-   public static double[][] a;                              //Array of input activation nodes
-   public static double[][][] w;                         //Weights between input and hidden1 layer
-   public static int trainIterations;                    //Number of iterations done during training
-   public static double[][] truthTableInputs;
-   public static double[][] truthTableOutputs;
+   public static ConfigFileIO configFileIO;              //Object for reading/writing the config file
+   public static WeightsFileIO weightsFileIO;            //Object for reading/writing the weights file
+   public static TruthTableFileIO truthTableFileIO;      //Object for reading/writing the truth table file
+   public static Config config;                          //Network configuration object
+
+/**
+ * Basic variables for the fundamental network functionality. Used in all modes.
+ */
+   public static double[][] a;                          //Activation values for each node
+   public static double[][][] w;                        //Weights between each layer
+   public static double[][] truthTableInputs;           //Inputs for each case in the truth table
 
 /**
  * Variables used during training mode only
  */
-   public static double[][] theta;
-   public static double[][] psi;
-   public static double error;
+   public static int trainIterations;                   //Number of iterations done during training
+   public static double[][] truthTableOutputs;          //Expected outputs for each case in the truth table
+   public static double[][] theta;                      //Theta values for each node
+   public static double[][] psi;                        //Psi values for each node
+   public static double error;                          //Average error for the network
 
 /**
  * Loads the configuration from the file passed as the first command line argument. If no file is
@@ -90,7 +117,7 @@ public class Main
  */
    public static void setConfig(String[] args)
    {
-      ConfigFileIO configFileIO;
+
       String configFile = DEFAULT_CONFIG_FILE;
 
 /**
@@ -111,7 +138,7 @@ public class Main
 
       truthTableFileIO = new TruthTableFileIO(config.numActsInLayers[Config.INPUT_LAYER],
             config.numActsInLayers[Config.OUTPUT_LAYER],
-            config.numCases, config.truthTableFile);
+            config.numCases, config.networkMode, config.truthTableFile);
       if (config.loadWeights || config.saveWeights)
       {
          weightsFileIO = new WeightsFileIO(config.numActsInLayers, config.weightsFile);
@@ -123,12 +150,15 @@ public class Main
  */
    public static void echoConfig()
    {
-      System.out.println(
-            "\n" +
-                  "=========================================================================================================================");
-      System.out.println("=========================================================================================================================");
-      System.out.println("=========================================================================================================================");
-      System.out.println("Network configuration: " + Util.formatConfiguration(config.numActsInLayers, config.numLayers));
+      System.out.println("\n====================================================================" +
+            "=====================================================");
+      System.out.println("======================================================================" +
+            "===================================================");
+      System.out.println("======================================================================" +
+            "===================================================");
+
+      System.out.println("Network configuration: " + Util.formatConfiguration(
+            config.numActsInLayers, config.numLayers));
 
       if (config.networkMode == TRAINING)
       {
@@ -142,7 +172,6 @@ public class Main
       } //if (config.networkMode == TRAINING)
       else if (config.networkMode == RUN_ALL)
       {
-
          System.out.println("Network is in mode: " + config.networkMode + " (Run All)\n");
          System.out.println("Loading inputs from file: " + config.truthTableFile);
       }
@@ -156,7 +185,7 @@ public class Main
       if (config.loadWeights)
       {
          System.out.println("Loading weights from file: " + config.weightsFile);
-      } //if (config.loadWeights)
+      }
       else
       {
          System.out.println("Randomizing weights with range: " + config.lowRand + " to " +
@@ -168,8 +197,9 @@ public class Main
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
 
-      System.out.println("----------------------------------------------------------------------------------------------------");
-   } //public static void echoConfig
+      System.out.println("----------------------------------------------------------------------" +
+            "------------------------------");
+   } //public static void echoConfig()
 
 /**
  * Initializes the activation, weights, and truth table arrays. Allocates space on the heap for the
@@ -190,6 +220,7 @@ public class Main
          psi[n] = new double[config.numActsInLayers[n]];
 
          error = Double.MAX_VALUE;
+
          n = Config.OUTPUT_LAYER;
          truthTableOutputs = new double[config.numCases][config.numActsInLayers[n]];
 
@@ -292,8 +323,8 @@ public class Main
          for (k = 0; k < config.numActsInLayers[n + 1]; k++)
          {
             w[n][m][k] = randomize(config.lowRand, config.highRand);
-         } //for (j = 0; j < config.numHidAct; j++)
-      } //for (k = 0; k < config.numInAct; k++)
+         }
+      }
 
 /**
  * Populates kjWeights with random weights
@@ -304,8 +335,8 @@ public class Main
          for (j = 0; j < config.numActsInLayers[n + 1]; j++)
          {
             w[n][k][j] = randomize(config.lowRand, config.highRand);
-         } //for (j = 0; j < config.numHidAct; j++)
-      } //for (k = 0; k < config.numInAct; k++)
+         }
+      }
 
 /**
  * Populates jiWeights with random weights
@@ -316,8 +347,8 @@ public class Main
          for (i = 0; i < config.numActsInLayers[n + 1]; i++)
          {
             w[n][j][i] = randomize(config.lowRand, config.highRand);
-         } //for (i = 0; i < config.numOutAct; i++)
-      } //for (j = 0; j < config.numHidAct; j++)
+         }
+      }
    } //public static void randomizeWeights()
 
 /**
@@ -347,7 +378,7 @@ public class Main
             thetaAccumulator += a[n - 1][m] * w[n - 1][m][k];
          }
          a[n][k] = activationFunction(thetaAccumulator);
-      } //for (j = 0; j < config.numHidAct; j++)
+      } //for (k = 0; k < config.numActsInLayers[n]; k++)
 
 /**
  * Computes the hidden2 layer.
@@ -361,7 +392,7 @@ public class Main
             thetaAccumulator += a[n - 1][k] * w[n - 1][k][j];
          }
          a[n][j] = activationFunction(thetaAccumulator);
-      } //for (j = 0; j < config.numHidAct; j++)
+      } //for (j = 0; j < config.numActsInLayers[n]; j++)
 
 /**
  * Computes the output layer.
@@ -375,7 +406,7 @@ public class Main
             thetaAccumulator += a[n - 1][j] * w[n - 1][j][i];
          }
          a[n][i] = activationFunction(thetaAccumulator);
-      } //for (i = 0; i < config.numOutAct; i++)
+      } //for (i = 0; i < config.numActsInLayers[n]; i++)
    } //public static void runSingleCase()
 
 /**
@@ -429,7 +460,7 @@ public class Main
             theta[n][k] += a[n - 1][m] * w[n - 1][m][k];
          }
          a[n][k] = activationFunction(theta[n][k]);
-      } //for (j = 0; j < config.numHidAct; j++)
+      } //for (k = 0; k < config.numActsInLayers[n]; k++)
 
 /**
  * Computes and saves the theta values for the hidden layer.
@@ -443,7 +474,7 @@ public class Main
             theta[n][j] += a[n - 1][k] * w[n - 1][k][j];
          }
          a[n][j] = activationFunction(theta[n][j]);
-      } //for (j = 0; j < config.numHidAct; j++)
+      } //for (j = 0; j < config.numActsInLayers[n]; j++)
 
 /**
  * Computes the output layer and the psi values for the output layer. Does not save the theta
@@ -462,7 +493,7 @@ public class Main
          Ti = truthTableOutputs[caseNum][i];
          omegaI = Ti - a[n][i];
          psi[n][i] = omegaI * activationFunctionPrime(thetaI);
-      } //for (i = 0; i < config.numOutAct; i++)
+      } //for (i = 0; i < config.numActsInLayers[n]; i++)
    } //public static void runDuringTrain(int caseNum)
 
 /**
@@ -544,7 +575,8 @@ public class Main
       int n;
       int caseIter;
 
-      System.out.println("----------------------------------------------------------------------------------------------------");
+      System.out.println("----------------------------------------------------------------------" +
+            "------------------------------");
 
       if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
       {
@@ -582,6 +614,7 @@ public class Main
 /**
  * Formats the given double array into a string with all the doubles formatted to the given
  * precision.
+ *
  * @param arr the double array to format
  * @param len the length of the array
  * @param precision the number of decimal places to format the doubles to
@@ -591,11 +624,16 @@ public class Main
    {
       int iter;
       StringBuilder res;
+      DecimalFormat df;
 
       res = new StringBuilder();
+
+      df = new DecimalFormat("#".repeat(precision) + "." + "#".repeat(precision));
+      df.setRoundingMode(java.math.RoundingMode.FLOOR);
+
       for (iter = 0; iter < len; iter++)
       {
-         res.append(String.format("%." + precision + "f", arr[iter]));
+         res.append(df.format(arr[iter]));
          if (iter < len - 1)
          {
             res.append(", ");
@@ -608,8 +646,8 @@ public class Main
 
 /**
  * Prints a report for the given case number. If the network is in training mode, it prints the
- * input case, the expected output, and the actual output. If the network is in run mode, it just
- * prints the input case and the output. Does not run the network.
+ * input case, the expected output, and the actual output. Otherwise, it
+ * just prints the input case and the output. Does not run the network.
  *
  * @param num the case number to report
  */
@@ -618,25 +656,16 @@ public class Main
       int n;
 
       n = Config.INPUT_LAYER;
+      System.out.print("Input Case #" + num + ": " + Arrays.toString(a[n]));
+
       if (config.networkMode == TRAINING)
       {
-         System.out.print("Input Case #" + num + ": " + Arrays.toString(a[n]) + "     Expected:" +
-               " " +
-               Arrays.toString(truthTableOutputs[num]));
-
-         n = Config.OUTPUT_LAYER;
-         System.out.println("     Output: " + formatDoubleArray(a[n],
-               config.numActsInLayers[n], config.decimalPrecision));
+         System.out.println("     Expected: " + Arrays.toString(truthTableOutputs[num]));
       }
-      else
-      {
-         System.out.print("Input Case #" + num + ": " + Arrays.toString(a[n]));
 
-         n = Config.OUTPUT_LAYER;
-         System.out.println("     Output:" +
-            " " +
-               formatDoubleArray(a[n], config.numActsInLayers[n], config.decimalPrecision));
-      }
+      n = Config.OUTPUT_LAYER;
+      System.out.println("     Output: " + formatDoubleArray(a[n], config.numActsInLayers[n],
+            config.decimalPrecision));
    } //public static void reportSingleCase(int num)
 
 /**
@@ -660,7 +689,7 @@ public class Main
       System.out.println("Training...");
 
 /**
- * Each iteration is defined as each execution of the body of the while loop.
+ * Each iteration is defined as each execution of the body of the following while loop.
  */
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
@@ -688,7 +717,7 @@ public class Main
                }
 
                psi[n][j] = omegaJ * activationFunctionPrime(theta[n][j]);
-            } //for (j = 0; j < config.numHidAct; j++)
+            } //for (j = 0; j < config.numActsInLayers[n]; j++)
 
             n = Config.HIDDEN_LAYER1;
             for (k = 0; k < config.numActsInLayers[n]; k++)
@@ -705,7 +734,7 @@ public class Main
                {
                   w[n - 1][m][k] += config.lambda * a[n - 1][m] * psiK;
                }
-            } //for (j = 0; j < config.numHidAct; j++)
+            } //for (k = 0; k < config.numActsInLayers[n]; k++)
 
             error += runError(caseIter);
          } //for (caseIter = 0; caseIter < config.numCases; caseIter++)

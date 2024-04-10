@@ -17,21 +17,25 @@ import java.util.Arrays;
  * loadWeights:       whether to load the weights from a file. This defaults to false.
  * saveWeights:       whether to save the weights to a file. This defaults to false.
  * weightsFile:       the file to load/save the weights from/to. This defaults to the value
- * passed in the constructor.
+ *                    passed in the constructor.
  * networkMode:       0 if the network is training, 1 if the network is running all cases in the
- * truth table, 2 if the network is running only one case in the truth table.
- * This defaults to 0.
+ *                    truth table, 2 if the network is running only one case in the truth table.
+ *                    This defaults to 0.
  * numCases:          the number of cases in the truth table. This defaults to 1.
  * maxIters:          the maximum number of iterations for training. This defaults to 0.
- * Lambda:            the learning rate. This defaults to 0.0.
- * errThreshold:      the error threshold for training. This defaults to 0.0.
+ * lambda:            the learning rate. This defaults to 0.0.
+ * errThreshold:      the error threshold to end under for training. This defaults to 0.0.
  * truthTableFile:    the file containing the truth table. This defaults to the value passed in the
- * constructor.
- * runCaseNum:        the case number to run in the truth table. Used when networkMode is 2. This
- * defaults to 0.
+ *                    constructor.
+ * runCaseNum:        the case number to run in the truth table. Used only when networkMode is 2
+ *                    (Run single case). This defaults to 0.
  * keepAliveInterval: the interval to print status updates to the console during training. This
- * defaults to 0.
- * decimalPrecision:  the number of decimal places to round the weights to
+ *                    defaults to 0.
+ * decimalPrecision:  the number of decimal places to round the weights to. This defaults to 17.
+ *
+ *
+ * Table of Contents:
+ * 1. Config(String defaultWeightsFile, String defaultTruthTableFile)
  *
  * Author: Akul Goyal
  * Date of Creation: 03/19/2024
@@ -43,7 +47,7 @@ public class Config
    public static final int HIDDEN_LAYER1 = 1;
    public static final int HIDDEN_LAYER2 = 2;
    public static final int OUTPUT_LAYER = 3;
-   public static final int numLayers = 4;
+   public final int numLayers = 4;
    public int[] numActsInLayers;
    public double lowRand;
    public double highRand;
