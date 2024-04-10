@@ -5,7 +5,7 @@ Number of cases: 4
 Max training iterations: 1e5
 Lambda: 0.3
 Error threshold: 2e-4
-Keep Alive Interval: 1e4
+Keep Alive Interval: 1e6
 Random range lower bound: 0.1
 Random range upper bound: 1.5
 Run case Number: 1
