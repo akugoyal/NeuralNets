@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 /**
  * This class represents the configuration of the A-B-C-D neural network. It stores the following
  * parameters:
@@ -43,11 +41,11 @@ import java.util.Arrays;
 
 public class Config
 {
-   public static final int INPUT_LAYER = 0;
-   public static final int HIDDEN_LAYER1 = 1;
-   public static final int HIDDEN_LAYER2 = 2;
-   public static final int OUTPUT_LAYER = 3;
-   public final int numLayers = 4;
+   public int numLayers;
+   public int INPUT_LAYER = 0;
+   public int FIRST_HIDDEN_LAYER = 1;
+   public int OUTPUT_LAYER;
+   public int LAST_HIDDEN_LAYER;
    public int[] numActsInLayers;
    public double lowRand;
    public double highRand;
@@ -72,8 +70,7 @@ public class Config
     */
    public Config(String defaultWeightsFile, String defaultTruthTableFile)
    {
-      numActsInLayers = new int[numLayers];
-      Arrays.fill(numActsInLayers, 1);
+      numActsInLayers = new int[0];
       lowRand = 0.0;
       highRand = 0.0;
       loadWeights = false;

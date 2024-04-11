@@ -60,7 +60,7 @@ public abstract class Util
  * @return The double value of the string.
  * @throws NumberFormatException If the string is not a valid double.
  */
-   public static double toDouble(String s) throws NumberFormatException
+      public static double toDouble(String s) throws NumberFormatException
    {
       return new BigDecimal(s).doubleValue();
    }

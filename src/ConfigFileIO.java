@@ -338,28 +338,28 @@ public class ConfigFileIO
       String[] read;
 
       read = ln.split("-");
-      config.numActsInLayers = new int[config.numLayers];
+      config.numLayers = read.length;
 
-      if (read.length > 3)
+      if (config.numLayers < 3)
       {
-         n = Config.INPUT_LAYER;
-         config.numActsInLayers[n] = Util.toInt(read[n].trim());
-         n = Config.HIDDEN_LAYER1;
-         config.numActsInLayers[n] = Util.toInt(read[n].trim());
-         n = Config.HIDDEN_LAYER2;
-         config.numActsInLayers[n] = Util.toInt(read[n].trim());
-         n = Config.OUTPUT_LAYER;
-         config.numActsInLayers[n] = Util.toInt(read[n].trim());
-      } //if (read.length > 3)
+         Util.exit("Network requires a minimum of three activation layers", fileName);
+      }
       else
       {
-         Util.exit("Missing network configuration parameters. Parsed: " + ln, fileName);
-      }
+         config.OUTPUT_LAYER = config.numLayers - 1;
+         config.LAST_HIDDEN_LAYER = config.OUTPUT_LAYER - 1;
+         config.numActsInLayers = new int[config.numLayers];
 
-      if (Arrays.asList(config.numActsInLayers).contains(0))
-      {
-         Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
-      }
+         for (n = 0; n <= config.OUTPUT_LAYER; n++)
+         {
+            config.numActsInLayers[n] = Util.toInt(read[n].trim());
+
+            if (config.numActsInLayers[n] == 0)
+            {
+               Util.exit("Invalid network configuration parameters. Parsed: " + ln, fileName);
+            }
+         }
+      } //if (config.numLayers < 3)...else
    } //public void parseNetworkConfig(String ln)
 
 /**
