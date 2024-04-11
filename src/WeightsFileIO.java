@@ -84,8 +84,8 @@ public class WeightsFileIO
                {
                   Util.exit("Error writing weights[" + n + "][" + k + "][" + j + "]", fileName);
                }
-            } //for (k = 0; k < numActsInLayers[n + 1]; k++)
-         } //for (m = 0; m < numActsInLayers[n]; m++)
+            } //for (j = 0; j < numActsInLayers[n + 1]; j++)
+         } //for (k = 0; k < numActsInLayers[n]; k++)
       } //for (n = config.INPUT_LAYER; n <= config.LAST_HIDDEN_LAYER; n++)
 
       try
@@ -122,7 +122,11 @@ public class WeightsFileIO
 
       try
       {
-         layersRead = new int[]{in.readInt(), in.readInt(), in.readInt(), in.readInt()};
+         layersRead = new int[config.numActLayers];
+         for (n = config.INPUT_LAYER; n <= config.OUTPUT_LAYER; n++)
+         {
+            layersRead[n] = in.readInt();
+         }
          if (!Arrays.equals(layersRead, numActsInLayers))
          {
             Util.exit("Network config doesn't match weights config from file", fileName);
@@ -147,8 +151,8 @@ public class WeightsFileIO
                {
                   Util.exit("Error reading mkWeights[" + k + "][" + j + "]", fileName);
                }
-            } //for (k = 0; k < numActsInLayers[n + 1]; k++)
-         } //for (m = 0; m < numActsInLayers[n]; m++)
+            } //for (j = 0; j < numActsInLayers[n + 1]; j++)
+         } //for (k = 0; k < numActsInLayers[n]; k++)
       } //for (n = config.INPUT_LAYER; n <= config.LAST_HIDDEN_LAYER; n++)
 
       try

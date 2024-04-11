@@ -1,14 +1,13 @@
 import java.io.*;
-import java.util.Arrays;
 
 /**
- * This is a class to read and write configuration files for the neural network. The configuration
- * file is a text file that contains the parameters for the neural network. The file is expected to
- * contain key:value pairs, with each pair on its own line. Keys are not case-sensitive, can be
- * padded with whitespaces, and can appear in any order. Blank lines between key:value pairs are
- * allowed. The accepted keys are:
+ * This is a class to read and write configuration files for an N-layer neural network. The
+ * configuration file is a text file that contains the parameters for the neural network. The file
+ * is expected to contain key:value pairs, with each pair on its own line. Keys are not
+ * case-sensitive, can be padded with whitespaces, and can appear in any order. Blank lines between
+ * key:value pairs are allowed. The accepted keys are:
  *
- * Network Configuration:     The number of input, hidden, and output neurons in the network,
+ * Network Configuration:     The number of input, hidden, and output nodes in the network,
  *                            separated by dashes.
  * Network Mode:              The mode of the network. 0 for training, 1 for running the entire
  *                            truth table, 2 for running a single case.
@@ -338,17 +337,17 @@ public class ConfigFileIO
       String[] read;
 
       read = ln.split("-");
-      config.numLayers = read.length;
+      config.numActLayers = read.length;
 
-      if (config.numLayers < 3)
+      if (config.numActLayers < 3)
       {
          Util.exit("Network requires a minimum of three activation layers", fileName);
       }
       else
       {
-         config.OUTPUT_LAYER = config.numLayers - 1;
+         config.OUTPUT_LAYER = config.numActLayers - 1;
          config.LAST_HIDDEN_LAYER = config.OUTPUT_LAYER - 1;
-         config.numActsInLayers = new int[config.numLayers];
+         config.numActsInLayers = new int[config.numActLayers];
 
          for (n = 0; n <= config.OUTPUT_LAYER; n++)
          {
@@ -381,7 +380,7 @@ public class ConfigFileIO
       try
       {
          out.writeUTF(Util.newLine("Network configuration: " +
-               Util.formatConfiguration(config.numActsInLayers, config.numLayers)));
+               Util.formatConfiguration(config.numActsInLayers, config.numActLayers)));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Network mode: " + config.networkMode));
          out.writeUTF(Util.newLine("Number of training cases: " + config.numCases));

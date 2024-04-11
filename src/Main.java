@@ -2,37 +2,16 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
- * This class is an A-B-C-D feedforward neural network. The network is fully connected and supports
+ * This class is an N-layer feedforward neural network. The network is fully connected and supports
  * a sigmoid activation function. The network can be run in training, run-all, or run single mode.
  * In training mode, the network uses a gradient descent algorithm with backpropagation to
  * calculate the delta weights, until either the maximum number of iterations is reached or the
  * average error is under the error threshold. In run-all mode, the network runs each input in
- * the truth table through the network and prints the value of the output node(s).
+ * the truth table through the network and prints the value of the output node(s). In run single
+ * mode
  *
- * The network reads the configuration parameters from a file. The configuration file contains
- * the following parameters:
- *
- * Network Configuration:     The number of input, hidden, and output neurons in the network,
- *                            separated by dashes.
- * Network Mode:              The mode of the network. 0 for training, 1 for running the entire
- *                            truth table, 2 for running a single case.
- * Number of Cases:           The number of cases in the truth table.
- * Max Training Iterations:   The maximum number of iterations for training.
- * Lambda:                    The learning rate.
- * Error Threshold:           The error threshold for training.
- * Keep Alive Interval:       The interval to print status updates to the console during training.
- * Random Range Lower Bound:  The lower bound for the random number range, which may be used to
- *                            randomize the weights.
- * Random Range Upper Bound:  The upper bound for the random number range, which may be used to
- *                            randomize the weights.
- * Run Case Number:           The case number to run in the truth table. Used when networkMode is 2.
- * Truth Table File:          The file containing the truth table.
- * Load Weights:              Whether to load the weights from a file.
- * Save Weights:              Whether to save the weights to a file.
- * Weights File:              The file to load/save the weights from/to.
- * Decimal Precision:         The number of decimal places to print the output to.
- *
- * Missing parameters will be set to their default values.
+ * The network reads the configuration parameters from a file, using a ConfigFileIO object to
+ * read/write from/to the file and storing the network configuration in a Config object.
  *
  * Table of Contents:
  * 1. setConfig(String[] args)
@@ -75,7 +54,7 @@ public class Main
    public static final int RUN_SINGLE = 2;
 
 /**
- * Constants and variables for tracking the time elapsed since the start of the program.
+ * Constants and variables for tracking the elapsed time since the start of the program.
  */
    public static final double NANO_PER_SEC = 1.0e9;        //Nanoseconds per second
    public static final double MILLIS_PER_SEC = 1000.0;     //Milliseconds per second
@@ -139,6 +118,7 @@ public class Main
       truthTableFileIO = new TruthTableFileIO(config.numActsInLayers[config.INPUT_LAYER],
             config.numActsInLayers[config.OUTPUT_LAYER],
             config.numCases, config.networkMode, config.truthTableFile);
+
       if (config.loadWeights || config.saveWeights)
       {
          weightsFileIO = new WeightsFileIO(config.weightsFile, config);
@@ -158,7 +138,7 @@ public class Main
             "===================================================");
 
       System.out.println("Network configuration: " + Util.formatConfiguration(
-            config.numActsInLayers, config.numLayers));
+            config.numActsInLayers, config.numActLayers));
 
       if (config.networkMode == TRAINING)
       {
@@ -167,6 +147,7 @@ public class Main
          System.out.println("Max training iterations: " + config.maxIters);
          System.out.println("Lambda value: " + config.lambda);
          System.out.println("Error threshold: " + config.errThreshold);
+
          if (config.keepAliveInterval > 0)
          {
             System.out.println("Keep alive interval: " + config.keepAliveInterval + "\n");
@@ -175,6 +156,7 @@ public class Main
          {
             System.out.println("Keep alive interval: Disabled");
          }
+
          System.out.println("Loading truth table from file: " + config.truthTableFile);
       } //if (config.networkMode == TRAINING)
       else if (config.networkMode == RUN_ALL)
@@ -220,8 +202,8 @@ public class Main
  */
       if (config.networkMode == TRAINING)
       {
-         psi = new double[config.numLayers][];
-         for (n = config.OUTPUT_LAYER; n > config.FIRST_HIDDEN_LAYER; n--)
+         psi = new double[config.numActLayers][];
+         for (n = config.OUTPUT_LAYER; n > config.INPUT_LAYER; n--) //n > config.FIRST_HIDDEN_LAYER?
          {
             psi[n] = new double[config.numActsInLayers[n]];
          }
@@ -231,7 +213,7 @@ public class Main
 
          truthTableOutputs = new double[config.numCases][config.numActsInLayers[config.OUTPUT_LAYER]];
 
-         theta = new double[config.numLayers][];
+         theta = new double[config.numActLayers][];
          for (n = config.LAST_HIDDEN_LAYER; n >= config.FIRST_HIDDEN_LAYER; n--)
          {
             theta[n] = new double[config.numActsInLayers[n]];
@@ -241,13 +223,13 @@ public class Main
 /**
  * The following memory is always allocated.
  */
-      a = new double[config.numLayers][];
+      a = new double[config.numActLayers][];
       for (n = config.OUTPUT_LAYER; n >= config.INPUT_LAYER; n--)
       {
          a[n] = new double[config.numActsInLayers[n]];
       }
 
-      w = new double[config.numLayers - 1][][];
+      w = new double[config.numActLayers - 1][][];
       for (n = config.LAST_HIDDEN_LAYER; n >= config.INPUT_LAYER; n--)
       {
          w[n] = new double[config.numActsInLayers[n]][config.numActsInLayers[n + 1]];
@@ -312,7 +294,7 @@ public class Main
       int k;
       int j;
 
-      for (n = config.INPUT_LAYER; n <= config.LAST_HIDDEN_LAYER; n++)
+      for (n = config.LAST_HIDDEN_LAYER; n >= config.INPUT_LAYER; n--)
       {
          for (j = 0; j < config.numActsInLayers[n + 1]; j++)
          {
@@ -321,7 +303,7 @@ public class Main
                w[n][k][j] = randomize(config.lowRand, config.highRand);
             }
          }
-      } //for (n = config.INPUT_LAYER; n <= config.LAST_HIDDEN_LAYER; n++)
+      } //for (n = config.LAST_HIDDEN_LAYER; n >= config.INPUT_LAYER; n--)
    } //public static void randomizeWeights()
 
 /**
@@ -384,7 +366,6 @@ public class Main
       int n;
       int k;
       int j;
-      int i;
       double thetaI;
       double omegaI;
       double Ti;
@@ -399,23 +380,23 @@ public class Main
                theta[n][j] += a[n - 1][k] * w[n - 1][k][j];
             }
             a[n][j] = activationFunction(theta[n][j]);
-         } //for (k = 0; k < config.numActsInLayers[n]; k++)
+         } //for (j = 0; j < config.numActsInLayers[n]; j++)
       } //for (n = config.FIRST_HIDDEN_LAYER; n <= config.LAST_HIDDEN_LAYER; n++)
 
       n = config.OUTPUT_LAYER;
-      for (i = 0; i < config.numActsInLayers[n]; i++)
+      for (j = 0; j < config.numActsInLayers[n]; j++)
       {
          thetaI = 0.0;
-         for (j = 0; j < config.numActsInLayers[n - 1]; j++)
+         for (k = 0; k < config.numActsInLayers[n - 1]; k++)
          {
-            thetaI += a[n - 1][j] * w[n - 1][j][i];
+            thetaI += a[n - 1][k] * w[n - 1][k][j];
          }
-         a[n][i] = activationFunction(thetaI);
+         a[n][j] = activationFunction(thetaI);
 
-         Ti = truthTableOutputs[caseNum][i];
-         omegaI = Ti - a[n][i];
-         psi[n][i] = omegaI * activationFunctionPrime(thetaI);
-      } //for (i = 0; i < config.numActsInLayers[n]; i++)
+         Ti = truthTableOutputs[caseNum][j];
+         omegaI = Ti - a[n][j];
+         psi[n][j] = omegaI * activationFunctionPrime(thetaI);
+      } //for (j = 0; j < config.numActsInLayers[n]; j++)
    } //public static void runDuringTrain(int caseNum)
 
 /**
@@ -488,7 +469,7 @@ public class Main
 /**
  * Prints a report at the end of either training or running. For training, it prints the
  * reason for ending training, the number of iterations, the average error, and the truth
- * table with outputs. If the network is in the run all mode, it runs every truth table case
+ * table with outputs. If the network is in the run-all mode, it runs every truth table case
  * and reports each case. If the network is in the run single mode, it just reports the specified
  * case. It also prints the time elapsed since the start of the program.
  */
@@ -523,7 +504,7 @@ public class Main
             a[n] = truthTableInputs[caseIter];
             runSingleCase();
             reportSingleCase(caseIter);
-         } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
+         }
       } //if (config.networkMode == TRAINING || config.networkMode == RUN_ALL)
       else if (config.networkMode == RUN_SINGLE)
       {
@@ -599,11 +580,11 @@ public class Main
       int m;
       int k;
       int j;
-      int i;
+
       int caseIter;
       double omegaJ;
-      double omegaK;
-      double psiK;
+//      double omegaK;
+//      double psiK;
 
       System.out.println("Training...");
 
@@ -624,35 +605,35 @@ public class Main
             a[config.INPUT_LAYER] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
 
-            for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n--)
+            for (n = config.LAST_HIDDEN_LAYER; n > config.INPUT_LAYER; n--)
             {
-               for (j = 0; j < config.numActsInLayers[n]; j++)
+               for (k = 0; k < config.numActsInLayers[n]; k++)
                {
                   omegaJ = 0.0;
-                  for (i = 0; i < config.numActsInLayers[n + 1]; i++)
+                  for (j = 0; j < config.numActsInLayers[n + 1]; j++)
                   {
-                     omegaJ += psi[n + 1][i] * w[n][j][i];
-                     w[n][j][i] += config.lambda * a[n][j] * psi[n + 1][i];
+                     omegaJ += psi[n + 1][j] * w[n][k][j];
+                     w[n][k][j] += config.lambda * a[n][k] * psi[n + 1][j];
                   }
 
-                  psi[n][j] = omegaJ * activationFunctionPrime(theta[n][j]);
-               } //for (j = 0; j < config.numActsInLayers[n]; j++)
-            } //for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n++)
+                  psi[n][k] = omegaJ * activationFunctionPrime(theta[n][k]);
+               } //for (k = 0; k < config.numActsInLayers[n]; k++)
+            } //for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n++) -> ?
 
             n = config.FIRST_HIDDEN_LAYER;
             for (k = 0; k < config.numActsInLayers[n]; k++)
             {
-               omegaK = 0.0;
-               for (j = 0; j < config.numActsInLayers[n + 1]; j++)
-               {
-                  omegaK += psi[n + 1][j] * w[n][k][j];
-                  w[n][k][j] += config.lambda * a[n][k] * psi[n + 1][j];
-               }
-
-               psiK = omegaK * activationFunctionPrime(theta[n][k]);
+//               omegaK = 0.0;
+//               for (j = 0; j < config.numActsInLayers[n + 1]; j++)
+//               {
+//                  omegaK += psi[n + 1][j] * w[n][k][j];
+//                  w[n][k][j] += config.lambda * a[n][k] * psi[n + 1][j];
+//               }
+//
+//               psiK = omegaK * activationFunctionPrime(theta[n][k]);
                for (m = 0; m < config.numActsInLayers[n - 1]; m++)
                {
-                  w[n - 1][m][k] += config.lambda * a[n - 1][m] * psiK;
+                  w[n - 1][m][k] += config.lambda * a[n - 1][m] * psi[n][k];
                }
             } //for (k = 0; k < config.numActsInLayers[n]; k++)
 
@@ -716,7 +697,7 @@ public class Main
  * Sets the configuration parameters, echos the network's settings, allocates memory for all
  * arrays and variables, populates all the arrays, loading the weights from file depending on
  * the loadWeights boolean and loading the truth table from file. Either trains or runs the
- * network depending on the network mode configuration. Then saves the weights to file depending
+ * network depending on the network mode configuration. Then it saves the weights to file depending
  * on the saveWeights configuration, and prints a final report.
  *
  * @param args the command line arguments

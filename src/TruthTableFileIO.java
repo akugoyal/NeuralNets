@@ -63,7 +63,7 @@ public class TruthTableFileIO
       this.networkMode = networkMode;
       this.lnNumber = 0;
       this.numConfigParams = 3;  //Refers to the three integers representing the file configuration
-   } //public TruthTableFileIO(int numInputs, int numOutputs, int numCases, int networkMode, String fileName)
+   } //public TruthTableFileIO(int numInputs, int numOutputs, ...)
 
 /**
  * Loads the truth table inputs from a file and stores the input values in the provided
