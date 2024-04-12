@@ -582,8 +582,6 @@ public class Main
 
       int caseIter;
       double omegaJ;
-//      double omegaK;
-//      double psiK;
 
       System.out.println("Training...");
 
@@ -594,7 +592,9 @@ public class Main
       {
          if (config.keepAliveInterval > 0 && trainIterations % config.keepAliveInterval == 0)
          {
-            System.out.println("Reached training iteration " + trainIterations + " with error " + error);
+            System.out.print("Reached training iteration " + trainIterations + " with error " + error + " at time since start: ");
+            printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
+            System.out.println();
          }
 
          error = 0.0;
