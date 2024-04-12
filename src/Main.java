@@ -203,7 +203,7 @@ public class Main
       if (config.networkMode == TRAINING)
       {
          psi = new double[config.numActLayers][];
-         for (n = config.OUTPUT_LAYER; n > config.INPUT_LAYER; n--) //n > config.FIRST_HIDDEN_LAYER?
+         for (n = config.OUTPUT_LAYER; n > config.INPUT_LAYER; n--)
          {
             psi[n] = new double[config.numActsInLayers[n]];
          }
@@ -256,7 +256,6 @@ public class Main
  */
    public static void populateArrays()
    {
-      int n;
       if (config.networkMode != TRAINING)
       {
          truthTableFileIO.loadTruthTableInputs(truthTableInputs);
@@ -618,19 +617,11 @@ public class Main
 
                   psi[n][k] = omegaJ * activationFunctionPrime(theta[n][k]);
                } //for (k = 0; k < config.numActsInLayers[n]; k++)
-            } //for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n++) -> ?
+            } //for (n = config.LAST_HIDDEN_LAYER; n > config.INPUT_LAYER; n--)
 
             n = config.FIRST_HIDDEN_LAYER;
             for (k = 0; k < config.numActsInLayers[n]; k++)
             {
-//               omegaK = 0.0;
-//               for (j = 0; j < config.numActsInLayers[n + 1]; j++)
-//               {
-//                  omegaK += psi[n + 1][j] * w[n][k][j];
-//                  w[n][k][j] += config.lambda * a[n][k] * psi[n + 1][j];
-//               }
-//
-//               psiK = omegaK * activationFunctionPrime(theta[n][k]);
                for (m = 0; m < config.numActsInLayers[n - 1]; m++)
                {
                   w[n - 1][m][k] += config.lambda * a[n - 1][m] * psi[n][k];

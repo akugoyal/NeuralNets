@@ -14,5 +14,5 @@ Decimal Precision: 17
 # Truth table file: (4)_2_1_XOR.txt
  Truth table file: (4)_2_3_AND_OR_XOR.txt
 Load weights: false
-Save weights: false
-Weights file: weights_2_5_10_15_3.bin
+Save weights: true
+Weights file: weights_2_5_10_20_40_80_160_320_3.bin
