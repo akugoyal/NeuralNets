@@ -203,7 +203,7 @@ public class Main
       if (config.networkMode == TRAINING)
       {
          psi = new double[config.numActLayers][];
-         for (n = config.OUTPUT_LAYER; n > config.INPUT_LAYER; n--)
+         for (n = config.OUTPUT_LAYER; n > config.FIRST_HIDDEN_LAYER; n--)
          {
             psi[n] = new double[config.numActsInLayers[n]];
          }
@@ -511,6 +511,7 @@ public class Main
       }
 
       printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
+      System.out.println();
    } //public static void reportFull()
 
 /**
@@ -582,6 +583,8 @@ public class Main
 
       int caseIter;
       double omegaJ;
+      double omegaM;
+      double psiM;
 
       System.out.println("Training...");
 
@@ -592,9 +595,8 @@ public class Main
       {
          if (config.keepAliveInterval > 0 && trainIterations % config.keepAliveInterval == 0)
          {
-            System.out.print("Reached training iteration " + trainIterations + " with error " + error + " at time since start: ");
+            System.out.print("Reached training iteration " + trainIterations + " with error " + error + " at ");
             printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
-            System.out.println();
          }
 
          error = 0.0;
@@ -604,7 +606,7 @@ public class Main
             a[config.INPUT_LAYER] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
 
-            for (n = config.LAST_HIDDEN_LAYER; n > config.INPUT_LAYER; n--)
+            for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n--)
             {
                for (k = 0; k < config.numActsInLayers[n]; k++)
                {
@@ -617,14 +619,22 @@ public class Main
 
                   psi[n][k] = omegaJ * activationFunctionPrime(theta[n][k]);
                } //for (k = 0; k < config.numActsInLayers[n]; k++)
-            } //for (n = config.LAST_HIDDEN_LAYER; n > config.INPUT_LAYER; n--)
+            } //for (n = config.LAST_HIDDEN_LAYER; n > config.FIRST_HIDDEN_LAYER; n--)
 
             n = config.FIRST_HIDDEN_LAYER;
             for (k = 0; k < config.numActsInLayers[n]; k++)
             {
+               omegaM = 0.0;
+               for (j = 0; j < config.numActsInLayers[n + 1]; j++)
+               {
+                  omegaM += psi[n + 1][j] * w[n][k][j];
+                  w[n][k][j] += config.lambda * a[n][k] * psi[n + 1][j];
+               }
+
+               psiM = omegaM * activationFunctionPrime(theta[n][k]);
                for (m = 0; m < config.numActsInLayers[n - 1]; m++)
                {
-                  w[n - 1][m][k] += config.lambda * a[n - 1][m] * psi[n][k];
+                  w[n - 1][m][k] += config.lambda * a[n - 1][m] * psiM;
                }
             } //for (k = 0; k < config.numActsInLayers[n]; k++)
 
@@ -681,7 +691,7 @@ public class Main
          } //if (minutes < MIN_PER_HR)...else
       } //else if (seconds < SEC_PER_MIN)...else
 
-      System.out.print("\n\n");
+      System.out.print("\n");
    } //public static void printTime(double seconds)
 
 /**
