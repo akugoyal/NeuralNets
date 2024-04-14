@@ -28,7 +28,7 @@ import java.util.Arrays;
  * 12. runError(int caseNum)
  * 13. reportFull()
  * 14. formatDoubleArray(double[] arr, int len)
- * 15. printTime(double seconds)
+ * 15. formatTime(double seconds)
  * 16. main(String[] args)
  *
  * Author: Akul Goyal
@@ -662,8 +662,8 @@ public class Main
  * digest units.
  *
  * Author: Dr. Eric R. Nelson
- * This method was modified by Akul Goyal to remove magic numbers and return the formatted time
- * instead of printing it.
+ * This method was modified by Akul Goyal to remove magic numbers, return the formatted time
+ * instead of printing it, and follow the decimal formatting specified by the network configuration.
  */
    public static String formatTime(double seconds)
    {
