@@ -1,0 +1,2 @@
+find . -name "*.java" > javaFiles.txt
+javac @javaFiles.txt

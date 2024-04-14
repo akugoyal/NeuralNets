@@ -23,9 +23,17 @@ import java.io.*;
  * Run Case Number:           The case number to run in the truth table. Used when networkMode is 2.
  * Truth Table File:          The file containing the truth table.
  * Load Weights:              Whether to load the weights from a file.
- * Save Weights:              Whether to save the weights to a file.
  * Weights File:              The file to load/save the weights from/to.
  * Decimal Precision:         The number of decimal places to round the weights to when saving.
+ * Activation Function:       The activation function to use. Supports the linear, hyperbolic
+ *                            tangent, sigmoid, ReLU, leaky ReLU, randomized ReLU, and Gaussian
+ *                            functions. For the linear and leaky ReLU functions, additional
+ *                            arguments are required after the function name as comma separated
+ *                            values. For the linear function, the slope and y-intercept are
+ *                            required. For the leaky ReLU function, the slope is required.
+ * Save Weights Interval:     The interval at which to save weights to file during training. If
+ *                            this is greater than 0, weights will be saved at the end, regardless
+ *                            of network mode.
  *
  * Keys which do not match the above list will be ignored. Lines beginning with a '#' are treated
  * as comments and are ignored. An example configuration file may look like the following:
@@ -40,11 +48,12 @@ import java.io.*;
  * Random Range Upper Bound: 0.5
  * Truth Table File: truth_table.txt
  * Load Weights: false
- * Save Weights: false
  * Weights File: weights.txt
  * Run Case Number: 0
  * Keep Alive Interval: 100
  * Decimal Precision: 17
+ * Activation Function: Linear, 0.1, 0.5
+ * Save Weights Interval: 1e3
  *
  *
  * Table of Contents:
@@ -126,35 +135,37 @@ public class ConfigFileIO
          {
             if (ln.contains(":"))
             {
-               read = ln.split(":");
+               read = ln.split("[:,]");
                if (read.length < 2)
                {
                   Util.exit("Missing key or value in config file. Line " + lnNumber +
                         ": \n\t" + ln, fileName);
                }
-               read[0] = read[0].trim().toLowerCase();
-               read[1] = read[1].trim();
+               int KEY = 0;
+               read[KEY] = read[KEY].trim().toLowerCase();
+               int VALUE = 1;
+               read[VALUE] = read[VALUE].trim();
 
-               switch (read[0])
+               switch (read[KEY])
                {
                   case "network configuration":
-                     parseNetworkConfig(read[1]);
+                     parseNetworkConfig(read[VALUE]);
                      break;
                   case "network mode":
                      try
                      {
-                        config.networkMode = Util.toInt(read[1]);
+                        config.networkMode = Util.toInt(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted integer for Network Mode: " + read[1],
+                        Util.exit("Poorly formatted integer for Network Mode: " + read[VALUE],
                               fileName);
                      }
                   case "number of cases":
                      try
                      {
-                        config.numCases = Util.toInt(read[1]);
+                        config.numCases = Util.toInt(read[VALUE]);
                         if (config.numCases == 0)
                         {
                            Util.exit("Invalid: \"Number of Cases\" parameter is 0. Read - "
@@ -165,78 +176,75 @@ public class ConfigFileIO
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted integer for Number of Training Cases: "
-                              + read[1], fileName);
+                              + read[VALUE], fileName);
                      }
                   case "max training iterations":
                      try
                      {
-                        config.maxIters = Util.toInt(read[1]);
+                        config.maxIters = Util.toInt(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted integer for Max Training Iterations: "
-                                    + read[1], fileName);
+                                    + read[VALUE], fileName);
                      }
                   case "lambda":
                      try
                      {
-                        config.lambda = Util.toDouble(read[1]);
+                        config.lambda = Util.toDouble(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
-                        Util.exit("Poorly formatted double for lambda: " + read[1], fileName);
+                        Util.exit("Poorly formatted double for lambda: " + read[VALUE], fileName);
                      }
                   case "error threshold":
                      try
                      {
-                        config.errThreshold = Util.toDouble(read[1]);
+                        config.errThreshold = Util.toDouble(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted double for error threshold: "
-                              + read[1], fileName);
+                              + read[VALUE], fileName);
                      }
                   case "random range lower bound":
                      try
                      {
-                        config.lowRand = Util.toDouble(read[1]);
+                        config.lowRand = Util.toDouble(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted double for random number range lower" +
-                              " bound: " + read[1], fileName);
+                              " bound: " + read[VALUE], fileName);
                      }
                   case "random range upper bound":
                      try
                      {
-                        config.highRand = Util.toDouble(read[1]);
+                        config.highRand = Util.toDouble(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted double for random number range upper" +
-                              " bound: " + read[1], fileName);
+                              " bound: " + read[VALUE], fileName);
                      }
                   case "truth table file":
-                     config.truthTableFile = read[1];
+                     config.truthTableFile = read[VALUE];
                      break;
                   case "load weights":
-                     config.loadWeights = Util.toBoolean(read[1]);
-                     break;
-                  case "save weights":
-                     config.saveWeights = Util.toBoolean(read[1]);
+                     config.loadWeights = Util.toBoolean(read[VALUE]);
                      break;
                   case "weights file":
-                     config.weightsFile = read[1];
+                     config.weightsFile = read[VALUE];
                      break;
                   case "run case number":
                      try
                      {
-                        config.runCaseNum = Util.toInt(read[1]);
+                        config.runCaseNum = Util.toInt(read[VALUE]);
                         if (config.runCaseNum > config.numCases)
                         {
                            Util.exit("Case " + config.runCaseNum + " in config file exceeds" +
@@ -247,34 +255,133 @@ public class ConfigFileIO
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted double for Run Case Number: "
-                              + read[1], fileName);
+                              + read[VALUE], fileName);
                      }
                   case "keep alive interval":
                      try
                      {
-                        config.keepAliveInterval = Util.toInt(read[1]);
+                        config.keepAliveInterval = Util.toInt(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted integer for Keep Alive Interval:" +
-                                    " " + read[1], fileName);
+                                    " " + read[VALUE], fileName);
                      }
                   case "decimal precision":
                      try
                      {
-                        config.decimalPrecision = Util.toInt(read[1]);
+                        config.decimalPrecision = Util.toInt(read[VALUE]);
                         break;
                      }
                      catch (NumberFormatException e)
                      {
                         Util.exit("Poorly formatted integer for Decimal Precision: "
-                                    + read[1], fileName);
+                                    + read[VALUE], fileName);
+                     }
+                  case "activation function":
+                     int ARG_0 = 2;
+                     int ARG_1 = 3;
+                     switch (read[VALUE].toLowerCase())
+                     {
+                        case "sigmoid":
+                           config.activationFunction = new Sigmoid();
+                           break;
+                        case "tanh", "hyperbolic tangent":
+                           config.activationFunction = new Tanh();
+                           break;
+                        case "relu":
+                           config.activationFunction = new ReLU();
+                           break;
+                        case "linear":
+                           double m = 0.0;
+                           double b = 0.0;
+                           try
+                           {
+                              if (read.length > ARG_0)
+                              {
+                                 m = Util.toDouble(read[ARG_0].trim());
+                              }
+                              else
+                              {
+                                 Util.exit("Missing argument for Linear activation function, m",
+                                       fileName);
+                              }
+                           }
+                           catch (NumberFormatException e)
+                           {
+                              Util.exit("Poorly formatted double for Linear activation " +
+                                    "function, m: " + read[ARG_0].trim(), fileName);
+                           }
+
+                           try
+                           {
+                              if (read.length > ARG_1)
+                              {
+                                 b = Util.toDouble(read[ARG_1].trim());
+                              }
+                              else
+                              {
+                                 Util.exit("Missing argument for Linear activation function, b",
+                                       fileName);
+                              }
+                           }
+                           catch (NumberFormatException e)
+                           {
+                              Util.exit("Poorly formatted double for Linear activation " +
+                                    "function, b: " + read[ARG_1].trim(), fileName);
+                           }
+
+                           config.activationFunction = new Linear(m, b);
+                           break;
+                        case "leaky relu":
+                           double alpha = 0.0;
+
+                           try
+                           {
+                              if (read.length > ARG_0)
+                              {
+                                 alpha = Util.toDouble(read[ARG_0].trim());
+                              }
+                              else
+                              {
+                                 Util.exit("Missing argument for Leaky ReLU activation function, " +
+                                       "alpha", fileName);
+                              }
+                           }
+                           catch (NumberFormatException e)
+                           {
+                              Util.exit("Poorly formatted double for Leaky ReLU activation " +
+                                    "function, alpha: " + read[ARG_0].trim(), fileName);
+                           }
+
+                           config.activationFunction = new LeakyReLU(alpha);
+                           break;
+                        case "randomized relu", "rrelu":
+                           config.activationFunction = new RReLU();
+                           break;
+                        case "gaussian":
+                           config.activationFunction = new Gaussian();
+                           break;
+                        default:
+                           Util.exit("Invalid activation function: " + read[VALUE], fileName);
+                     }
+                     break;
+                  case "save weights interval":
+                     try
+                     {
+                        config.saveWeightsInterval = Util.toInt(read[VALUE]);
+                        break;
+                     }
+                     catch (NumberFormatException e)
+                     {
+                        Util.exit("Poorly formatted integer for Save Weights Interval: " +
+                              read[VALUE], fileName);
                      }
                   default:
-                     Util.exit("Invalid configuration parameter \"" + read[0] + "\"",
+                     Util.exit("Invalid configuration parameter \"" + read[KEY] + "\"",
                            fileName);
-               } //switch (read[0])
+               } //switch (read[KEY])
             } //if (ln.contains(":"))
             else
             {
@@ -393,8 +500,13 @@ public class ConfigFileIO
          out.writeUTF(Util.newLine("Random range upper bound: " + config.highRand));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Load weights: " + config.loadWeights));
-         out.writeUTF(Util.newLine("Save weights: " + config.saveWeights));
          out.writeUTF(Util.newLine("Weights file: " + config.weightsFile));
+         out.writeUTF(Util.newLine("Run case Number: " + config.runCaseNum));
+         out.writeUTF(Util.newLine("Keep Alive Interval: " + config.keepAliveInterval));
+         out.writeUTF(Util.newLine("Save Weights Interval: " + config.saveWeightsInterval));
+         out.writeUTF(Util.newLine("Decimal precision: " + config.decimalPrecision));
+         out.writeUTF(Util.newLine("Activation Function: " + config.activationFunction.toString()));
+
       } //try
       catch (IOException e)
       {

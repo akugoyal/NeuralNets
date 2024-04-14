@@ -2,13 +2,13 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
- * This class is an N-layer feedforward neural network. The network is fully connected and supports
- * a sigmoid activation function. The network can be run in training, run-all, or run single mode.
- * In training mode, the network uses a gradient descent algorithm with backpropagation to
- * calculate the delta weights, until either the maximum number of iterations is reached or the
- * average error is under the error threshold. In run-all mode, the network runs each input in
- * the truth table through the network and prints the value of the output node(s). In run single
- * mode
+ * This class is a fully connected, N-layer feedforward neural network. The network can be run in
+ * training, run-all, or run single mode. In training mode, the network uses a gradient descent
+ * algorithm with backpropagation to calculate the delta weights, until either the maximum
+ * number of iterations is reached or the average error is under the error threshold. In run-all
+ * mode, the network runs each input in the truth table through the network and prints the value
+ * of the output node(s). In run single mode the network runs only the input specified in the
+ * configuration file.
  *
  * The network reads the configuration parameters from a file, using a ConfigFileIO object to
  * read/write from/to the file and storing the network configuration in a Config object.
@@ -23,15 +23,13 @@ import java.util.Arrays;
  * 7. runSingleCase()
  * 8. runAll()
  * 9. runDuringTrain(int caseNum)
- * 10. sigmoid(double x)
- * 11. sigmoidPrime(double x)
- * 12. activationFunction(double x)
- * 13. activationFunctionPrime(double x)
- * 14. runError(int caseNum)
- * 15. reportFull()
- * 16. formatDoubleArray(double[] arr, int len, int precision)
- * 17. printTime(double seconds)
- * 18. main(String[] args)
+ * 10. activationFunction(double x)
+ * 11. activationFunctionPrime(double x)
+ * 12. runError(int caseNum)
+ * 13. reportFull()
+ * 14. formatDoubleArray(double[] arr, int len)
+ * 15. printTime(double seconds)
+ * 16. main(String[] args)
  *
  * Author: Akul Goyal
  * Date of Creation: 01/30/2024
@@ -89,6 +87,11 @@ public class Main
    public static double error;                          //Average error for the network
 
 /**
+ * Variables for formatting.
+ */
+   public static DecimalFormat df;
+
+/**
  * Loads the configuration from the file passed as the first command line argument. If no file is
  * passed, the default configuration file is used. The configuration is stored in a Config object.
  * It also creates objects which can read and write the weights and truth table files, but doesn't
@@ -115,11 +118,15 @@ public class Main
       configFileIO = new ConfigFileIO(configFile, DEFAULT_WEIGHTS_FILE, DEFAULT_TRUTH_TABLE_FILE);
       config = configFileIO.loadConfig();
 
+      df = new DecimalFormat("#".repeat(config.decimalPrecision) + "." +
+            "0".repeat(config.decimalPrecision));
+      df.setRoundingMode(java.math.RoundingMode.FLOOR);
+
       truthTableFileIO = new TruthTableFileIO(config.numActsInLayers[config.INPUT_LAYER],
             config.numActsInLayers[config.OUTPUT_LAYER],
             config.numCases, config.networkMode, config.truthTableFile);
 
-      if (config.loadWeights || config.saveWeights)
+      if (config.loadWeights || config.saveWeightsInterval > 0)
       {
          weightsFileIO = new WeightsFileIO(config.weightsFile, config);
       }
@@ -139,6 +146,13 @@ public class Main
 
       System.out.println("Network configuration: " + Util.formatConfiguration(
             config.numActsInLayers, config.numActLayers));
+      System.out.println("Activation function: " + config.activationFunction.toString());
+      if (!config.activationFunction.BOUNDED)
+      {
+         System.out.println("WARNING: Activation function is unbounded. May result in NaN values.");
+      }
+
+      System.out.println();
 
       if (config.networkMode == TRAINING)
       {
@@ -150,14 +164,23 @@ public class Main
 
          if (config.keepAliveInterval > 0)
          {
-            System.out.println("Keep alive interval: " + config.keepAliveInterval + "\n");
+            System.out.println("Keep alive interval: " + config.keepAliveInterval);
          }
          else
          {
             System.out.println("Keep alive interval: Disabled");
          }
 
-         System.out.println("Loading truth table from file: " + config.truthTableFile);
+         if (config.saveWeightsInterval > 0)
+         {
+            System.out.println("Save weights interval: " + config.saveWeightsInterval);
+         }
+         else
+         {
+            System.out.println("Save weights interval: Disabled");
+         }
+
+         System.out.println("\nLoading truth table from file: " + config.truthTableFile);
       } //if (config.networkMode == TRAINING)
       else if (config.networkMode == RUN_ALL)
       {
@@ -171,6 +194,8 @@ public class Main
          System.out.println("Loading inputs from file: " + config.truthTableFile);
       }
 
+      System.out.println();
+
       if (config.loadWeights)
       {
          System.out.println("Loading weights from file: " + config.weightsFile);
@@ -181,7 +206,7 @@ public class Main
                config.highRand);
       }
 
-      if (config.saveWeights)
+      if (config.saveWeightsInterval > 0)
       {
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
@@ -208,7 +233,7 @@ public class Main
             psi[n] = new double[config.numActsInLayers[n]];
          }
 
-         error = Double.MAX_VALUE;
+         error = config.errThreshold + 1.0;
          trainIterations = 0;
 
          truthTableOutputs = new double[config.numCases][config.numActsInLayers[config.OUTPUT_LAYER]];
@@ -307,7 +332,7 @@ public class Main
 
 /**
  * Runs the network on the input given by the input activations array, a. Each hidden node is the
- * sigmoid of the sum of the dot products of each of the previous activations and the
+ * activation function of the sum of the dot products of each of the previous activations and the
  * corresponding weight between the previous activation and the current activation. This
  * method does not save the theta values because they are not needed after the network runs.
  */
@@ -399,31 +424,13 @@ public class Main
    } //public static void runDuringTrain(int caseNum)
 
 /**
- * Computes the sigmoid of the passed double using Math.exp() to compute the exponent of e.
- */
-   public static double sigmoid(double x)
-   {
-      return 1.0 / (1.0 + Math.exp(-x));
-   } //public static double sigmoid(double x)
-
-/**
- * Computes the derivative of the sigmoid at the passed double using the previously
- * defined sigmoid() function.
- */
-   public static double sigmoidPrime(double x)
-   {
-      double sigValue = sigmoid(x);
-      return sigValue * (1.0 - sigValue);
-   } //public static double sigmoidPrime(double x)
-
-/**
  * Activation function for the network.
  * @param x the input to the activation function
  * @return the output of the activation function
  */
    public static double activationFunction(double x)
    {
-      return sigmoid(x);
+      return config.activationFunction.f(x);
    } //public static double activationFunction(double x)
 
 /**
@@ -433,7 +440,7 @@ public class Main
  */
    public static double activationFunctionPrime(double x)
    {
-      return sigmoidPrime(x);
+      return config.activationFunction.fPrime(x);
    } //public static double activationFunctionPrime(double x)
 
 /**
@@ -510,8 +517,8 @@ public class Main
          reportSingleCase(config.runCaseNum);
       }
 
-      printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
-      System.out.println();
+      System.out.println("\nElapsed Time: " + formatTime((System.nanoTime() - initTime)
+            / NANO_PER_SEC));
    } //public static void reportFull()
 
 /**
@@ -520,20 +527,15 @@ public class Main
  *
  * @param arr the double array to format
  * @param len the length of the array
- * @param precision the number of decimal places to format the doubles to
  * @return the formatted string
  */
-   public static String formatDoubleArray(double[] arr, int len, int precision)
+   public static String formatDoubleArray(double[] arr, int len)
    {
       int iter;
       StringBuilder res;
-      DecimalFormat df;
 
       res = new StringBuilder();
       res.append("[");
-
-      df = new DecimalFormat("#".repeat(precision) + "." + "0".repeat(precision));
-      df.setRoundingMode(java.math.RoundingMode.FLOOR);
 
       for (iter = 0; iter < len; iter++)
       {
@@ -546,7 +548,7 @@ public class Main
       res.append("]");
 
       return res.toString();
-   } //public static String formatDoubleArray(double[] arr, int len, int precision)
+   } //public static String formatDoubleArray(double[] arr, int len)
 
 /**
  * Prints a report for the given case number. If the network is in training mode, it prints the
@@ -565,7 +567,7 @@ public class Main
       }
 
       System.out.println("     Output: " + formatDoubleArray(a[config.OUTPUT_LAYER],
-            config.numActsInLayers[config.OUTPUT_LAYER], config.decimalPrecision));
+            config.numActsInLayers[config.OUTPUT_LAYER]));
    } //public static void reportSingleCase(int num)
 
 /**
@@ -593,10 +595,19 @@ public class Main
  */
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
-         if (config.keepAliveInterval > 0 && trainIterations % config.keepAliveInterval == 0)
+         if (config.keepAliveInterval > 0 && trainIterations > 0 &&
+               trainIterations % config.keepAliveInterval == 0)
          {
-            System.out.print("Reached training iteration " + trainIterations + " with error " + error + " at ");
-            printTime((System.nanoTime() - initTime) / NANO_PER_SEC);
+            System.out.print("Reached training iteration " + trainIterations + " with error " +
+                  df.format(error) + " at ");
+            System.out.print(formatTime((System.nanoTime() - initTime) / NANO_PER_SEC));
+         }
+
+         if (config.saveWeightsInterval > 0 && trainIterations > 0 &&
+               trainIterations % config.saveWeightsInterval == 0)
+         {
+            weightsFileIO.saveWeights(w);
+            System.out.println("Saved weights at iteration " + trainIterations);
          }
 
          error = 0.0;
@@ -651,48 +662,48 @@ public class Main
  * digest units.
  *
  * Author: Dr. Eric R. Nelson
- * This method was modified by Akul Goyal to remove magic numbers.
+ * This method was modified by Akul Goyal to remove magic numbers and return the formatted time
+ * instead of printing it.
  */
-   public static void printTime(double seconds)
+   public static String formatTime(double seconds)
    {
       double minutes, hours, days, weeks;
-
-      System.out.print("Elapsed time: ");
+      String time = "";
 
       if (seconds < 1.)
-         System.out.printf("%g milliseconds", seconds * MILLIS_PER_SEC);
+         time += df.format(seconds * MILLIS_PER_SEC) + " milliseconds";
       else if (seconds < SEC_PER_MIN)
-         System.out.printf("%g seconds", seconds);
+         time += df.format(seconds) + " seconds";
       else
       {
          minutes = seconds / SEC_PER_MIN;
 
          if (minutes < MIN_PER_HR)
-            System.out.printf("%g minutes", minutes);
+            time += df.format(minutes) + " minutes";
          else
          {
             hours = minutes / MIN_PER_HR;
 
             if (hours < HR_PER_DAY)
-               System.out.printf("%g hours", hours);
+               time += df.format(hours) + " hours";
             else
             {
                days = hours / HR_PER_DAY;
 
                if (days < DAYS_PER_WK)
-                  System.out.printf("%g days", days);
+                  time += df.format(days) + " days";
                else
                {
                   weeks = days / DAYS_PER_WK;
 
-                  System.out.printf("%g weeks", weeks);
+                  time += df.format(weeks) + " weeks";
                }
             } //if (hours < HR_PER_DAY)...else
          } //if (minutes < MIN_PER_HR)...else
       } //else if (seconds < SEC_PER_MIN)...else
 
-      System.out.print("\n");
-   } //public static void printTime(double seconds)
+      return time + "\n";
+   } //public static String formatTime(double seconds)
 
 /**
  * Sets the configuration parameters, echos the network's settings, allocates memory for all
@@ -722,8 +733,9 @@ public class Main
             runAll();
          }
 
-         if (config.saveWeights)
+         if (config.saveWeightsInterval > 0)
          {
+            System.out.println("Saving weights...");
             weightsFileIO.saveWeights(w);
          }
 

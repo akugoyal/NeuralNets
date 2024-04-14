@@ -18,7 +18,6 @@ import java.util.Arrays;
  * highRand:               the upper bound for the random number range, which may be used to
  *                         randomize the weights. This defaults to 0.0.
  * loadWeights:            whether to load the weights from a file. This defaults to false.
- * saveWeights:            whether to save the weights to a file. This defaults to false.
  * weightsFile:            the file to load/save the weights from/to. This defaults to the value
  *                         passed in the constructor.
  * networkMode:            0 if the network is training, 1 if the network is running all cases in
@@ -33,9 +32,12 @@ import java.util.Arrays;
  * runCaseNum:             the case number to run in the truth table. Used only when networkMode is
  *                         2 (Run single case). This defaults to 0.
  * keepAliveInterval:      the interval to print status updates to the console during training. This
- *                         defaults to 0.
+ *                         defaults to 0 (disabled).
  * decimalPrecision:       the number of decimal places to round the weights to. This defaults to 17.
- *
+ * activationFunction:     the activation function to use. This defaults to sigmoid.
+ * saveWeightsInterval:    the interval at which to save weights during training. Defaults to 0
+ *                         (disabled). If this is greater than 0, weights will be saved at the
+ *                         end, regardless of network mode.
  *
  * Table of Contents:
  * 1. Config(String defaultWeightsFile, String defaultTruthTableFile)
@@ -55,7 +57,6 @@ public class Config
    public double lowRand;
    public double highRand;
    public boolean loadWeights;
-   public boolean saveWeights;
    public String weightsFile;
    public int networkMode;
    public int numCases;
@@ -66,6 +67,8 @@ public class Config
    public int runCaseNum;
    public int keepAliveInterval;
    public int decimalPrecision;
+   public Function activationFunction;
+   public int saveWeightsInterval;
 
 /**
  * Constructor for the Config class. Initializes the parameters to their default values.
@@ -83,7 +86,6 @@ public class Config
       lowRand = 0.0;
       highRand = 0.0;
       loadWeights = false;
-      saveWeights = false;
       weightsFile = defaultWeightsFile;
       networkMode = 0;
       numCases = 1;
@@ -94,5 +96,7 @@ public class Config
       runCaseNum = 0;
       keepAliveInterval = 0;
       decimalPrecision = 17;
+      activationFunction = new Sigmoid();
+      saveWeightsInterval = 0;
    } //public Config(String defaultWeightsFile, String defaultTruthTableFile)
 } //public class Config
