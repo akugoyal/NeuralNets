@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the RReLU (Randomized ReLU) function and implements the Function interface.
  * RReLU is defined the same as the Leaky ReLU function, but with a random slope. The random
@@ -52,6 +54,6 @@ public class RReLU extends Function
  */
    public String toString()
    {
-      return "RandomizedReLU" + ", " + leaky.getA();
+      return "ReLU" + ", " + leaky.getA();
    }
 } //public class RReLU implements Function

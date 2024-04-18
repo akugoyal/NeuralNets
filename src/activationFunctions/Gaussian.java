@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the Gaussian function and implements the Function interface.
  * Gaussian is defined as:
@@ -41,7 +43,7 @@ public class Gaussian extends Function
  */
    public double fPrime(double x)
    {
-      return -2 * x * f(x);
+      return -2.0 * x * f(x);
    }
 
 /**

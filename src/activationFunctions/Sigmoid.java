@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the sigmoid function and implements the Function interface. Sigmoid
  * is defined as:

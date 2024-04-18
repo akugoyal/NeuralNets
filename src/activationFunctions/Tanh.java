@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the hyperbolic tangent function and implements the Function interface.
  * Tanh is defined as:
@@ -45,7 +47,7 @@ public class Tanh extends Function
    public double fPrime(double x)
    {
       double fVal = this.f(x);
-      return 1 - (fVal * fVal);
+      return 1.0 - (fVal * fVal);
    }
 
 /**

@@ -1,4 +1,4 @@
-import javax.sound.sampled.Line;
+package activationFunctions;
 
 /**
  * This class represents the linear function and implements the Function interface.

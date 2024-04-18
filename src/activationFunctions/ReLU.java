@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the ReLU function and implements the Function interface.
  * ReLU is defined as:
@@ -32,7 +34,7 @@ public class ReLU extends Function
  */
    public double f(double x)
    {
-      return (x <= 0) ? 0 : x;
+      return (x <= 0.0) ? 0.0 : x;
    }
 
 /**

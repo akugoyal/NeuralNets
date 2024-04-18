@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * This class represents the Leaky ReLU function and implements the Function interface.
  * Leaky ReLU is defined as:
@@ -39,7 +41,7 @@ public class LeakyReLU extends Function
  */
    public double f(double x)
    {
-      return (x <= 0) ? a * x : x;
+      return (x <= 0.0) ? a * x : x;
    }
 
 /**
@@ -49,7 +51,7 @@ public class LeakyReLU extends Function
  */
    public double fPrime(double x)
    {
-      return (x <= 0) ? a : 1;
+      return (x <= 0.0) ? a : 1.0;
    }
 
 /**

@@ -1,3 +1,5 @@
+package activationFunctions;
+
 /**
  * Abstract class for a function and its derivative.
  *
