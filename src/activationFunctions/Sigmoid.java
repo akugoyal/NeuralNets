@@ -1,7 +1,7 @@
 package activationFunctions;
 
 /**
- * This class represents the sigmoid function and implements the Function interface. Sigmoid
+ * This class represents the sigmoid function and extends the Function abstract class. Sigmoid
  * is defined as:
  *
  * f(x) = 1 / (1 + exp(-x))

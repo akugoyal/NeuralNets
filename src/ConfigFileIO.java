@@ -35,6 +35,8 @@ import java.io.*;
  * Save Weights Interval:     The interval at which to save weights to file during training. If
  *                            this is greater than 0, weights will be saved at the end, regardless
  *                            of network mode.
+ * ETA Interval:              The interval at which to print an ETA to the end of training. This
+ *                            is only used when the network is in training mode.
  *
  * Keys which do not match the above list will be ignored. Lines beginning with a '#' are treated
  * as comments and are ignored. An example configuration file may look like the following:
@@ -55,6 +57,7 @@ import java.io.*;
  * Decimal Precision: 17
  * Activation Function: Linear, 0.1, 0.5
  * Save Weights Interval: 1e3
+ * ETA Interval: 0
  *
  *
  * Table of Contents:
@@ -379,6 +382,17 @@ public class ConfigFileIO
                         Util.exit("Poorly formatted integer for Save Weights Interval: " +
                               read[VALUE], fileName);
                      }
+                  case "eta interval":
+                        try
+                        {
+                           config.etaInterval = Util.toInt(read[VALUE]);
+                           break;
+                        }
+                        catch (NumberFormatException e)
+                        {
+                           Util.exit("Poorly formatted integer for ETA Interval: " +
+                                 read[VALUE], fileName);
+                        }
                   default:
                      Util.exit("Invalid configuration parameter \"" + read[KEY] + "\"",
                            fileName);

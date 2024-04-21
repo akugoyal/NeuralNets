@@ -1,7 +1,7 @@
 package activationFunctions;
 
 /**
- * This class represents the Leaky ReLU function and implements the Function interface.
+ * This class represents the Leaky ReLU function and extends the Function abstract class.
  * Leaky ReLU is defined as:
  *
  * f(x) = x, if x > 0,
@@ -59,7 +59,7 @@ public class LeakyReLU extends Function
  */
    public String toString()
    {
-      return "LeakyReLU" + ", " + a;
+      return "LeakyReLU" + ", α = " + getA();
    }
 
 /**

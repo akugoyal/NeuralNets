@@ -1,7 +1,7 @@
 package activationFunctions;
 
 /**
- * This class represents the Gaussian function and implements the Function interface.
+ * This class represents the Gaussian function and extends the Function abstract class.
  * Gaussian is defined as:
  *
  * f(x) = exp(-x^2)

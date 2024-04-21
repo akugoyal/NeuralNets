@@ -9,6 +9,9 @@
 ./activationFunctions/RReLU.java
 ./TruthTableFileIO.java
 ./ConfigFileIO.java
+./RgbQuad.java
 ./Main.java
 ./Config.java
 ./WeightsFileIO.java
+./BMP2OneByte.java
+./bmp2bin.java

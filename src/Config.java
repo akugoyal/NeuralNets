@@ -39,6 +39,8 @@ import java.util.Arrays;
  * saveWeightsInterval:    the interval at which to save weights during training. Defaults to 0
  *                         (disabled). If this is greater than 0, weights will be saved at the
  *                         end, regardless of network mode.
+ * etaInterval:            the interval at which to print an ETA for training. This defaults to 0
+ *                         (disabled).
  *
  * Table of Contents:
  * 1. Config(String defaultWeightsFile, String defaultTruthTableFile)
@@ -70,6 +72,7 @@ public class Config
    public int decimalPrecision;
    public Function activationFunction;
    public int saveWeightsInterval;
+   public int etaInterval;
 
 /**
  * Constructor for the Config class. Initializes the parameters to their default values.
@@ -99,5 +102,6 @@ public class Config
       decimalPrecision = 17;
       activationFunction = new Sigmoid();
       saveWeightsInterval = 0;
+      etaInterval = 0;
    } //public Config(String defaultWeightsFile, String defaultTruthTableFile)
 } //public class Config

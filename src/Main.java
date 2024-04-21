@@ -180,6 +180,15 @@ public class Main
             System.out.println("Save weights interval: Disabled");
          }
 
+         if (config.etaInterval > 0)
+         {
+            System.out.println("ETA interval: " + config.saveWeightsInterval);
+         }
+         else
+         {
+            System.out.println("ETA interval: Disabled");
+         }
+
          System.out.println("\nLoading truth table from file: " + config.truthTableFile);
       } //if (config.networkMode == TRAINING)
       else if (config.networkMode == RUN_ALL)
@@ -588,11 +597,34 @@ public class Main
       double omegaM;
       double psiM;
 
+      double totalDeltaTime;
+      double totalDeltaError;
+      double prevTime;
+      double prevError;
+      int numIntervals;
+      double estIntervalsToTrain;
+      double estTimeLeft;
+      double timeToTrain;
+      double avgDeltaTime;
+      double avgDeltaError;
+
       System.out.println("Training...");
 
 /**
  * Each iteration is defined as each execution of the body of the following while loop.
  */
+      for (error = 0.0, caseIter = 0; caseIter < config.numCases; caseIter++)
+      {
+         error += runError(caseIter);
+      }
+      error /= (double) config.numCases;
+
+      totalDeltaTime = 0.0;
+      totalDeltaError = 0.0;
+      prevError = error;
+      numIntervals = 0;
+      prevTime = System.nanoTime() / NANO_PER_SEC;
+
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
          if (config.keepAliveInterval > 0 && trainIterations > 0 &&
@@ -608,6 +640,39 @@ public class Main
          {
             weightsFileIO.saveWeights(w);
             System.out.println("Saved weights at iteration " + trainIterations);
+         }
+
+         if (config.etaInterval > 0 && trainIterations > 0 &&
+               trainIterations % config.etaInterval == 0)
+         {
+            numIntervals++;
+
+            totalDeltaTime += (System.nanoTime() / NANO_PER_SEC) - prevTime;
+            prevTime = System.nanoTime() / NANO_PER_SEC;
+
+            totalDeltaError += prevError - error;
+            prevError = error;
+
+            avgDeltaTime = totalDeltaTime / ((double) numIntervals);
+            avgDeltaError = totalDeltaError / ((double) numIntervals);
+
+            estTimeLeft =
+                  (((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * avgDeltaTime;
+
+            estIntervalsToTrain = (error - config.errThreshold) / avgDeltaError;
+
+            if (estIntervalsToTrain > 0 && (((double) config.etaInterval * estIntervalsToTrain) + trainIterations) < (double) config.maxIters)
+            {
+               timeToTrain = (estIntervalsToTrain * avgDeltaTime);
+               System.out.print("ETA: Will converge in " + df.format(estIntervalsToTrain) + " " +
+                     "intervals " +
+                     "and " + formatTime(timeToTrain));
+            }
+            else
+            {
+               System.out.println("ETA: Will fail in " + formatTime(estTimeLeft));
+            }
+            System.out.println();
          }
 
          error = 0.0;

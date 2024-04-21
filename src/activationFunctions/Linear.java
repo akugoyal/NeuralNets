@@ -1,7 +1,7 @@
 package activationFunctions;
 
 /**
- * This class represents the linear function and implements the Function interface.
+ * This class represents the linear function and extends the Function abstract class.
  * Linear is defined as:
  *
  * f(x) = mx + b
@@ -60,6 +60,6 @@ public class Linear extends Function
  */
    public String toString()
    {
-      return "Linear, " + m + ", " + b;
+      return "Linear, y = " + m + "x  + " + b;
    }
 } //public class Linear implements Function

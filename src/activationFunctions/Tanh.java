@@ -1,7 +1,7 @@
 package activationFunctions;
 
 /**
- * This class represents the hyperbolic tangent function and implements the Function interface.
+ * This class represents the hyperbolic tangent function and extends the Function abstract class.
  * Tanh is defined as:
  *
  * f(x) = (exp(x) - exp(-x)) / (exp(x) + exp(-x))
