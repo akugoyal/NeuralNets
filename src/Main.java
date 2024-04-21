@@ -597,16 +597,19 @@ public class Main
       double omegaM;
       double psiM;
 
-      double totalDeltaTime;
-      double totalDeltaError;
+      double deltaTime;
+      double deltaError;
       double prevTime;
       double prevError;
-      int numIntervals;
       double estIntervalsToTrain;
       double estTimeLeft;
       double timeToTrain;
-      double avgDeltaTime;
-      double avgDeltaError;
+      int numIntervals;
+      double prevTimeEMA;
+      double currTimeEMA;
+      double multiplier;
+      double currErrorEMA;
+      double prevErrorEMA;
 
       System.out.println("Training...");
 
@@ -619,11 +622,12 @@ public class Main
       }
       error /= (double) config.numCases;
 
-      totalDeltaTime = 0.0;
-      totalDeltaError = 0.0;
+      prevTime = System.nanoTime() / NANO_PER_SEC;
+      prevTimeEMA = 0.0;
+      prevErrorEMA = 0.0;
       prevError = error;
       numIntervals = 0;
-      prevTime = System.nanoTime() / NANO_PER_SEC;
+
 
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
@@ -646,33 +650,34 @@ public class Main
                trainIterations % config.etaInterval == 0)
          {
             numIntervals++;
+            multiplier = 2.0 / ((double) numIntervals);
 
-            totalDeltaTime += (System.nanoTime() / NANO_PER_SEC) - prevTime;
+            deltaTime = System.nanoTime() / NANO_PER_SEC - prevTime;
+            currTimeEMA = deltaTime * multiplier + prevTimeEMA * (1.0 - multiplier);
             prevTime = System.nanoTime() / NANO_PER_SEC;
+            prevTimeEMA = currTimeEMA;
 
-            totalDeltaError += prevError - error;
+            deltaError = prevError - error;
+            currErrorEMA = deltaError * multiplier + prevErrorEMA * (1.0 - multiplier);
             prevError = error;
-
-            avgDeltaTime = totalDeltaTime / ((double) numIntervals);
-            avgDeltaError = totalDeltaError / ((double) numIntervals);
+            prevErrorEMA = currErrorEMA;
 
             estTimeLeft =
-                  (((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * avgDeltaTime;
+                  (((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * currTimeEMA;
 
-            estIntervalsToTrain = (error - config.errThreshold) / avgDeltaError;
+            estIntervalsToTrain = (error - config.errThreshold) / currErrorEMA;
 
             if (estIntervalsToTrain > 0 && (((double) config.etaInterval * estIntervalsToTrain) + trainIterations) < (double) config.maxIters)
             {
-               timeToTrain = (estIntervalsToTrain * avgDeltaTime);
+               timeToTrain = (estIntervalsToTrain * currTimeEMA);
                System.out.print("ETA: Will converge in " + df.format(estIntervalsToTrain) + " " +
                      "intervals " +
                      "and " + formatTime(timeToTrain));
             }
             else
             {
-               System.out.println("ETA: Will fail in " + formatTime(estTimeLeft));
+               System.out.print("ETA: Will fail in " + formatTime(estTimeLeft));
             }
-            System.out.println();
          }
 
          error = 0.0;
