@@ -597,12 +597,9 @@ public class Main
       double omegaM;
       double psiM;
 
-      double deltaTime;
-      double deltaError;
       double prevTime;
       double prevError;
       double estIntervalsToTrain;
-      double estTimeLeft;
       double timeToTrain;
       int numIntervals;
       double prevTimeEMA;
@@ -652,18 +649,13 @@ public class Main
             numIntervals++;
             multiplier = 2.0 / ((double) numIntervals);
 
-            deltaTime = System.nanoTime() / NANO_PER_SEC - prevTime;
-            currTimeEMA = deltaTime * multiplier + prevTimeEMA * (1.0 - multiplier);
+            currTimeEMA = (System.nanoTime() / NANO_PER_SEC - prevTime) * multiplier + prevTimeEMA * (1.0 - multiplier);
             prevTime = System.nanoTime() / NANO_PER_SEC;
             prevTimeEMA = currTimeEMA;
 
-            deltaError = prevError - error;
-            currErrorEMA = deltaError * multiplier + prevErrorEMA * (1.0 - multiplier);
+            currErrorEMA = (prevError - error) * multiplier + prevErrorEMA * (1.0 - multiplier);
             prevError = error;
             prevErrorEMA = currErrorEMA;
-
-            estTimeLeft =
-                  (((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * currTimeEMA;
 
             estIntervalsToTrain = (error - config.errThreshold) / currErrorEMA;
 
@@ -676,7 +668,7 @@ public class Main
             }
             else
             {
-               System.out.print("ETA: Will fail in " + formatTime(estTimeLeft));
+               System.out.print("ETA: Will fail in " + formatTime((((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * currTimeEMA));
             }
          }
 
