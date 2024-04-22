@@ -107,11 +107,13 @@ public class Main
       String configFile = DEFAULT_CONFIG_FILE;
 
 /**
- * Record the time at the start of the program. Not for the user to modify.
+ * Record the time at the start of the program.
  */
-      initTime = System.nanoTime();
-      dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss");
-      now = LocalDateTime.now();
+      {
+         initTime = System.nanoTime();
+         dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss");
+         now = LocalDateTime.now();
+      }
 
 /**
  * Load the configuration from file.
@@ -227,7 +229,7 @@ public class Main
       }
 
 
-      System.out.println("Starting time: " + dtf.format(now));
+      System.out.println("\nStarting time: " + dtf.format(now));
       System.out.println("----------------------------------------------------------------------" +
             "------------------------------");
    } //public static void echoConfig()

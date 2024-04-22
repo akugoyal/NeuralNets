@@ -34,9 +34,10 @@ public class Tanh extends Function
  */
    public double f(double x)
    {
-      double eX = Math.exp(x);
-      double eNegX = Math.exp(-x);
-      return (eX - eNegX)/(eX + eNegX);
+      double sign;
+      sign = (x > 0) ? 1.0 : -1.0;
+
+      return sign * (1.0 - Math.exp(sign * -2.0 * x)) / (1.0 + Math.exp(sign * -2.0 * x));
    }
 
 /**
