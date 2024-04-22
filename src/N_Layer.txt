@@ -10,7 +10,7 @@ Keep Alive Interval: 5e3
 Random range lower bound: -1.5
 Random range upper bound: 1.5
 Run case Number: 1
-Decimal Precision: 2
+Decimal Precision: 5
 
 # Truth table file: (4)_2_1_XOR.txt
  Truth table file: (4)_2_3_AND_OR_XOR.txt

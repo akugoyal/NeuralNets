@@ -1,4 +1,6 @@
 import java.text.DecimalFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 /**
@@ -61,8 +63,10 @@ public class Main
    public static final double HR_PER_DAY = 24.0;           //Hours per day
    public static final double DAYS_PER_WK = 7.0;           //Days per week
    public static double initTime;                          //Time at the start of the program
+   public static DateTimeFormatter dtf;
+   public static LocalDateTime now;
 
-/**
+   /**
  * Variables for the IO objects for the configuration, weights, and truth table files.
  */
    public static ConfigFileIO configFileIO;              //Object for reading/writing the config file
@@ -106,6 +110,8 @@ public class Main
  * Record the time at the start of the program. Not for the user to modify.
  */
       initTime = System.nanoTime();
+      dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss");
+      now = LocalDateTime.now();
 
 /**
  * Load the configuration from file.
@@ -220,6 +226,8 @@ public class Main
          System.out.println("Saving weights to file: " + config.weightsFile);
       }
 
+
+      System.out.println("Starting time: " + dtf.format(now));
       System.out.println("----------------------------------------------------------------------" +
             "------------------------------");
    } //public static void echoConfig()
