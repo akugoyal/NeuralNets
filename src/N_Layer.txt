@@ -1,21 +1,22 @@
 # Network mode: 0 - Training, 1 - Run All, 2 - Run case number
-Network configuration: 2-5-10-20-40-80-160-320-3
-Activation function: tanh
+Network configuration: 2-1-1
+Activation function: sigmoid
 Network Mode: 0
 Number of cases: 4
 Max training iterations: 1e5
 Lambda: 0.3
 Error threshold: 2e-4
 Keep Alive Interval: 0
-Random range lower bound: -1.5
+Random range lower bound: 0.1
 Random range upper bound: 1.5
 Run case Number: 1
 Decimal Precision: 5
 
-Truth table file: (4)_2_3_AND_OR_XOR.txt
+#Truth table file: (4)_2_3_AND_OR_XOR.txt
+Truth table file: (4)_2_1_XOR.txt
 
 Load weights: false
 Save weights interval: 0
 Weights file: weights_2_test_3.bin
 
-eta Interval: 5e3
+eta Interval: 0

@@ -9,9 +9,13 @@
 ./activationFunctions/RReLU.java
 ./TruthTableFileIO.java
 ./ConfigFileIO.java
-./RgbQuad.java
+./imgProcessing/PelArray/PelArray.java
+./imgProcessing/PelArray/Test.java
+./imgProcessing/BGR2BMP.java
+./imgProcessing/RgbQuad.java
+./imgProcessing/BMP2OneByte.java
+./imgProcessing/oneByteToPelArray.java
+./imgProcessing/bmp2bin.java
 ./Main.java
 ./Config.java
 ./WeightsFileIO.java
-./BMP2OneByte.java
-./bmp2bin.java
