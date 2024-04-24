@@ -242,8 +242,11 @@ public class ConfigFileIO
                   case "load weights":
                      config.loadWeights = Util.toBoolean(read[VALUE]);
                      break;
-                  case "weights file":
-                     config.weightsFile = read[VALUE];
+                  case "weights file in":
+                     config.weightsFileIn = read[VALUE];
+                     break;
+                  case "weights file out":
+                     config.weightsFileOut = read[VALUE];
                      break;
                   case "run case number":
                      try
@@ -515,7 +518,8 @@ public class ConfigFileIO
          out.writeUTF(Util.newLine("Random range upper bound: " + config.highRand));
          out.writeUTF(Util.newLine(""));
          out.writeUTF(Util.newLine("Load weights: " + config.loadWeights));
-         out.writeUTF(Util.newLine("Weights file: " + config.weightsFile));
+         out.writeUTF(Util.newLine("Weights file In: " + config.weightsFileIn));
+         out.writeUTF(Util.newLine("Weights file Out: " + config.weightsFileOut));
          out.writeUTF(Util.newLine("Run case Number: " + config.runCaseNum));
          out.writeUTF(Util.newLine("Keep Alive Interval: " + config.keepAliveInterval));
          out.writeUTF(Util.newLine("Save Weights Interval: " + config.saveWeightsInterval));

@@ -60,7 +60,8 @@ public class Config
    public double lowRand;
    public double highRand;
    public boolean loadWeights;
-   public String weightsFile;
+   public String weightsFileIn;
+   public String weightsFileOut;
    public int networkMode;
    public int numCases;
    public int maxIters;
@@ -90,7 +91,8 @@ public class Config
       lowRand = 0.0;
       highRand = 0.0;
       loadWeights = false;
-      weightsFile = defaultWeightsFile;
+      weightsFileIn = defaultWeightsFile;
+      weightsFileOut = defaultWeightsFile;
       networkMode = 0;
       numCases = 1;
       maxIters = 0;

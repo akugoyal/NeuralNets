@@ -70,7 +70,8 @@ public class Main
  * Variables for the IO objects for the configuration, weights, and truth table files.
  */
    public static ConfigFileIO configFileIO;              //Object for reading/writing the config file
-   public static WeightsFileIO weightsFileIO;            //Object for reading/writing the weights file
+   public static WeightsFileIO weightsFileIOLoader;      //Object for reading/writing the input weights file
+   public static WeightsFileIO weightsFileIOSaver;       //Object for reading/writing the output weights file
    public static TruthTableFileIO truthTableFileIO;      //Object for reading/writing the truth table file
    public static Config config;                          //Network configuration object
 
@@ -134,9 +135,13 @@ public class Main
             config.numActsInLayers[config.OUTPUT_LAYER],
             config.numCases, config.networkMode, config.truthTableFile);
 
-      if (config.loadWeights || config.saveWeightsInterval > 0)
+      if (config.loadWeights)
       {
-         weightsFileIO = new WeightsFileIO(config.weightsFile, config);
+         weightsFileIOLoader = new WeightsFileIO(config.weightsFileIn, config);
+      }
+      if (config.saveWeightsInterval > 0)
+      {
+         weightsFileIOSaver = new WeightsFileIO(config.weightsFileOut, config);
       }
    } //public static void setConfig(String[] args)
 
@@ -215,7 +220,7 @@ public class Main
 
       if (config.loadWeights)
       {
-         System.out.println("Loading weights from file: " + config.weightsFile);
+         System.out.println("Loading weights from file: " + config.weightsFileIn);
       }
       else
       {
@@ -225,7 +230,7 @@ public class Main
 
       if (config.saveWeightsInterval > 0)
       {
-         System.out.println("Saving weights to file: " + config.weightsFile);
+         System.out.println("Saving weights to file: " + config.weightsFileOut);
       }
 
 
@@ -319,7 +324,7 @@ public class Main
 
       if (config.loadWeights)
       {
-         weightsFileIO.loadWeights(w);
+         weightsFileIOLoader.loadWeights(w);
       } //if (config.loadWeights)
       else
       {
@@ -649,7 +654,7 @@ public class Main
          if (config.saveWeightsInterval > 0 && trainIterations > 0 &&
                trainIterations % config.saveWeightsInterval == 0)
          {
-            weightsFileIO.saveWeights(w);
+            weightsFileIOSaver.saveWeights(w);
             System.out.println("Saved weights at iteration " + trainIterations);
          }
 
@@ -808,7 +813,7 @@ public class Main
          if (config.saveWeightsInterval > 0)
          {
             System.out.println("Saving weights...");
-            weightsFileIO.saveWeights(w);
+            weightsFileIOSaver.saveWeights(w);
          }
 
          reportFull();
