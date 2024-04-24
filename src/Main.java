@@ -578,7 +578,7 @@ public class Main
  */
    public static void reportSingleCase(int num)
    {
-      System.out.print("Input Case #" + num + ": " + Arrays.toString(a[config.INPUT_LAYER]));
+      System.out.print("Input Case #" + num);// + ": " + Arrays.toString(a[config.INPUT_LAYER]));
 
       if (config.networkMode == TRAINING)
       {
