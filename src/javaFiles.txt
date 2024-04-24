@@ -12,10 +12,11 @@
 ./imgProcessing/PelArray/PelArray.java
 ./imgProcessing/PelArray/Test.java
 ./imgProcessing/BGR2BMP.java
+./imgProcessing/bmp2binAll.java
 ./imgProcessing/RgbQuad.java
+./imgProcessing/bin2bmpAll.java
 ./imgProcessing/BMP2OneByte.java
 ./imgProcessing/oneByteToPelArray.java
-./imgProcessing/bmp2bin.java
 ./Main.java
 ./Config.java
 ./WeightsFileIO.java

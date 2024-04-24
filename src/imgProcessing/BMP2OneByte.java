@@ -777,10 +777,11 @@ typedef RGBQUAD FAR* LPRGBQUAD;
        */
       try
       {
-         BufferedWriter out = new BufferedWriter(new FileWriter(outFileName));
+         FileOutputStream fstream = new FileOutputStream(outFileName);
+         DataOutputStream out = new DataOutputStream(fstream);
 
-         out.write(bmpInfoHeader_biHeight + "\n");
-         out.write(bmpInfoHeader_biWidth + "\n");
+         out.writeInt(bmpInfoHeader_biWidth);
+         out.writeInt(bmpInfoHeader_biHeight);
 
          for (i = bmpInfoHeader_biHeight - 1; i >= 0; --i)    // write over the rows (in the usual inverted format)
          {
@@ -790,12 +791,12 @@ typedef RGBQUAD FAR* LPRGBQUAD;
                pel = dibdumper.colorToGrayscale(pel);
                byteVal  = (byte)(pel & 0x00FF);
 
-               out.write(byteVal + "\n"); // $ Change this line to alter the type of output.
+               out.writeByte(byteVal); // $ Change this line to alter the type of output.
             }
          } // for (i = bmpInfoHeader_biHeight - 1; i >= 0; --i)
 
-         out.flush();
          out.close();
+         fstream.close();
       }
       catch (Exception e)
       {
