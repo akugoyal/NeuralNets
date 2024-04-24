@@ -1,10 +1,10 @@
 #Testing: 1B, 2C, 3A, 4D, 5C
 # Network mode: 0 - Training, 1 - Run All, 2 - Run case number
 
-Network configuration: 8600-100-10-5
+Network configuration: 8600-100-5
 Activation function: sigmoid
 Network Mode: 1
-Number of cases: 25
+Number of cases: 5
 Max training iterations: 1e5
 Lambda: 0.75
 Error threshold: 1e-4
@@ -12,12 +12,12 @@ Keep Alive Interval: 1e2
 Random range lower bound: -1.5
 Random range upper bound: 1.5
 Run case Number: 1
-Decimal Precision: 5
+Decimal Precision: 3
 
-Truth table file: /Users/akulgoyal/Desktop/NeuralNets/src/imgTruthTable.txt
+Truth table file: /Users/akulgoyal/Desktop/NeuralNets/src/imgTruthTableTesting.txt
 
 Load weights: true
 Save weights interval: 0
-Weights file: weightsTry.bin
+Weights file in: 8600_100_5_BESTBEST.bin
 
 eta Interval: 1e2
