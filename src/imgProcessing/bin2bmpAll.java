@@ -15,22 +15,59 @@ public class bin2bmpAll
       }
       else
       {
-         String headerPath = args[0].substring(0, args[0].indexOf(".")) + ".txt";
-         BufferedReader headerIn = new BufferedReader(new FileReader(headerPath));
+         if (!args[1].endsWith("/"))
+         {
+            args[1] = args[1] + "/";
+         }
 
-         int width = Integer.parseInt(headerIn.readLine());
-         int height = Integer.parseInt(headerIn.readLine());
-         String type = headerIn.readLine().trim();
-
+         BufferedReader br = new BufferedReader(new FileReader(args[0]));
+         String fileName;
+         int width;
+         int height;
+         String type;
          String cmd = "java imgProcessing/BGR2BMP";
+         Runtime r;
+         Process p;
+         String outFile;
 
-         Runtime r = Runtime.getRuntime();
-         Process p =
-               r.exec(cmd + " " + type + " " + width + " " + height + " " + args[0] + " " + args[1]);
+         String line;
+         while ((line = br.readLine()) != null)
+         {
+            System.out.println(line);
 
-         p.waitFor();
+            fileName = extractFileName(line);
 
-         headerIn.close();
+            outFile = args[1] + fileName + ".bmp";
+
+            String headerPath = line.substring(0, line.indexOf(".")) + ".txt";
+            BufferedReader headerIn = new BufferedReader(new FileReader(headerPath));
+
+            width = Integer.parseInt(headerIn.readLine());
+            height = Integer.parseInt(headerIn.readLine());
+            type = headerIn.readLine().trim();
+
+            r = Runtime.getRuntime();
+            p = r.exec(cmd + " " + type + " " + width + " " + height + " " + line + " " + outFile);
+
+            p.waitFor();
+
+            headerIn.close();
+         }
+
+         br.close();
       }
    }
+
+   public static String extractFileName(String line)
+   {
+      String res = line.substring(line.indexOf("/") + 1);
+
+      int ind;
+      while ((ind = res.indexOf("/")) != -1)
+      {
+         res = res.substring(ind + 1);
+      }
+
+      return res.substring(0, res.indexOf("."));
+   } //public static String extractFileName(String line)
 }

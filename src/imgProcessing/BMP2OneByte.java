@@ -780,7 +780,7 @@ typedef RGBQUAD FAR* LPRGBQUAD;
          FileOutputStream fstream = new FileOutputStream(outFileName);
          DataOutputStream out = new DataOutputStream(fstream);
 
-         out.writeInt(bmpInfoHeader_biWidth);
+         out.writeInt(bmpInfoHeader_biWidth); //MODIFIED THIS STUFF
          out.writeInt(bmpInfoHeader_biHeight);
 
          for (i = bmpInfoHeader_biHeight - 1; i >= 0; --i)    // write over the rows (in the usual inverted format)

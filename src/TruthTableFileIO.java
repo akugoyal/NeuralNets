@@ -297,29 +297,54 @@ public class TruthTableFileIO
       String ln;
       String[] read;
       int iter;
+      int b;
 
       try
       {
-         BufferedReader inputReader = new BufferedReader(new FileReader(file));
-         ln = inputReader.readLine();
-         if (ln == null)
+         if (file.endsWith("txt"))
          {
-            Util.exit("Empty file when reading from truth table Case #" + caseIter, file);
-         }
-         if (ln.isBlank())
-         {
-            Util.exit("Empty line when reading from truth table Case #" + caseIter, file);
-         }
+            BufferedReader inputReader = new BufferedReader(new FileReader(file));
+            ln = inputReader.readLine();
+            if (ln == null)
+            {
+               Util.exit("Empty file when reading from truth table Case #" + caseIter, file);
+            }
+            if (ln.isBlank())
+            {
+               Util.exit("Empty line when reading from truth table Case #" + caseIter, file);
+            }
 
-         read = ln.trim().split("\s+");
-         if (read.length > numElements)
-         {
-            System.out.println("Found " + read.length + " elements in file \"" + file + "\". " +
-                  "Using only the first " + numElements + " elements.");
+            read = ln.trim().split("\s+");
+            if (read.length > numElements)
+            {
+               System.out.println("Found " + read.length + " elements in file \"" + file + "\". " +
+                     "Using only the first " + numElements + " elements.");
+            }
+            else if (read.length < numElements)
+            {
+               Util.exit("Found " + read.length + " elements for Case #" + caseIter + ". " +
+                     "Expected " + numElements + ".", file);
+            }
+            for (iter = 0; iter < numElements; iter++)
+            {
+               truthTable[caseIter][iter] = Util.toDouble(read[iter]);
+            }
          }
-         for (iter = 0; iter < numElements; iter++)
+         else
          {
-            truthTable[caseIter][iter] = Util.toDouble(read[iter]);
+            DataInputStream in = new DataInputStream(new FileInputStream(file));
+
+            for (iter = 0; iter < numElements; iter++)
+            {
+               try
+               {
+                  truthTable[caseIter][iter] = in.readUnsignedByte();
+               }
+               catch (EOFException e)
+               {
+                  Util.exit("Missing byte values when reading truth table Case #" + caseIter, file);
+               }
+            }
          }
 
       } //try

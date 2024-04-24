@@ -50,7 +50,7 @@ public class bmp2binAll
             p.waitFor();
          }
       } //if (args.length < 1)...else
-   }
+   } //public static void main(String[] args) throws IOException, InterruptedException
 
    public static String extractFileName(String line)
    {
@@ -63,5 +63,5 @@ public class bmp2binAll
       }
 
       return res.substring(0, res.indexOf("."));
-   }
-}
+   } //public static String extractFileName(String line)
+} //public class bmp2binAll
