@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 /**
@@ -24,12 +25,12 @@ public class WeightsFileIO
    private DataInputStream in;
    private String fileName;
 
-/**
- * Constructor to initialize the expected number of activations in each layer and the file name.
- *
- * @param fileName        the name of the file to read/write weights
- * @param config          the Config object representing the network configuration
- */
+   /**
+    * Constructor to initialize the expected number of activations in each layer and the file name.
+    *
+    * @param fileName        the name of the file to read/write weights
+    * @param config          the Config object representing the network configuration
+    */
    public WeightsFileIO(String fileName, Config config)
    {
       this.numActsInLayers = config.numActsInLayers;
@@ -37,21 +38,25 @@ public class WeightsFileIO
       this.config = config;
    } //public WeightsFileIO(int[] numActsInLayers, String fileName, Config config)
 
-/**
- * Method to save the weights to the binary file in a format that is compatible with the
- * loadWeights method.
- *
- * @param w the weights to save
- */
+   /**
+    * Method to save the weights to the binary file in a format that is compatible with the
+    * loadWeights method.
+    *
+    * @param w the weights to save
+    */
    public void saveWeights(double[][][] w)
    {
       int n;
       int k;
       int j;
 
+      ByteArrayOutputStream b = new ByteArrayOutputStream();
+      out = new DataOutputStream(b);
+      DataOutputStream out1 = null;
+
       try
       {
-         out = new DataOutputStream(new FileOutputStream(fileName));
+         out1 = new DataOutputStream(new FileOutputStream(fileName));
       }
       catch (FileNotFoundException e)
       {
@@ -90,7 +95,11 @@ public class WeightsFileIO
 
       try
       {
+         byte[] bArr = b.toByteArray();
          out.close();
+         b.close();
+         out1.write(bArr);
+         out1.close();
       }
       catch (IOException e)
       {
@@ -98,12 +107,12 @@ public class WeightsFileIO
       }
    } //public void saveWeights(double[][][] w)
 
-/**
- * Method to load the weights from the binary file. The weights are loaded into the provided
- * array.
- *
- * @param w the array to load the weights into
- */
+   /**
+    * Method to load the weights from the binary file. The weights are loaded into the provided
+    * array.
+    *
+    * @param w the array to load the weights into
+    */
    public void loadWeights(double[][][] w)
    {
       int[] layersRead;

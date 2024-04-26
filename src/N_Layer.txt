@@ -18,6 +18,6 @@ Truth table file: (4)_2_3_AND_OR_XOR.txt
 Load weights: true
 Save weights interval: 0
 Weights file in: weights_testOut.bin
-Weights file out: weights_testOut2.bin
+Weights file out: weights_testOut.bin
 
 eta Interval: 0
