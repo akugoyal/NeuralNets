@@ -543,6 +543,8 @@ public class Main
 
       System.out.println("\nElapsed Time: " + formatTime((System.nanoTime() - initTime)
             / NANO_PER_SEC));
+      now = LocalDateTime.now();
+      System.out.println("Ended at: " + dtf.format(now));
    } //public static void reportFull()
 
    /**
