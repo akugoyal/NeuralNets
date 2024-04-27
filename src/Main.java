@@ -541,10 +541,10 @@ public class Main
          reportSingleCase(config.runCaseNum);
       }
 
-      System.out.println("\nElapsed Time: " + formatTime((System.nanoTime() - initTime)
+      System.out.print("\nElapsed Time: " + formatTime((System.nanoTime() - initTime)
             / NANO_PER_SEC));
       now = LocalDateTime.now();
-      System.out.println("Ended at: " + dtf.format(now));
+      System.out.println("Ended at: " + dtf.format(now) + "\n");
    } //public static void reportFull()
 
    /**
