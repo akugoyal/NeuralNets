@@ -1,7 +1,7 @@
 #Testing: 1B, 2D, 3C, 4D, 5C
 # Network mode: 0 - Training, 1 - Run All, 2 - Run case number
 
-Network configuration: 8600-300-150-5
+Network configuration: 8600-2500-625-150-30-5
 Activation function: sigmoid
 Network Mode: 1
 Number of cases: 30
@@ -17,8 +17,7 @@ Decimal Precision: 3
 Truth table file: imgTruthTableAll.txt
 Load weights: true
 Save weights interval: 0
-Weights file in: iter640_more_8600_150_80_5.bin
-
+Weights file in: iter3000_massivebigboi.bin
 Weights file out: good_8600_860_86_5.bin
 
 eta Interval: 0
