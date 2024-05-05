@@ -11,7 +11,7 @@ public class bin2bmpAll
       if (args.length < 2)
       {
          System.out.println("Missing one or more arguments: path to file containing input paths, " +
-               "path to output directory");
+               "path to output directory, scale factor");
       }
       else
       {
@@ -47,8 +47,16 @@ public class bin2bmpAll
             type = headerIn.readLine().trim();
 
             r = Runtime.getRuntime();
-            p = r.exec(cmd + " " + type + " " + width + " " + height + " " + line + " " + outFile);
+            p =
+                  r.exec(cmd + " " + type + " " + width + " " + height + " " + line + " " + outFile);
 
+            BufferedReader reader =
+                  new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String ln;
+            while ((ln = reader.readLine()) != null)
+            {
+               System.out.print(ln + "\n");
+            }
             p.waitFor();
 
             headerIn.close();

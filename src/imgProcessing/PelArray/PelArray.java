@@ -781,5 +781,61 @@ public class PelArray
       return((a > b) ? a : b);
    }
 
+   public PelArray pad(int xLeftPad, int yTopPad, int xRightPad, int yBottomPad, int color)
+   {
+      int iRow, iCol;
+
+      int iRowCount = arrayOfPels.length;
+      int iColCount = arrayOfPels[0].length;
+
+      int[][] targetArray =
+            new int[iRowCount + yTopPad + yBottomPad][iColCount + xLeftPad + xRightPad];
+
+      int iNewRowCount = targetArray.length;
+      int iNewColCount = targetArray[0].length;
+
+      for (iRow = yTopPad; iRow < yTopPad + iRowCount; iRow++) //Copy existing image
+      {
+         for (iCol = xLeftPad; iCol < xLeftPad + iColCount; iCol++)
+         {
+            targetArray[iRow][iCol] = arrayOfPels[iRow - yTopPad][iCol - xLeftPad];
+         }
+      }
+
+      for (iRow = 0; iRow < yTopPad; iRow++) //Top Pad
+      {
+         for (iCol = 0; iCol < iNewColCount; iCol++)
+         {
+            targetArray[iRow][iCol] = color;
+         }
+      }
+
+      for (iRow = yTopPad + iRowCount; iRow < iNewRowCount; iRow++) //Bottom Pad
+      {
+         for (iCol = 0; iCol < iNewColCount; iCol++)
+         {
+            targetArray[iRow][iCol] = color;
+         }
+      }
+
+      for (iRow = yTopPad; iRow < yTopPad + iRowCount; iRow++) //Left Pad (without corner)
+      {
+         for (iCol = 0; iCol < xLeftPad; iCol++)
+         {
+            targetArray[iRow][iCol] = color;
+         }
+      }
+
+      for (iRow = yTopPad; iRow < yTopPad + iRowCount; iRow++) //Right Pad (without corner)
+      {
+         for (iCol = xLeftPad + iColCount; iCol < iNewColCount; iCol++)
+         {
+            targetArray[iRow][iCol] = color;
+         }
+      }
+
+      return new PelArray(targetArray);
+   }
+
 } // public class PelArray
 

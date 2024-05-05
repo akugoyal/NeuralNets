@@ -30,7 +30,7 @@ public class bmp2binAll
          while ((line = in.readLine()) != null)
          {
             line = line.trim();
-            System.out.println(line);
+            System.out.println("\n" + line);
             Runtime r = Runtime.getRuntime();
             outFile = outPath + extractFileName(line) + ".bin";
             p = r.exec(cmdStart + " " +  line + " " + outFile);

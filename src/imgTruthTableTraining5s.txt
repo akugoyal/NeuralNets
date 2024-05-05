@@ -1,0 +1,13 @@
+5-8300-5
+
+?/Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/5A.bin
+?/Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/5B.bin
+?/Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/5C.bin
+?/Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/5D.bin
+?/Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/5F.bin
+
+?/Users/akulgoyal/Desktop/NeuralNets/src/5Out.txt
+?/Users/akulgoyal/Desktop/NeuralNets/src/5Out.txt
+?/Users/akulgoyal/Desktop/NeuralNets/src/5Out.txt
+?/Users/akulgoyal/Desktop/NeuralNets/src/5Out.txt
+?/Users/akulgoyal/Desktop/NeuralNets/src/5Out.txt

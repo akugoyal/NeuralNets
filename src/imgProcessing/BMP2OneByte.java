@@ -777,8 +777,9 @@ typedef RGBQUAD FAR* LPRGBQUAD;
        */
       try
       {
-         FileOutputStream fstream = new FileOutputStream(outFileName);
-         DataOutputStream out = new DataOutputStream(fstream);
+         ByteArrayOutputStream b = new ByteArrayOutputStream();
+         DataOutputStream out1 = new DataOutputStream(new FileOutputStream(outFileName));
+         DataOutputStream out = new DataOutputStream(b);
 
          out.writeInt(bmpInfoHeader_biWidth); //MODIFIED THIS STUFF
          out.writeInt(bmpInfoHeader_biHeight);
@@ -795,8 +796,11 @@ typedef RGBQUAD FAR* LPRGBQUAD;
             }
          } // for (i = bmpInfoHeader_biHeight - 1; i >= 0; --i)
 
+         byte[] bArr = b.toByteArray();
          out.close();
-         fstream.close();
+         b.close();
+         out1.write(bArr);
+         out1.close();
       }
       catch (Exception e)
       {

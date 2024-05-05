@@ -338,7 +338,7 @@ public class TruthTableFileIO
             {
                try
                {
-                  truthTable[caseIter][iter] = in.readUnsignedByte();
+                  truthTable[caseIter][iter] = in.readDouble();
                }
                catch (EOFException e)
                {

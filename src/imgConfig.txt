@@ -1,24 +1,25 @@
 #Testing: 1B, 2C, 3A, 4D, 5C
 # Network mode: 0 - Training, 1 - Run All, 2 - Run case number
+#Testing: 1F, 2F, 3F, 4F, 5E
 
-Network configuration: 8600-8033-6036-5419-1072-840-321-5
+Network configuration: 8300-83-8-5
 Activation function: sigmoid
 Network Mode: 0
-Number of cases: 25
+Number of cases: 30
 Max training iterations: 1e5
-Lambda: 0.3
-Error threshold: 1e-5
-Keep Alive Interval: 10
-Random range lower bound: -0.5
-Random range upper bound: 0.5
+Lambda: 0.5
+Error threshold: 2e-4
+Keep Alive Interval: 1000
+Random range lower bound: -1.5
+Random range upper bound: 1.5
 Run case Number: 1
 Decimal Precision: 6
 
-Truth table file: imgTruthTableTraining.txt
+Truth table file: imgTruthTableTrainingAllTest.txt
 Load weights: false
-Save weights interval: 10
-Weights file in: iter10_massivebigboi.bin
+Save weights interval: 1000
+Weights file in: iter17000_errorTest6.bin
 
-Weights file out: holyfrc3.bin
+Weights file out: scaled6.bin
 
-eta Interval: 10
+eta Interval: 1000

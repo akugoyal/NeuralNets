@@ -1,0 +1,3 @@
+java imgProcessing/oneByteToPelArrayAll /Users/akulgoyal/Desktop/NeuralNets/binsTry/inBinList.txt /Users/akulgoyal/Desktop/NeuralNets/binsModdedTry 1000 gray
+
+find /Users/akulgoyal/Desktop/NeuralNets/binsModdedTry -name "*.bin" > /Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/binModList.txt

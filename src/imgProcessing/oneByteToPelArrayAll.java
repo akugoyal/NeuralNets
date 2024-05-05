@@ -27,15 +27,15 @@ public class oneByteToPelArrayAll
          int height;
          int xCOM;
          int yCOM;
-         int xOFF = 770;
-         int yOFF = 900;
+         int xOFF = 600;
+         int yOFF = 720;
          int xTL;
          int yTL;
          int xBR;
          int yBR;
-         int rOFF = -100;
-         int gOFF = -100;
-         int bOFF = -100;
+         int rOFF = -50;
+         int gOFF = -50;
+         int bOFF = -50;
          double ratio;
          int[][] img;
          int[][] moddedImg;
@@ -47,7 +47,7 @@ public class oneByteToPelArrayAll
          String line;
          while ((line = br.readLine()) != null)
          {
-            System.out.println(line);
+            System.out.println("\n" + line);
             fileName = extractFileName(line);
             DataInputStream in = new DataInputStream(new FileInputStream(line));
             DataOutputStream out =
@@ -76,6 +76,11 @@ public class oneByteToPelArrayAll
             pel = new PelArray(img);
 
             pel = pel.onesComplimentImage();
+
+            pel = pel.pad(500, 500, 500, 500, pel.getPelArray()[5][50]);
+            moddedImg = pel.getPelArray();
+            width = moddedImg[0].length;
+            height = moddedImg.length;
 
             xCOM = pel.getXcom();
             yCOM = pel.getYcom();

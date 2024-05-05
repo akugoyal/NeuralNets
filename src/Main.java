@@ -616,14 +616,13 @@ public class Main
 
       double prevTime;
       double prevError;
-      double estIntervalsToTrain;
+      double estItersToTrain;
       double timeToTrain;
-      int numIntervals;
-      double prevTimeEMA;
-      double currTimeEMA;
+      double prevDeltaTimeEMA;
+      double currDeltaTimeEMA;
       double multiplier;
-      double currErrorEMA;
-      double prevErrorEMA;
+      double currDeltaErrorEMA;
+      double prevDeltaErrorEMA;
 
       System.out.println("Training...");
 
@@ -637,10 +636,9 @@ public class Main
       error /= (double) config.numCases;
 
       prevTime = System.nanoTime() / NANO_PER_SEC;
-      prevTimeEMA = 0.0;
-      prevErrorEMA = 0.0;
+      prevDeltaTimeEMA = 0.0;
+      prevDeltaErrorEMA = 0.0;
       prevError = error;
-      numIntervals = 0;
 
 
       while (trainIterations < config.maxIters && error > config.errThreshold)
@@ -661,38 +659,42 @@ public class Main
             System.out.println("Saved weights at iteration " + trainIterations);
          }
 
-         if (config.etaInterval > 0 && trainIterations > 0 &&
-               trainIterations % config.etaInterval == 0)
+         if (config.etaInterval > 0 && trainIterations > 0)
          {
-            numIntervals++;
-            multiplier = 2.0 / ((double) numIntervals);
+            multiplier = 2.0 / ((double) trainIterations);
 
-            currTimeEMA = (System.nanoTime() / NANO_PER_SEC - prevTime) * multiplier + prevTimeEMA * (1.0 - multiplier);
+            currDeltaTimeEMA =
+                  (System.nanoTime() / NANO_PER_SEC - prevTime) * multiplier + prevDeltaTimeEMA * (1.0 - multiplier);
             prevTime = System.nanoTime() / NANO_PER_SEC;
-            prevTimeEMA = currTimeEMA;
+            prevDeltaTimeEMA = currDeltaTimeEMA;
 
-            currErrorEMA = (prevError - error) * multiplier + prevErrorEMA * (1.0 - multiplier);
+            currDeltaErrorEMA =
+                  (prevError - error) * multiplier + prevDeltaErrorEMA * (1.0 - multiplier);
             prevError = error;
-            prevErrorEMA = currErrorEMA;
+            prevDeltaErrorEMA = currDeltaErrorEMA;
 
-            estIntervalsToTrain = (error - config.errThreshold) / currErrorEMA;
+            if (trainIterations % config.etaInterval == 0)
+            {
+               estItersToTrain = (error - config.errThreshold) / currDeltaErrorEMA;
 
-            if (estIntervalsToTrain > 0 && (((double) config.etaInterval * estIntervalsToTrain) + trainIterations) < (double) config.maxIters)
-            {
-               timeToTrain = (estIntervalsToTrain * currTimeEMA);
-               System.out.print("ETA: Will converge in " + df.format(estIntervalsToTrain) + " " +
-                     "intervals " +
-                     "and " + formatTime(timeToTrain));
-            }
-            else
-            {
-               System.out.print("ETA: Will fail in " + formatTime((((double) (config.maxIters - trainIterations)) / ((double) config.etaInterval)) * currTimeEMA));
+               if (estItersToTrain > 0 && (estItersToTrain + trainIterations) < (double) config.maxIters)
+               {
+                  timeToTrain = (estItersToTrain * currDeltaTimeEMA);
+                  System.out.print("ETA: Will converge in " + df.format(estItersToTrain) + " " +
+                        "iterations and " + formatTime(timeToTrain));
+               }
+               else
+               {
+                  System.out.print("ETA: Will fail in " + formatTime(
+                        ((double) (config.maxIters - trainIterations)) * currDeltaTimeEMA));
+               }
             }
          }
 
          error = 0.0;
 
-         for (caseIter = 0; caseIter < config.numCases; caseIter++)
+         for (caseIter = 0; caseIter < 25; caseIter++) //$ for (caseIter = 0; caseIter < config
+            // .numCases; caseIter++)
          {
             a[config.INPUT_LAYER] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
@@ -731,6 +733,12 @@ public class Main
 
             error += runError(caseIter);
          } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
+
+         for (caseIter = 25; caseIter < config.numCases; caseIter++) //$ delete
+         {
+            a[config.INPUT_LAYER] = truthTableInputs[caseIter];
+            error += runError(caseIter);
+         }
 
          error /= (double) config.numCases;
          trainIterations++;
