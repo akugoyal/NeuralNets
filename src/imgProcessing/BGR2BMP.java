@@ -200,7 +200,7 @@ public class BGR2BMP
                      }
                      else
                      {
-                        byteVal = in.readByte();    // $$$
+                        byteVal = (byte) (in.readDouble() * 255);    // $$$
                         rgbQuad_rgbBlue  = byteVal;
                         rgbQuad_rgbGreen = byteVal;
                         rgbQuad_rgbRed   = byteVal;

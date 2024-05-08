@@ -631,6 +631,7 @@ public class Main
  */
       for (error = 0.0, caseIter = 0; caseIter < config.numCases; caseIter++)
       {
+         a[config.INPUT_LAYER] = truthTableInputs[caseIter];
          error += runError(caseIter);
       }
       error /= (double) config.numCases;
@@ -641,6 +642,7 @@ public class Main
       prevError = error;
 
 
+      System.out.println("Starting training at iteration 0 and error " + df.format(error));
       while (trainIterations < config.maxIters && error > config.errThreshold)
       {
          if (config.keepAliveInterval > 0 && trainIterations > 0 &&
@@ -693,8 +695,7 @@ public class Main
 
          error = 0.0;
 
-         for (caseIter = 0; caseIter < 25; caseIter++) //$ for (caseIter = 0; caseIter < config
-            // .numCases; caseIter++)
+         for (caseIter = 0; caseIter < config.numCases; caseIter++)
          {
             a[config.INPUT_LAYER] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
@@ -733,12 +734,6 @@ public class Main
 
             error += runError(caseIter);
          } //for (caseIter = 0; caseIter < config.numCases; caseIter++)
-
-         for (caseIter = 25; caseIter < config.numCases; caseIter++) //$ delete
-         {
-            a[config.INPUT_LAYER] = truthTableInputs[caseIter];
-            error += runError(caseIter);
-         }
 
          error /= (double) config.numCases;
          trainIterations++;

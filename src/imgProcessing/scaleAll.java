@@ -31,7 +31,7 @@ public class scaleAll
          DataInputStream in = new DataInputStream(new FileInputStream(line));
 
          width = 83;
-         height = 100;
+         height = 120;
          img = new int[height][width];
 
          for (int i = 0; i < height; i++)

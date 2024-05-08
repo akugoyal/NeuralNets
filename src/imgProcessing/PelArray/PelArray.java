@@ -133,12 +133,12 @@ public class PelArray
    /*
     ** Return the width and height of the image array
     */
-   int getWidth()
+   public int getWidth()
    {
       return(arrayOfPels[0].length);
    }
 
-   int getHeight()
+   public int getHeight()
    {
       return(arrayOfPels.length);
    }

@@ -28,7 +28,7 @@ public class oneByteToPelArrayAll
          int xCOM;
          int yCOM;
          int xOFF = 600;
-         int yOFF = 720;
+         int yOFF = 700;
          int xTL;
          int yTL;
          int xBR;
@@ -50,14 +50,13 @@ public class oneByteToPelArrayAll
             System.out.println("\n" + line);
             fileName = extractFileName(line);
             DataInputStream in = new DataInputStream(new FileInputStream(line));
-            DataOutputStream out =
-                  new DataOutputStream(new FileOutputStream(args[1] + fileName + ".bin"));
 
             String headerPath = args[1] + fileName + ".txt";
             BufferedWriter headerOut = new BufferedWriter(new FileWriter(headerPath));
 
             width = in.readInt();
             height = in.readInt();
+            System.out.println(width + "x" + height);
             img = new int[height][width];
 
             for (int i = 0; i < height; i++)
@@ -74,34 +73,36 @@ public class oneByteToPelArrayAll
             }
 
             pel = new PelArray(img);
+//
+//            pel = pel.onesComplimentImage();
+//
+//            pel = pel.pad(500, 500, 500, 500, pel.getPelArray()[5][50]);
+//            moddedImg = pel.getPelArray();
+//            width = moddedImg[0].length;
+//            height = moddedImg.length;
+//
+//            xCOM = pel.getXcom();
+//            yCOM = pel.getYcom();
+//            System.out.println("Center of Mass: (" + xCOM + ", " + yCOM + ")");
+//
+//            xTL = Math.max(0, xCOM - xOFF);
+//            yTL = Math.max(0, yCOM - yOFF);
+//            xBR = Math.min(xCOM + xOFF, width - 1);
+//            yBR = Math.min(yCOM + yOFF, height - 1);
+//            pel = pel.crop(xTL, yTL, xBR, yBR);
+//            pel = pel.offsetColors(rOFF, gOFF, bOFF);
+//
+//
+//            ratio = ((double) xOFF * 2) / (yOFF * 2);
+//            desiredWidth = (int) (ratio * desiredHeight + 0.5); //Rounds the number
+//            System.out.println("Scaling to: " + desiredWidth + " x " + desiredHeight);
+//            pel = pel.scale(desiredWidth, desiredHeight);
 
-            pel = pel.onesComplimentImage();
-
-            pel = pel.pad(500, 500, 500, 500, pel.getPelArray()[5][50]);
             moddedImg = pel.getPelArray();
             width = moddedImg[0].length;
             height = moddedImg.length;
-
-            xCOM = pel.getXcom();
-            yCOM = pel.getYcom();
-            System.out.println("Center of Mass: (" + xCOM + ", " + yCOM + ")");
-
-            xTL = Math.max(0, xCOM - xOFF);
-            yTL = Math.max(0, yCOM - yOFF);
-            xBR = Math.min(xCOM + xOFF, width - 1);
-            yBR = Math.min(yCOM + yOFF, height - 1);
-            pel = pel.crop(xTL, yTL, xBR, yBR);
-            pel = pel.offsetColors(rOFF, gOFF, bOFF);
-
-
-            ratio = ((double) xOFF * 2) / (yOFF * 2);
-            desiredWidth = (int) (ratio * desiredHeight + 0.5); //Rounds the number
-            System.out.println("Scaling to: " + desiredWidth + " x " + desiredHeight);
-            pel = pel.scale(desiredWidth, desiredHeight);
-
-            moddedImg = pel.getPelArray();
-            width = moddedImg[0].length;
-            height = moddedImg.length;
+            DataOutputStream out =
+                  new DataOutputStream(new FileOutputStream(args[1] + fileName + ".bin"));
             for (int i = 0; i < height; i++)
             {
                for (int j = 0; j < width; j++)

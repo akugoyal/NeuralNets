@@ -1,7 +1,7 @@
 #Testing: 1B, 2D, 3C, 4D, 5C
 # Network mode: 0 - Training, 1 - Run All, 2 - Run case number
 
-Network configuration: 8300-83-8-5
+Network configuration: 8300-30-20-5
 
 Activation function: sigmoid
 Network Mode: 1
@@ -10,4 +10,4 @@ Decimal Precision: 3
 
 Truth table file: imgTruthTableAll2.txt
 Load weights: true
-Weights file in: iter6000_scaled2.bin
+Weights file in: iter6000_betterImg.bin

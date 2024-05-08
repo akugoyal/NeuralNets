@@ -284,8 +284,8 @@ public class TruthTableFileIO
    } //public void loadTruthTable(double[][] truthTableInputs, double[][] truthTableOutputs)
 
 /**
- * Reads a line from a file and stores the values in the provided array. If the file does not
- * adhere to the expected format, the method will throw an exception.
+ * Reads eight byte double values from a file and stores them in the provided array. If the
+ * file does not adhere to the expected format, the method will throw an exception.
  *
  * @param truthTable  the array to store the values read from the file.
  * @param caseIter    the index of the case in the truth table.
@@ -297,7 +297,8 @@ public class TruthTableFileIO
       String ln;
       String[] read;
       int iter;
-      int b;
+      int widthRead;
+      int heightRead;
 
       try
       {
@@ -330,9 +331,10 @@ public class TruthTableFileIO
                truthTable[caseIter][iter] = Util.toDouble(read[iter]);
             }
          }
-         else
+         else if (file.endsWith("bin"))
          {
-            DataInputStream in = new DataInputStream(new FileInputStream(file));
+            DataInputStream in =
+                  new DataInputStream(new FileInputStream(file));
 
             for (iter = 0; iter < numElements; iter++)
             {
