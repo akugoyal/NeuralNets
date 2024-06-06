@@ -95,6 +95,7 @@ public class Main
     * Variables for formatting.
     */
    public static DecimalFormat df;
+   public static DecimalFormat df1;
 
    /**
     * Loads the configuration from the file passed as the first command line argument. If no file is
@@ -127,7 +128,11 @@ public class Main
       configFileIO = new ConfigFileIO(configFile, DEFAULT_WEIGHTS_FILE, DEFAULT_TRUTH_TABLE_FILE);
       config = configFileIO.loadConfig();
 
-      df = new DecimalFormat("#".repeat(config.decimalPrecision) + "." +
+      df1 = new DecimalFormat("#".repeat(config.decimalPrecision) + "." +
+            "0".repeat(config.decimalPrecision) + "E0");
+      df1.setRoundingMode(java.math.RoundingMode.FLOOR);
+
+      df = new DecimalFormat("#".repeat(config.decimalPrecision) + "0." +
             "0".repeat(config.decimalPrecision));
       df.setRoundingMode(java.math.RoundingMode.FLOOR);
 
@@ -621,8 +626,9 @@ public class Main
       double prevDeltaTimeEMA;
       double currDeltaTimeEMA;
       double multiplier;
-      double currDeltaErrorEMA;
+      double currDeltaErrorEMA = 0.0;
       double prevDeltaErrorEMA;
+      double tempLambda = config.lambda;
 
       System.out.println("Training...");
 
@@ -693,9 +699,7 @@ public class Main
             }
          }
 
-         error = 0.0;
-
-         for (caseIter = 0; caseIter < config.numCases; caseIter++)
+         for (error = 0.0, caseIter = 0; caseIter < config.numCases; caseIter++)
          {
             a[config.INPUT_LAYER] = truthTableInputs[caseIter];
             runDuringTrain(caseIter);
