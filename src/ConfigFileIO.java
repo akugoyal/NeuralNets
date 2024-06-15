@@ -428,8 +428,7 @@ public class ConfigFileIO
  */
    public boolean readLine()
    {
-      boolean success;
-      success = false;
+      boolean success = false;
 
       try
       {

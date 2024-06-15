@@ -628,7 +628,6 @@ public class Main
       double multiplier;
       double currDeltaErrorEMA = 0.0;
       double prevDeltaErrorEMA;
-      double tempLambda = config.lambda;
 
       System.out.println("Training...");
 

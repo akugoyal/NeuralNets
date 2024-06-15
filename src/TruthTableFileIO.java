@@ -169,7 +169,7 @@ public class TruthTableFileIO
             else
             {
 
-               read = ln.split("\s+");
+               read = ln.split(" +");
 
                if (read.length != this.numInputs)
                {
@@ -237,7 +237,7 @@ public class TruthTableFileIO
             }
             else
             {
-               read = ln.split("\s+");
+               read = ln.split(" +");
 
                if (read.length != this.numOutputs && networkMode == Main.TRAINING)
                {
@@ -297,8 +297,6 @@ public class TruthTableFileIO
       String ln;
       String[] read;
       int iter;
-      int widthRead;
-      int heightRead;
 
       try
       {
@@ -315,7 +313,7 @@ public class TruthTableFileIO
                Util.exit("Empty line when reading from truth table Case #" + caseIter, file);
             }
 
-            read = ln.trim().split("\s+");
+            read = ln.trim().split(" +");
             if (read.length > numElements)
             {
                System.out.println("Found " + read.length + " elements in file \"" + file + "\". " +
@@ -330,7 +328,7 @@ public class TruthTableFileIO
             {
                truthTable[caseIter][iter] = Util.toDouble(read[iter]);
             }
-         }
+         } //if (file.endsWith("txt"))
          else if (file.endsWith("bin"))
          {
             DataInputStream in =
@@ -346,8 +344,8 @@ public class TruthTableFileIO
                {
                   Util.exit("Missing byte values when reading truth table Case #" + caseIter, file);
                }
-            }
-         }
+            } //for (iter = 0; iter < numElements; iter++)
+         } //if (file.endsWith("txt"))...else if (file.endsWith("bin"))
 
       } //try
       catch (FileNotFoundException e)
@@ -462,15 +460,15 @@ public class TruthTableFileIO
  */
    public String formatRow(double[] arr, int len)
    {
-      String res;
+      StringBuilder res;
       int iter;
 
-      res = "";
+      res = new StringBuilder();
       for (iter = 0; iter < len; iter++)
       {
-         res += arr[iter] + " ";
+         res.append(arr[iter]).append(" ");
       }
 
-      return res;
+      return res.toString();
    } //public String formatRow(double[] arr, int len)
 } //public class TruthTableFileIO
