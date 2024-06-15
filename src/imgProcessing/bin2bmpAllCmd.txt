@@ -1,1 +1,0 @@
-java imgProcessing/bin2bmpAll /Users/akulgoyal/Desktop/NeuralNets/binsModdedTry/binModList.txt /Users/akulgoyal/Desktop/NeuralNets/moddedBmpsTry/

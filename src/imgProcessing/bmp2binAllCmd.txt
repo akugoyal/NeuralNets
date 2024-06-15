@@ -1,3 +1,0 @@
-java imgProcessing/bmp2binAll /Users/akulgoyal/Downloads/finlBMPS/inBmpFiles.txt /Users/akulgoyal/Desktop/NeuralNets/binsTry/     
-
-find /Users/akulgoyal/Desktop/NeuralNets/binsTry/ -name "*.bin" > /Users/akulgoyal/Desktop/NeuralNets/binsTry/inBinList.txt

@@ -1,20 +1,23 @@
-package imgProcessing; /**
- **
- ** BGR2BMP.java
- **
- ** @author Eric R. Nelson
- ** September 19, 200.
- **
- ** This code reads in a binary file of byte values that represents either a gray scale (1 byte) or BGR color (3 bytes) images and converts them into a BMP fil**e.
- **
- ** Search for $ to change the data type read in by the program.
- **
- ** Usage:
- ** java BGR2BMP color/gray width height input_byte_file output_BMP_file
- **
- ** If five arguments are not passed, then a usage message is presented to the user.
- **
- **/
+package imgProcessing;
+
+/**
+ *
+ * BGR2BMP.java
+ *
+ * @author Eric R. Nelson
+ * September 19, 200.
+ *
+ * This code reads in a binary file of byte values that represents either a gray scale (1 byte)
+ * or BGR color (3 bytes) images and converts them into a BMP file.
+ *
+ * Search for $ to change the data type read in by the program.
+ *
+ * Usage:
+ * java BGR2BMP color/gray width height input_byte_file output_BMP_file
+ *
+ * If five arguments are not passed, then a usage message is presented to the user.
+ *
+ */
 import java.io.*;
 
 public class BGR2BMP

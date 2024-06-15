@@ -1,0 +1,12 @@
+# Network mode: 0 - Training, 1 - Run All, 2 - Run case number
+
+Network configuration: 9960-30-20-5
+
+Activation function: sigmoid
+Network Mode: 1
+Number of cases: 5
+Decimal Precision: 20
+
+Truth table file: imgTruthTableTesting.txt
+Load weights: true
+Weights file in: imgWeights.bin

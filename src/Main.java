@@ -42,9 +42,9 @@ public class Main
    /**
     * Default files for reading and writing the configuration, weights, and truth table files.
     */
-   public static final String DEFAULT_CONFIG_FILE = "config.txt";
+   public static final String DEFAULT_CONFIG_FILE = "defaultConfig.txt";
    public static final String DEFAULT_WEIGHTS_FILE = "weights.bin";
-   public static final String DEFAULT_TRUTH_TABLE_FILE = "truthTable.txt";
+   public static final String DEFAULT_TRUTH_TABLE_FILE = "defaultTruthTable.txt";
 
    /**
     * Constants for the network mode

@@ -1,6 +1,6 @@
 package imgProcessing.PelArray;
 
-/*
+/**
  * The PelArray class is used to manipulate two dimensional integer arrays that are
  * interpreted to be picture elements (32 bit color). The Java int type is 4 bytes
  * long, which is more than sufficient for 32 bit color represented as 0x00RRGGBB.

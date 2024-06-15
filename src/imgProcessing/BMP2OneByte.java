@@ -792,7 +792,7 @@ typedef RGBQUAD FAR* LPRGBQUAD;
                pel = dibdumper.colorToGrayscale(pel);
                byteVal  = (byte)(pel & 0x00FF);
 
-               out.writeByte(byteVal); // $ Change this line to alter the type of output.
+               out.writeByte(byteVal); // $$$ Change this line to alter the type of output.
             }
          } // for (i = bmpInfoHeader_biHeight - 1; i >= 0; --i)
 
