@@ -2,8 +2,9 @@ import java.math.BigDecimal;
 
 /**
  * Utility class for common operations. Supports conversion of strings to booleans, integers, and
- * doubles. It also provides a method to exit the program with an error message and a method to
- * add a new line to the end of a string.
+ * doubles. It also provides a method to exit the program with an error message, a method to
+ * add a new line to the end of a string, and a method to format an array with the network
+ * configuration into a string for printing.
  *
  * Table of Contents:
  * 1. exit(String msg, String fileName)

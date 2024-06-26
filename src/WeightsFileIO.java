@@ -36,7 +36,7 @@ public class WeightsFileIO
       this.numActsInLayers = config.numActsInLayers;
       this.fileName = fileName;
       this.config = config;
-   } //public WeightsFileIO(int[] numActsInLayers, String fileName, Config config)
+   } //public WeightsFileIO(String fileName, Config config)
 
    /**
     * Method to save the weights to the binary file in a format that is compatible with the
